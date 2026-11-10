@@ -6,7 +6,7 @@ function boot(options={}){
  function node(id){if(!nodes.has(id)){const listeners={};nodes.set(id,{textContent:'',innerHTML:'',value:'',hidden:false,open:false,style:{},dataset:{},classList:{toggle(){},add(){},remove(){}},setAttribute(){},focus(){},setPointerCapture(){},addEventListener(type,fn){(listeners[type]??=[]).push(fn)},emit(type,event){for(const fn of listeners[type]||[])fn(event)},showModal(){this.open=true},close(){this.open=false;for(const fn of listeners.close||[])fn()},getContext(){return ctx},getBoundingClientRect(){return {width:1100,height:620}},querySelectorAll(){return []},querySelector(){return null}})}return nodes.get(id)}
  const buddies=[1,2,3].map(n=>{const b=node('buddy'+n);b.dataset.buddy=String(n);return b});
  const holds=['Space','ArrowLeft','ArrowRight','ArrowDown'].map(k=>{const b=node(k);b.dataset.hold=k;return b});
- const storage={};
+ const storage={...(options.storage||{})};
  const timers=new Map();let clock=0,nextTimer=0;
  const sandbox={console,Math,Number,JSON,Array,Object,String,Boolean,Set,Map,setTimeout(fn,delay=0){const id=++nextTimer;timers.set(id,{fn,at:clock+delay});return id},clearTimeout(id){timers.delete(id)},requestAnimationFrame(){},localStorage:{getItem:k=>storage[k],setItem:(k,v)=>storage[k]=v},document:{querySelector:node,querySelectorAll:s=>s==='[data-buddy]'?buddies:s==='[data-hold]'?holds:[],addEventListener(){},body:{classList:{contains:c=>classes.has(c),toggle(c,on){on?classes.add(c):classes.delete(c)}}}},window:{addEventListener(){}}};
  vm.createContext(sandbox);vm.runInContext(script,sandbox);const run=source=>vm.runInContext(source,sandbox);
@@ -56,7 +56,7 @@ test('Stomps bounce, side contact removes one heart, shields absorb contact, and
 test('World powers have a cooldown; pause prevents input and stages finish only once',()=>{
  const run=boot();run(`sound=false;state='playing';ability()`);assert(run('p.power===3&&p.cooldown===8'));run(`p.power=1;ability()`);assert.equal(run('p.power'),1);
  run(`pause();pressed('ArrowRight')`);assert(run("state==='paused'&&!keys.ArrowRight"));run(`start();finish()`);assert(run("state==='complete'&&rescues===1"));const stars=run('bank');run('finish()');assert.equal(run('bank'),stars);run('start()');assert(run("level===1&&state==='playing'&&stageStars===0"));
- run(`level=11;makeLevel();state='playing';finish()`);assert.equal(run('state'),'worldComplete');run('start()');assert(run("level===0&&theme==='candy'&&state==='playing'"));
+ run(`level=11;makeLevel();state='playing';finish()`);assert.equal(run('state'),'bossReady');assert(run("medals['space:11']&&boss===null"));
 });
 test('Every world and stage renders without errors; rewards and buddy selections save',()=>{
  const run=boot();for(const th of ['space','candy','forest','squishy','home'])for(let i=0;i<12;i++)run(`theme='${th}';level=${i};makeLevel();camera=goalX-700;render();camera=1000;render()`);run('buddy=3;bank=40;hat=3;save()');assert.equal(run("JSON.parse(localStorage.getItem('laserLeapRewards')).buddy"),3);
@@ -133,5 +133,41 @@ test('Search and link readers receive connected game, site, and cover details wi
  const head=html.split('</head>')[0],data=JSON.parse(head.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
  assert.equal(data['@context'],'https://schema.org');const graph=data['@graph'],game=graph.find(n=>n['@type']==='VideoGame'),site=graph.find(n=>n['@type']==='WebSite'),page=graph.find(n=>n['@type']==='WebPage'),image=graph.find(n=>n['@id']===game.image['@id']);
  assert.equal(game.name,'Super Emilia World');assert.equal(game.author.name,'Emilia');assert.equal(game.isAccessibleForFree,true);assert.equal(game.playMode,'https://schema.org/SinglePlayer');assert.equal(page.mainEntity['@id'],game['@id']);assert.equal(page.isPartOf['@id'],site['@id']);assert.equal(image.width,1717);assert.equal(image.height,916);assert.equal(game.url,site.url);assert.equal(game.featureList.length,5);assert.equal(game.creditText,'Designed with ❤️ in Smyrna by Emilia');
+});
+test('Stage 12 ends in a boss arena; head bounces cheer the boss up and free a new buddy',()=>{
+ const run=boot();run(`level=11;makeLevel();state='playing';sound=false;finish()`);assert.equal(run('state'),'bossReady');
+ run('start()');assert(run("state==='playing'&&boss.hp===3&&boss.max===3&&boss.name==='Captain Grumpcomet'&&!buddyUnlocked(4)"));
+ run(`p.inv=0;p.x=boss.x-20;p.y=boss.y+40;p.vy=0;physics(STEP)`);assert.equal(run('p.hp'),2);
+ const bounce=()=>run(`p.inv=2;boss.inv=0;boss.timer=99;boss.shots=[];p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;physics(STEP)`);
+ bounce();assert(run('boss.hp===2&&p.vy<0'));
+ run(`p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;physics(STEP)`);assert.equal(run('boss.hp'),2);
+ bounce();bounce();assert(run('boss.defeated&&boss.hp===0&&boss.shots.length===0'));
+ run('for(let i=0;i<360;i++)physics(STEP)');assert(run("state==='worldComplete'&&bosses.space===true&&buddy===4&&bossReward.fresh&&finishBonus===25"));
+ assert(run("JSON.parse(localStorage.getItem('laserLeapRewards')).bosses.space===true"));
+ run('start()');assert(run("theme==='candy'&&level===0&&state==='playing'&&boss===null"));
+ run(`buddy=2;theme='space';level=11;makeLevel();state='playing';finish();start();boss.hp=1`);bounce();run('for(let i=0;i<360;i++)physics(STEP)');assert(run("state==='worldComplete'&&!bossReward.fresh&&buddy===2"));
+});
+test('Boss shadows warn before things fall; Adventure bosses reset after a tumble, Gentle ones do not',()=>{
+ const run=boot();run(`mode='normal';level=11;makeLevel();state='playing';sound=false;finish();start()`);assert(run('boss.max===5&&boss.hp===5'));
+ run(`boss.attack=1;boss.timer=0;physics(STEP)`);assert(run('boss.shots.length>=3&&boss.shots.every(s=>s.warn>0&&s.y<0)'));
+ run(`p.inv=0;p.x=boss.shots[0].x-3;boss.x=boss.cage.x-200;for(let i=0;i<360;i++){boss.timer=99;physics(STEP)}`);assert(run('p.hp<3&&boss.shots.length===0'));
+ run(`boss.hp=2;p.hp=1;p.inv=0;p.star=0;p.shield=0;damage(p.x+30)`);assert(run('boss.hp===5&&p.hp===3&&!boss.defeated&&p.x===spawn.x'));
+ const gentle=boot();gentle(`level=11;makeLevel();state='playing';sound=false;finish();start();boss.hp=1;p.hp=1;p.inv=0;damage(p.x+30)`);assert(gentle('boss.hp===1&&p.hp===3'));
+ gentle(`chooseStage(4)`);assert(gentle("boss===null&&state==='ready'"));
+});
+test('Boss buddies stay locked until earned, then join Settings, the studio and the save',()=>{
+ const run=boot(),pick=id=>run(`$('#buddyChoices').onclick({target:{closest:()=>({dataset:{buddy:'${id}'}})}})`);
+ pick(6);assert.equal(run('buddy'),1);assert(run("$('#toast').textContent.includes('Old Grumblestump')"));
+ run('openCharacterStudio()');assert(run("$('#characterTargets').innerHTML.includes('🔒 Hazel')&&$('#characterTargets').innerHTML.includes('🐥 Pip')"));
+ run('bosses.forest=true;save()');pick(6);assert.equal(run('buddy'),6);run('renderStudioControls()');assert(run("$('#characterTargets').innerHTML.includes('🦔 Hazel')"));
+ run(`studioTarget='hazel';studioDraft={...looks.hazel,color:'#777185',accessory:'crown'};applyCharacterLook()`);assert(run("buddy===6&&looks.hazel.accessory==='crown'"));
+ const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.buddy===6&&saved.bosses.forest===true&&saved.appearance.hazel.color==='#777185');
+ const tampered=boot({storage:{laserLeapRewards:JSON.stringify({buddy:7,bosses:{squishy:'yes',space:true,moon:true}})}});assert(tampered("buddy===1&&bosses.space===true&&!bosses.squishy&&!('moon' in bosses)"));
+ const kept=boot({storage:{laserLeapRewards:JSON.stringify({buddy:4,bosses:{space:true}})}});assert.equal(kept('buddy'),4);
+});
+test('Every boss arena, falling hazard, freed buddy and new buddy look renders',()=>{
+ const run=boot();for(const th of ['space','candy','forest','squishy','home']){run(`theme='${th}';level=11;makeLevel();state='playing';sound=false;finish();start();boss.shots.push({x:200,y:100,w:28,h:28,vy:0,warn:0},{x:300,y:-40,w:28,h:28,vy:0,warn:.5});render();hud();boss.inv=.5;render();boss.defeated=true;boss.celebrate=1;render();showOverlay('bossReady')`);assert(run("$('#overlayText').textContent.includes(BOSSES[theme].name)"));
+ run(`mapTheme=theme;mapLevel=11;drawWorldMap()`);assert(run("$('#mapLevelDetail').textContent.includes('Boss: '+BOSSES[theme].name)"))}
+ for(const key of ['orbit','taffy','hazel','bloop','biscuit'])for(const eyes of ['round','sparkle','wink'])for(const accessory of ['none','bow','scarf','crown'])run(`drawBuddyLook(g,0,0,'${key}',{...looks.${key},eyes:'${eyes}',accessory:'${accessory}'},1,1,-1)`);
 });
 console.log(checks+' checks passed.');

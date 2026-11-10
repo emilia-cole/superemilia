@@ -1,6 +1,6 @@
 # Super Emilia World
 
-A little platform adventure with five lands, three companion buddies, and 60 stages. Run, double jump, bounce on grumps, discover hidden pipe entrances, collect coins in mini-games, and rescue friends.
+A little platform adventure with five lands, 60 stages, five boss battles, and eight companion buddies. Run, double jump, bounce on grumps, discover hidden pipe entrances, collect coins in mini-games, cheer up grumpy bosses, and rescue friends.
 
 Play at **https://superemilia.com**. The game is hosted on GitHub Pages.
 
@@ -25,13 +25,29 @@ Game text does not select on long presses. The play area and touch controls supp
 
 Use **Map** to choose one of five lands and a level spot. Completed stages and found treasures appear on the map. All stages are available to explore.
 
-Use **Characters** to build Emilia's look from outfits, hairstyles, skin tones, eye styles, colors, accessories, and unlockable hats. Pip, Mochi, and Luna have their own color and accessory choices. The live preview shows each selection before **Use this look** saves it. No drawing is required.
+## Bosses and buddies
+
+Stage 12 of every land ends in a boss arena. After the finish flag, a crowned grump guards a caged buddy. Bounce on the boss's head to cheer it up: three bounces in Gentle mode, five in Adventure. Side contact costs a heart. The boss hops toward Emilia, and between hops it drops themed objects; a flashing shadow marks each landing spot first. The boss speeds up as it loses health. Two ? blocks in Gentle mode (one in Adventure) hold a heart and a shield. Losing every heart returns Emilia to the arena's start; the boss keeps its damage in Gentle mode and recovers fully in Adventure.
+
+| Land | Boss | Falling objects | Buddy reward |
+| --- | --- | --- | --- |
+| Space | Captain Grumpcomet | Comets | Orbit 👽 |
+| Candy | The Sour Gumdrop | Candies | Taffy 🐷 |
+| Forest | Old Grumblestump | Acorns | Hazel 🦔 |
+| Squishy World | Wobblegrump | Bubbles | Bloop 🐙 |
+| Cozy Home | The Dust Bunny King | Socks | Biscuit 🐶 |
+
+Pip, Mochi, and Luna are available from the start. Cheering up a boss frees its buddy, who joins Emilia right away and stays unlocked in Settings and the Character Studio. Every win awards 25 celebration stars, and a land's boss can be replayed anytime from stage 12. Locked buddies appear dimmed with a hint naming their boss. The map marks each stage 12 with a crown until its boss is cheered up, then shows the buddy earned there.
+
+## Characters
+
+Use **Characters** to build Emilia's look from outfits, hairstyles, skin tones, eye styles, colors, accessories, and unlockable hats. Every buddy has its own color and accessory choices. The live preview shows each selection before **Use this look** saves it. No drawing is required.
 
 Secret entrances blend in with the scenery; there are no secret-trail signs. Three entrances in each stage lead to a rotating selection of four coin games: a coin vault, a falling-coin challenge, a bouncing challenge, and a five-tier mystery-block ladder. Reaching the target earns a hidden gem, extra coins, and wardrobe stars. Every collected coin is kept even if time runs out. Returning restores the level, checkpoint, health, enemies, and active powers.
 
 In the mystery ladder, jump under one of three blocks on each tier. One holds coins; an empty guess closes the other blocks on that tier. Each guess unlocks the next floor. Double jump up to keep trying, then leave through the top pipe after all five tiers. Higher tiers pay more coins. This room has no timer; two winning tiers in Gentle mode or three in Adventure mode earn its hidden gem.
 
-Settings contain sound and difficulty controls. Coins, stars, rescued friends, completed stages, and character choices save in the current browser.
+Settings contain sound and difficulty controls. Coins, stars, rescued friends, completed stages, cheered-up bosses, and character choices save in the current browser.
 
 The page includes Open Graph and large Twitter card metadata with original wide and square cover art in `public/assets`. Preview images use absolute HTTPS URLs, descriptive alternative text, and their actual pixel dimensions. The wide cover is the default sharing image. Titles and descriptions cover the 60 levels, five lands, buddies, secret coin games, character choices, and free browser play. Static JSON-LD connects the website, page, game, author credit, and cover image so readers can discover the game's details without executing JavaScript. Existing social posts may retain the preview cached by their platform.
 
