@@ -27,7 +27,7 @@ Use **Map** to choose one of five lands and a level spot. Completed stages and f
 
 ## Bosses and buddies
 
-Stage 12 of every land ends in a boss arena. After the finish flag, a crowned grump guards a caged buddy. Bounce on the boss's head to cheer it up: five bounces in Gentle mode, seven in Adventure. Side contact costs a heart. The boss hops toward Emilia, and between hops it drops three or four themed objects at once; a flashing shadow marks each landing spot first. Its big landings send shockwaves along the ground that Emilia must jump over (from the start in Adventure, after the first bounce in Gentle). The boss speeds up and attacks more often as it loses health. Two ? blocks in Gentle mode (one in Adventure) hold a heart and a shield. Losing every heart returns Emilia to the arena's start; the boss keeps its damage in Gentle mode and recovers fully in Adventure.
+Stage 12 of every land ends in a boss arena. After the finish flag, a crowned grump guards a caged buddy. Bounce on the boss's head to cheer it up: five bounces in Gentle mode, seven in Adventure. Side contact costs a heart. The boss hops toward Emilia, and between hops it drops three or four themed objects at once; a flashing shadow marks each landing spot first. Its big landings send shockwaves along the ground that Emilia must jump over (from the start in Adventure, after the first bounce in Gentle). The boss speeds up and attacks more often as it loses health. Two ? blocks in Gentle mode (one in Adventure) hold a heart and a shield. Losing every heart restarts the boss battle in both modes: an "Out of hearts" screen appears, then the boss returns at full strength and the arena's ? blocks refill.
 
 | Land | Boss | Falling objects | Buddy reward |
 | --- | --- | --- | --- |

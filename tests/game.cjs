@@ -147,15 +147,17 @@ test('Stage 12 ends in a boss arena; head bounces cheer the boss up and free a n
  run('start()');assert(run("theme==='candy'&&level===0&&state==='playing'&&boss===null"));
  run(`buddy=2;theme='space';level=11;makeLevel();state='playing';finish();start();boss.hp=1`);bounce();run('for(let i=0;i<360;i++)physics(STEP)');assert(run("state==='worldComplete'&&!bossReward.fresh&&buddy===2"));
 });
-test('Boss shadows warn before things fall; Adventure bosses reset after a tumble, Gentle ones do not',()=>{
+test('Boss shadows warn before things fall, shockwaves must be jumped, and running out of hearts restarts the battle',()=>{
  const run=boot();run(`mode='normal';level=11;makeLevel();state='playing';sound=false;finish();start()`);assert(run('boss.max===7&&boss.hp===7'));
  run(`boss.attack=1;boss.timer=0;physics(STEP)`);assert(run('boss.shots.length>=4&&boss.shots.every(s=>s.warn>0&&s.y<0&&s.warn<1)'));
  run(`p.inv=0;p.x=boss.shots[0].x-3;boss.x=boss.cage.x-200;for(let i=0;i<360;i++){boss.timer=99;physics(STEP)}`);assert(run('p.hp<3&&boss.shots.length===0'));
- run(`boss.hp=2;p.hp=1;p.inv=0;p.star=0;p.shield=0;damage(p.x+30)`);assert(run('boss.hp===7&&p.hp===3&&!boss.defeated&&p.x===spawn.x&&boss.waves.length===0'));
+ run(`boss.hp=2;blocks[0].used=true;p.hp=1;p.inv=0;p.star=0;p.shield=0;damage(p.x+30)`);assert(run("state==='bossReady'&&bossRetry&&$('#start').textContent==='Restart the battle →'&&boss.shots.length===0"));
+ run('physics(STEP);start()');assert(run("state==='playing'&&boss.hp===7&&!boss.defeated&&p.hp===3&&p.x===spawn.x&&!blocks[0].used&&!bossRetry"));
  run(`p.inv=0;p.hp=3;p.x=100;p.y=GROUND-p.h;p.vy=0;boss.shots=[];boss.x=400;boss.y=GROUND-boss.h-3;boss.vy=600;boss.timer=99;physics(STEP)`);assert(run('boss.waves.length===2&&boss.waves[0].vx<0'));
  run(`for(let i=0;i<240;i++){boss.timer=99;boss.x=500;boss.vy=0;physics(STEP)}`);assert(run('p.hp===2&&boss.waves.length===0'));
  run(`p.inv=0;p.x=100;p.y=GROUND-p.h;boss.waves=[{x:300,y:GROUND-22,w:18,h:22,vx:-380}];p.vy=-650;p.grounded=false;for(let i=0;i<60;i++){boss.timer=99;boss.x=600;boss.vy=0;physics(STEP)}`);assert(run('p.hp===2'));
- const gentle=boot();gentle(`level=11;makeLevel();state='playing';sound=false;finish();start();boss.hp=1;p.hp=1;p.inv=0;damage(p.x+30)`);assert(gentle('boss.hp===1&&p.hp===3'));
+ const gentle=boot();gentle(`level=11;makeLevel();state='playing';sound=false;finish();start();boss.hp=1;p.hp=1;p.inv=0;damage(p.x+30)`);assert(gentle("state==='bossReady'&&$('#overlayEyebrow').textContent==='Out of hearts'"));gentle('start()');assert(gentle('boss.hp===5&&boss.max===5&&p.hp===3'));
+ gentle(`p.hp=1;p.inv=0;damage(p.x+30)`);assert.equal(gentle('state'),'bossReady');
  gentle(`chooseStage(4)`);assert(gentle("boss===null&&state==='ready'"));
 });
 test('Boss buddies stay locked until earned, then join Settings, the studio and the save',()=>{
