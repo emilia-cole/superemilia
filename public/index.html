@@ -725,7 +725,7 @@ document.addEventListener('keyup',e=>released(e.code));window.addEventListener('
 document.querySelectorAll('[data-hold]').forEach(b=>{b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);pressed(b.dataset.hold)});const end=()=>released(b.dataset.hold);b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end);b.addEventListener('lostpointercapture',end)});c.addEventListener('pointerdown',()=>c.focus());
 function resizeCanvas(){const bounds=c.getBoundingClientRect();if(bounds.width&&bounds.height){W=Math.round(H*bounds.width/bounds.height);c.width=W;c.height=H;camera=clamp(p.x-W*.33,0,Math.max(0,Math.max(0,worldWidth-W)))}}
 document.querySelectorAll('[data-hold]').forEach(b=>guardGameTouches(b));guardGameTouches(c);guardGameTouches($('#run'),$('#run').onclick);guardGameTouches($('#ability'),$('#ability').onclick);
-document.addEventListener('selectstart',e=>{if(!e.target.closest('input,textarea,select'))e.preventDefault()});
+document.addEventListener('selectstart',e=>{const t=e.target.closest?e.target:e.target.parentElement;if(!t?.closest('input,textarea,select'))e.preventDefault()});
 window.addEventListener('resize',resizeCanvas);document.addEventListener('fullscreenchange',resizeCanvas);
 resizeCanvas();makeLevel();showOverlay('ready');showSplash();requestAnimationFrame(frame);
 </script>
