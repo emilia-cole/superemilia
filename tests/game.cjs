@@ -184,4 +184,21 @@ test('Boss arenas have the land obstacles, which switch on and off and hurt only
   run('render()');
   run(`p.hp=1;p.inv=0;damage(p.x+30);start()`);assert.equal(run('hazards.length'),count)}
 });
+test('Finishing every stage and boss awards the grand prize once, with a champion-only hat and sparkle trail',()=>{
+ const all=`for(const k of Object.keys(themes))for(let i=0;i<12;i++)medals[k+':'+i]=1;`;
+ const run=boot();run(`sound=false;${all}bosses={space:true,candy:true,forest:true,squishy:true};theme='home';level=11;makeLevel();state='playing';finish()`);assert(run("!champion&&state==='bossReady'"));
+ run(`start();boss.hp=1;p.inv=2;boss.inv=0;boss.timer=99;boss.shots=[];p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;physics(STEP);for(let i=0;i<360;i++)physics(STEP)`);
+ assert(run("champion&&prizeMoment&&hat===4&&state==='worldComplete'&&$('#overlayTitle').innerHTML.includes('Superstar')&&$('#start').textContent==='Keep exploring →'"));
+ const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.champion===true&&saved.hat===4);
+ assert(run("$('#stats').textContent.includes('🏆 Superstar')"));const bank=run('bank');
+ run('start()');assert(run("!prizeMoment&&theme==='space'&&state==='playing'"));
+ run(`theme='home';level=11;makeLevel();state='playing';finish();start();boss.hp=1;p.inv=2;boss.inv=0;boss.timer=99;boss.shots=[];p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;physics(STEP);for(let i=0;i<360;i++)physics(STEP)`);assert(run('!prizeMoment')&&run('bank')>bank&&run('bank')<bank+40);
+ run(`hat=3;$('#outfit').onclick()`);assert.equal(run('hat'),4);run(`$('#outfit').onclick()`);assert.equal(run('hat'),0);
+ run(`openCharacterStudio()`);assert(run("!$('#characterOptions').innerHTML.includes('win the grand prize')"));
+ run(`state='playing';theme='forest';level=2;makeLevel();state='playing';hat=4;p.vx=300;particles=[];for(let i=0;i<30;i++)updateEffects(1/60);render()`);assert(run('particles.length>0'));
+ const stage=boot();stage(`sound=false;${all}delete medals['candy:4'];bosses={space:true,candy:true,forest:true,squishy:true,home:true};theme='candy';level=4;makeLevel();state='playing';finish()`);assert(stage("champion&&$('#start').textContent==='Next adventure →'"));stage('start()');assert(stage("level===5&&state==='playing'"));
+ const fresh=boot();fresh('openCharacterStudio()');assert(fresh("$('#characterOptions').innerHTML.includes('win the grand prize')"));fresh(`hat=3;bank=99;$('#outfit').onclick()`);assert.equal(fresh('hat'),0);
+ const tampered=boot({storage:{laserLeapRewards:JSON.stringify({hat:4,champion:'yes'})}});assert(tampered('hat===0&&!champion'));
+ const kept=boot({storage:{laserLeapRewards:JSON.stringify({hat:4,champion:true})}});assert(kept('hat===4&&champion'));
+});
 console.log(checks+' checks passed.');

@@ -39,6 +39,10 @@ Stage 12 of every land ends in a boss arena. After the finish flag, a crowned gr
 
 Pip, Mochi, and Luna are available from the start. Cheering up a boss frees its buddy, who joins Emilia right away and stays unlocked in Settings and the Character Studio. Every win awards 25 celebration stars, and a land's boss can be replayed anytime from stage 12. Locked buddies appear dimmed with a hint naming their boss. The map marks each stage 12 with a crown until its boss is cheered up, then shows the buddy earned there.
 
+## Grand prize
+
+Finishing all 60 stages and cheering up all 5 bosses, in any order, awards the grand prize once: a "Super Emilia Superstar!" celebration screen, the golden 🌟 Superstar hat (equipped right away and selectable only by champions), a rainbow sparkle trail behind Emilia while she runs, 100 bonus stars, and a 🏆 in Settings and on the map. The map shows progress toward it. The prize is saved in the browser with the rest of the progress.
+
 ## Characters
 
 Use **Characters** to build Emilia's look from outfits, hairstyles, skin tones, eye styles, colors, accessories, and unlockable hats. Every buddy has its own color and accessory choices. The live preview shows each selection before **Use this look** saves it. No drawing is required.
