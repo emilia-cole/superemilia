@@ -175,4 +175,13 @@ test('Every boss arena, falling hazard, freed buddy and new buddy look renders',
  run(`mapTheme=theme;mapLevel=11;drawWorldMap()`);assert(run("$('#mapLevelDetail').textContent.includes('Boss: '+BOSSES[theme].name)"))}
  for(const key of ['orbit','taffy','hazel','bloop','biscuit'])for(const eyes of ['round','sparkle','wink'])for(const accessory of ['none','bow','scarf','crown'])run(`drawBuddyLook(g,0,0,'${key}',{...looks.${key},eyes:'${eyes}',accessory:'${accessory}'},1,1,-1)`);
 });
+test('Boss arenas have the land obstacles, which switch on and off and hurt only while on',()=>{
+ for(const [m,count] of [['gentle',2],['normal',3]]){const run=boot();run(`mode='${m}';level=11;makeLevel();state='playing';sound=false;finish();start()`);
+  assert.equal(run('hazards.length'),count);assert(run('hazards.every(h=>h.x>spawn.x+100&&h.x+h.w<boss.cage.x&&h.y+h.h===GROUND)'));
+  assert(run('hazards.every(h=>Math.abs(h.x+6-(worldWidth/2))>60)'));
+  run(`boss.x=boss.cage.x-30-boss.w;boss.shots=[];boss.waves=[];p.inv=0;p.x=hazards[0].x-10;p.y=GROUND-p.h;p.vy=0;time=(4-hazards[0].phase+3)%4;boss.timer=99;physics(STEP)`);assert(run('!active(hazards[0])&&p.hp===3'));
+  run(`time=(4-hazards[0].phase+.1)%4;p.inv=0;p.x=hazards[0].x-10;p.y=GROUND-p.h;boss.timer=99;physics(STEP)`);assert(run('p.hp===2'));
+  run('render()');
+  run(`p.hp=1;p.inv=0;damage(p.x+30);start()`);assert.equal(run('hazards.length'),count)}
+});
 console.log(checks+' checks passed.');
