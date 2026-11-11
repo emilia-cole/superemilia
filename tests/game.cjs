@@ -201,4 +201,30 @@ test('Finishing every stage and boss awards the grand prize once, with a champio
  const tampered=boot({storage:{laserLeapRewards:JSON.stringify({hat:4,champion:'yes'})}});assert(tampered('hat===0&&!champion'));
  const kept=boot({storage:{laserLeapRewards:JSON.stringify({hat:4,champion:true})}});assert(kept('hat===4&&champion'));
 });
+test('The Star Shop spends stars on power-ups that switch on once per adventure, and on hats to keep',()=>{
+ const run=boot();run(`sound=false;bank=100;openShop()`);assert(run("$('#shopDialog').open&&$('#shopItems').innerHTML.includes('Bonus heart')&&$('#shopBalance').textContent.includes('100')"));
+ run(`buyPowerup('shield');buyPowerup('heart');buyPowerup('boots')`);assert(run('bank===53&&starsSpent===47&&powerups.shield===1&&powerups.heart===1&&powerups.boots===1&&powerups.star===0'));
+ run(`bank=5;buyPowerup('star')`);assert(run("powerups.star===0&&bank===5&&$('#toast').textContent.includes('15 more stars')"));
+ run(`bank=500;for(let i=0;i<12;i++)buyPowerup('boots')`);assert(run('powerups.boots===9&&bank===500-80'));
+ run(`$('#shopDialog').close();powerups.boots=1;chooseStage(2);start()`);assert(run("state==='playing'&&p.shield===20&&p.hp===4&&p.boots===10&&powerups.shield===0&&powerups.heart===0&&powerups.boots===0"));
+ assert(run("$('#hearts').textContent==='♥♥♥♥'"));
+ run(`const flag=checkpoints[0];p.x=flag.x;p.y=flag.y+flag.h-p.h;p.vy=0;p.grounded=true;physics(STEP)`);assert.equal(run('p.hp'),4);
+ run(`powerups.star=2;pause();start()`);assert(run("powerups.star===2&&state==='playing'"));
+ run(`finish();start()`);assert(run('level===3&&powerups.star===1&&p.star===8'));
+ run(`powerups.heart=2;level=11;makeLevel();state='playing';finish();start()`);assert(run('boss&&p.hp===4&&powerups.heart===1'));
+ run(`p.hp=1;p.inv=0;p.star=0;p.shield=0;damage(p.x+30);start()`);assert(run('p.hp===4&&powerups.heart===0'));
+ const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.starsSpent>0&&saved.powerups.boots===0&&saved.powerups.star===0);
+});
+test('Shop hats are bought once, worn from the shop or studio, and milestone hats survive spending',()=>{
+ const run=boot();run(`sound=false;bank=30;hat=3;openShop();buyHat(5)`);assert(run('bank===5&&starsSpent===25&&ownedHats.includes(5)&&hat===5'));
+ assert(run('hatAvailable(3)&&hatAvailable(1)&&!hatAvailable(6)&&!hatAvailable(4)'));
+ run('buyHat(5)');assert.equal(run('bank'),5);run('buyHat(6)');assert(run('!ownedHats.includes(6)&&bank===5'));
+ run('wearHat(3)');assert.equal(run('hat'),3);run('wearHat(6)');assert.equal(run('hat'),3);
+ run(`$('#outfit').onclick()`);assert.equal(run('hat'),5);run(`$('#outfit').onclick()`);assert.equal(run('hat'),0);
+ run('renderShop()');assert(run("$('#shopItems').innerHTML.includes('Wear it')&&$('#shopItems').innerHTML.includes('Flower crown')"));
+ run('openCharacterStudio()');assert(run("$('#characterOptions').innerHTML.includes('🧢 Cap')&&$('#characterOptions').innerHTML.includes('buy in the Star Shop')"));
+ run(`hat=5;state='playing';makeLevel();render();updateUI()`);assert(run("$('#outfit').textContent==='Hat: 🧢'"));
+ const kept=boot({storage:{laserLeapRewards:JSON.stringify({bank:2,starsSpent:40,ownedHats:[5,5,7],hat:7,powerups:{heart:3,star:50}})}});assert(kept('hat===7&&hatAvailable(3)&&ownedHats.length===2&&powerups.heart===3&&powerups.star===9'));
+ const tampered=boot({storage:{laserLeapRewards:JSON.stringify({bank:2,starsSpent:'lots',ownedHats:[1,4,99,'5'],hat:6,powerups:{heart:-4,boots:'x'}})}});assert(tampered('hat===0&&starsSpent===0&&ownedHats.length===0&&powerups.heart===0&&powerups.boots===0'));
+});
 console.log(checks+' checks passed.');

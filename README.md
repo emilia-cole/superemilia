@@ -39,6 +39,22 @@ Stage 12 of every land ends in a boss arena. After the finish flag, a crowned gr
 
 Pip, Mochi, and Luna are available from the start. Cheering up a boss frees its buddy, who joins Emilia right away and stays unlocked in Settings and the Character Studio. Every win awards 25 celebration stars, and a land's boss can be replayed anytime from stage 12. Locked buddies appear dimmed with a hint naming their boss. The map marks each stage 12 with a crown until its boss is cheered up, then shows the buddy earned there.
 
+## Star Shop
+
+Stars from blocks, bounces, gems, and finished stages can be spent in the **Star Shop** (✦ Shop in the header, or in Settings). Spending stars never removes a milestone hat: the bow, top hat, and crown unlock by total stars ever collected.
+
+| Item | Cost | What it does |
+| --- | --- | --- |
+| 🫧 Bubble shield | 12 | Blocks one bump during the first 20 seconds |
+| 👟 Zoom boots | 10 | Extra-fast running for the first 10 seconds |
+| ✨ Star sparkle | 20 | Unstoppable for the first 8 seconds |
+| 💖 Bonus heart | 25 | Start with 4 hearts instead of 3 |
+| 🧢 Cap | 25 | A hat to keep |
+| 🌸 Flower crown | 40 | A hat to keep |
+| 🌈 Rainbow hat | 60 | A hat to keep |
+
+Power-ups are kept in a bag (up to 9 of each) and switch on automatically when the next stage or boss battle starts, using one of each kind you own. Restarting a boss battle after running out of hearts uses them again. Purchases save in the browser.
+
 ## Grand prize
 
 Finishing all 60 stages and cheering up all 5 bosses, in any order, awards the grand prize once: a "Super Emilia Superstar!" celebration screen, the golden 🌟 Superstar hat (equipped right away and selectable only by champions), a rainbow sparkle trail behind Emilia while she runs, 100 bonus stars, and a 🏆 in Settings and on the map. The map shows progress toward it. The prize is saved in the browser with the rest of the progress.
