@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff1df">
+<meta name="author" content="Emilia">
+<meta name="description" content="Bake treats for buddy customers, hatch mystery eggs into surprise pets, and grow a whole pet family. A free bakery game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/bakery/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/bakery/">
+<meta property="og:title" content="Mystery Egg Bakery · A Super Emilia Game">
+<meta property="og:description" content="Bake treats for buddy customers, hatch mystery eggs into surprise pets, and grow a whole pet family. A free bakery game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Mystery Egg Bakery</title>
+<style>
+/* Layout: a warm bakery screen. Top bar, then the counter of waiting customers, then the kitchen (tray + steps) beside the pet corner. Dialogs for the shop, the pet family, day start/end and hatching. */
+:root{
+ color-scheme:light;
+ --cream:#fff6ea; --paper:#fffaf3; --wall:#fde7d2; --line:#ecd3bb; --ink:#4a2f2a; --soft:#8a6a5e;
+ --berry:#ef7fa4; --berry-deep:#c95480; --cocoa:#7a4a3a; --mint:#8fd6bb; --butter:#ffd98a; --sky:#9fc7f2;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--wall);color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:700;transition:transform .12s ease,background .12s}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.42;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--berry-deep);outline-offset:2px}
+.app{max-width:1100px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 16px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--berry-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.coins{color:#9a6a12}
+.daybar{display:flex;align-items:center;gap:10px;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:8px 12px}
+.daybar b{white-space:nowrap}
+.meter{flex:1;height:12px;background:#f3e2d1;border-radius:99px;overflow:hidden;min-width:60px}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--berry),#ffb3c9);border-radius:99px;width:0;transition:width .3s}
+.shopfront{position:relative;border-radius:24px;background:linear-gradient(#ffe9d4,#ffe0c4);border:2px solid var(--line);padding:42px 12px 12px;min-height:200px;overflow:hidden}
+.awning{position:absolute;inset:0 0 auto;height:30px;background:repeating-linear-gradient(90deg,var(--berry) 0 34px,#fff 34px 68px);border-bottom:3px solid var(--berry-deep)}
+.awning:after{content:"";position:absolute;left:0;right:0;bottom:-12px;height:12px;background:radial-gradient(circle at 17px 0,var(--berry) 11px,transparent 12px) 0 0/68px 12px,radial-gradient(circle at 51px 0,#fff 11px,transparent 12px) 0 0/68px 12px}
+.decor{position:absolute;right:12px;top:38px;display:flex;gap:4px;font-size:22px;opacity:.95}
+.counter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:6px}
+.customer{position:relative;min-height:150px;border-radius:18px;border:2px dashed #e8c9ad;background:#fff4e8aa;display:grid;place-items:center;padding:8px 6px;text-align:center}
+.customer.here{border:2px solid var(--line);background:var(--paper);cursor:pointer;box-shadow:0 4px 0 #ecd3bb}
+.customer.here:hover{transform:translateY(-2px)}
+.customer.ready-to-serve{box-shadow:0 0 0 3px var(--mint),0 4px 0 #ecd3bb}
+.customer .face{font-size:40px;line-height:1;animation:bob 2.4s ease-in-out infinite}
+.customer .name{font-size:12px;font-weight:800;color:var(--soft)}
+.bubble{position:relative;background:#fff;border:2px solid var(--line);border-radius:14px;padding:2px;margin-top:4px;line-height:0}
+.bubble canvas{width:64px;height:64px}
+.patience{width:80%;height:7px;background:#f3e2d1;border-radius:99px;overflow:hidden;margin-top:6px}
+.patience i{display:block;height:100%;width:100%;background:var(--mint);transition:width .25s linear,background .3s}
+.customer .empty{font-size:12px;color:#c7a68f;font-weight:700}
+.float{position:absolute;left:50%;top:28%;transform:translateX(-50%);font-weight:900;font-size:18px;color:#9a6a12;pointer-events:none;animation:rise 1.2s ease-out forwards;white-space:nowrap}
+.say{position:absolute;left:6px;right:6px;bottom:6px;font-size:11px;font-weight:800;color:var(--berry-deep);background:#fff;border-radius:8px;padding:3px}
+.workarea{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:12px;align-items:start}
+.kitchen{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:12px;display:grid;grid-template-columns:170px minmax(0,1fr);gap:14px}
+.tray{display:grid;justify-items:center;align-content:start;gap:8px}
+.tray canvas{width:150px;height:150px;background:radial-gradient(circle at 50% 70%,#fbe7d4 0 55%,transparent 56%);border-radius:18px}
+.status{font-size:13px;font-weight:800;text-align:center;color:var(--soft);min-height:34px}
+.steps{display:grid;gap:10px;min-width:0}
+.step h3{margin:0 0 6px;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--berry-deep)}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.opt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;min-width:64px;font-size:11px}
+.opt canvas{width:46px;height:46px}
+.opt.locked{opacity:.4}
+.swatch{width:44px;height:44px;border-radius:50%;padding:0;border:3px solid #fff;box-shadow:0 0 0 2px var(--line)}
+.oven{display:flex;align-items:center;gap:10px}
+.oven button{background:var(--butter);border-color:#e9bf63;min-width:120px}
+.ovenbar{flex:1;height:14px;background:#f3e2d1;border-radius:99px;overflow:hidden}
+.ovenbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb35c,#ff7a3c);border-radius:99px}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools .trash{background:#fff}
+.petcorner{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:12px;display:grid;justify-items:center;gap:8px;text-align:center}
+.petcorner h2{margin:0;font-size:16px}
+.petcorner .stage{font-size:12px;color:var(--soft);font-weight:800}
+#petCanvas{width:150px;height:150px}
+.growth{width:100%;height:12px;background:#f3e2d1;border-radius:99px;overflow:hidden}
+.growth i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mint),#c9f2e2);border-radius:99px;transition:width .4s}
+.petbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.feed{background:var(--mint);border-color:#6fbfa1}
+.bottom{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.bottom button{background:var(--paper)}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:20;max-width:92vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(560px,calc(100vw - 24px));max-height:calc(100svh - 24px);box-shadow:0 30px 80px #4a2f2a55}
+dialog::backdrop{background:#4a2f2a66;backdrop-filter:blur(4px)}
+.dlg{padding:20px 20px 18px;display:grid;gap:12px;text-align:center;justify-items:center}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.5px;text-wrap:balance}
+.dlg p{margin:0;color:var(--soft);line-height:1.45;max-width:42ch}
+.big{font-size:56px;line-height:1}
+.primary{background:var(--berry);border-color:var(--berry-deep);color:#fff;font-size:17px;padding:12px 22px;box-shadow:0 4px 0 var(--berry-deep)}
+.dlghead{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
+.dlghead h2{text-align:left}
+.close{border-radius:50%;width:40px;height:40px;padding:0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.tabs button.sel{background:var(--berry);color:#fff;border-color:var(--berry-deep)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;width:100%;max-height:52vh;overflow:auto;padding:2px}
+.card{border:2px solid var(--line);border-radius:16px;padding:10px 8px;display:grid;justify-items:center;gap:4px;background:#fff;font-size:12px}
+.card canvas{width:56px;height:56px}
+.card .ico{font-size:34px;line-height:1.2}
+.card strong{font-size:13px}
+.card button{font-size:12px;padding:6px 10px;width:100%}
+.card.active{border-color:var(--mint);box-shadow:0 0 0 2px var(--mint)}
+.owned{color:#3f8a6e;font-weight:800}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px}
+.toggle span{display:grid}
+.toggle small{color:var(--soft);font-weight:600}
+.stats{font-size:13px;font-weight:800;color:var(--soft)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes rise{from{opacity:1;top:28%}to{opacity:0;top:-4%}}
+@media (max-width:860px){.workarea{grid-template-columns:1fr}.petcorner{grid-template-columns:110px 1fr;justify-items:start;text-align:left;align-items:center}.petcorner>*:not(#petCanvas){grid-column:2}#petCanvas{grid-row:1/span 5;width:110px;height:110px}}
+@media (max-width:600px){.kitchen{grid-template-columns:1fr}.tray{grid-template-columns:110px 1fr;justify-items:start;align-items:center}.tray canvas{width:110px;height:110px}.status{text-align:left}.customer{min-height:132px}.customer .face{font-size:32px}.bubble canvas{width:52px;height:52px}.title strong{font-size:17px}.opt{min-width:56px}.decor{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Mystery Egg Bakery</strong></div>
+  <span class="chip coins" id="coins" aria-label="Coins">● 0</span>
+ </div>
+ <div class="daybar" aria-live="polite"><b id="dayLabel">Day 1</b><div class="meter" aria-hidden="true"><i id="dayMeter"></i></div><span class="chip" id="served">0 / 5 served</span></div>
+
+ <section class="shopfront" aria-label="Customers at the counter">
+  <div class="awning" aria-hidden="true"></div>
+  <div class="decor" id="decor" aria-hidden="true"></div>
+  <div class="counter" id="counter"></div>
+ </section>
+
+ <div class="workarea">
+  <section class="kitchen" aria-label="Kitchen">
+   <div class="tray">
+    <canvas id="trayCanvas" width="300" height="300" aria-label="Your treat"></canvas>
+    <div class="status" id="status">Pick a treat to start.</div>
+   </div>
+   <div class="steps">
+    <div class="step"><h3>1 · Pick a treat</h3><div class="row" id="baseRow"></div></div>
+    <div class="step"><h3>2 · Bake it</h3><div class="oven"><button id="bakeBtn" type="button">🔥 Bake</button><div class="ovenbar" aria-hidden="true"><i id="ovenBar"></i></div></div></div>
+    <div class="step"><h3>3 · Frosting</h3><div class="row" id="frostRow"></div></div>
+    <div class="step"><h3>4 · Topping</h3><div class="row" id="topRow"></div></div>
+    <div class="tools"><button class="trash" id="trashBtn" type="button">🗑️ Start over</button></div>
+   </div>
+  </section>
+  <aside class="petcorner" aria-label="Your pet">
+   <canvas id="petCanvas" width="300" height="300" aria-label="Your pet"></canvas>
+   <h2 id="petName">Mystery egg</h2>
+   <div class="stage" id="petStage">Feed it treats to help it hatch!</div>
+   <div class="growth" aria-hidden="true"><i id="petGrowth"></i></div>
+   <div class="petbtns"><button class="feed" id="feedBtn" type="button">🍰 Feed this treat</button></div>
+  </aside>
+ </div>
+
+ <div class="bottom">
+  <button id="shopBtn" type="button">🛍️ Shop</button>
+  <button id="familyBtn" type="button">🥚 Pet family</button>
+  <button id="settingsBtn" type="button">⚙️ Settings</button>
+ </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<dialog id="dayDialog"><div class="dlg" id="dayBody"></div></dialog>
+<dialog id="hatchDialog"><div class="dlg"><canvas id="hatchCanvas" width="320" height="320" style="width:160px;height:160px" aria-hidden="true"></canvas><h2 id="hatchTitle"></h2><p id="hatchText"></p><button class="primary" id="hatchOk" type="button">Yay! →</button></div></dialog>
+<dialog id="shopDialog"><div class="dlg"><div class="dlghead"><h2>Bakery shop</h2><button class="close" id="shopClose" type="button" aria-label="Close shop">✕</button></div><p class="stats" id="shopCoins"></p><div class="tabs" id="shopTabs"></div><div class="grid" id="shopGrid"></div></div></dialog>
+<dialog id="familyDialog"><div class="dlg"><div class="dlghead"><h2>Pet family</h2><button class="close" id="familyClose" type="button" aria-label="Close pet family">✕</button></div><p>Tap a pet to make it your bakery helper. Grown-up pets earn bonus coins. Finish every 4 days to get a new mystery egg!</p><div class="grid" id="familyGrid"></div></div></dialog>
+<dialog id="settingsDialog"><div class="dlg"><div class="dlghead"><h2>Settings</h2><button class="close" id="settingsClose" type="button" aria-label="Close settings">✕</button></div>
+ <button class="toggle" id="relaxedBtn" type="button"><span><b>Relaxed mode</b><small>Customers wait as long as you need.</small></span><b id="relaxedState">Off</b></button>
+ <button class="toggle" id="soundBtn" type="button"><span><b>Sound</b><small>Little dings and pops.</small></span><b id="soundState">On</b></button>
+ <p class="stats" id="settingsStats"></p></div></dialog>
+
+<script>
+'use strict';
+// ---------- game data ----------
+const BASES={cupcake:{name:'Cupcake',price:6,cost:0},cookie:{name:'Cookie',price:5,cost:0},donut:{name:'Donut',price:8,cost:40},cake:{name:'Cake slice',price:10,cost:90},pie:{name:'Mini pie',price:9,cost:130}};
+const FROSTINGS={strawberry:{name:'Strawberry',color:'#f7a1bd',cost:0},chocolate:{name:'Chocolate',color:'#8a5a44',cost:0},vanilla:{name:'Vanilla',color:'#fff1cf',cost:35},mint:{name:'Mint',color:'#a8e6cf',cost:55},blueberry:{name:'Blueberry',color:'#a9b8f5',cost:75}};
+const TOPPINGS={none:{name:'Nothing',cost:0,price:0},sprinkles:{name:'Sprinkles',cost:0,price:2},cherry:{name:'Cherry',cost:0,price:2},star:{name:'Star candy',cost:45,price:3},heart:{name:'Heart candy',cost:65,price:3},strawberry:{name:'Strawberry',cost:95,price:4}};
+const DECOR={flowers:{icon:'💐',name:'Flowers',cost:30},plant:{icon:'🪴',name:'Potted plant',cost:35},balloons:{icon:'🎈',name:'Balloons',cost:45},clock:{icon:'🕰️',name:'Cuckoo clock',cost:55},lights:{icon:'✨',name:'Fairy lights',cost:70},bear:{icon:'🧸',name:'Teddy bear',cost:85},crown:{icon:'👑',name:'Royal sign',cost:150}};
+const CUSTOMERS=[['🐥','Pip'],['🐱','Mochi'],['🦋','Luna'],['👽','Orbit'],['🐷','Taffy'],['🦔','Hazel'],['🐙','Bloop'],['🐶','Biscuit'],['☁️','Nimbus'],['🐠','Finn'],['🦭','Snowy'],['🐫','Dune'],['🦎','Ember'],['🦇','Echo']];
+const PETS=[['🐉','Dragon'],['🦄','Unicorn'],['🐰','Bunny'],['🐱','Kitty'],['🐶','Puppy'],['🦊','Fox'],['🐸','Frog'],['🐧','Penguin'],['🦉','Owl'],['🐼','Panda'],['🐨','Koala'],['🐹','Hamster'],['🦔','Hedgehog'],['🐢','Turtle'],['🦕','Dino'],['🐙','Octopus'],['🦋','Butterfly'],['🐝','Bee'],['🐬','Dolphin'],['🦩','Flamingo'],['🐿️','Squirrel'],['🦦','Otter'],['🐻','Bear'],['🐯','Tiger']];
+const PET_NAMES=['Sprinkles','Muffin','Biscotti','Pudding','Cupcake','Waffles','Jellybean','Marshmallow','Peaches','Taffy','Noodle','Butterscotch','Cocoa','Pretzel','Honeybun','Gumdrop','Sugarplum','Churro','Macaron','Snickerdoodle'];
+const STAGES=[{name:'Mystery egg',need:6},{name:'Baby',need:12},{name:'Kid',need:20},{name:'Grown-up',need:0}];
+const DAYS_PER_PATH=4;
+const EGG_COLORS=['#ffd3e2','#d5e8ff','#ddf5d6','#fff0b8','#e8dcff','#ffe0c7'];
+
+// ---------- pure game logic (also used by the tests) ----------
+function goalFor(day){return Math.min(14,4+day)}
+function patienceFor(day){return Math.max(26,52-day*1.6)}
+function pick(list,rand){return list[Math.floor(rand()*list.length)%list.length]}
+function makeOrder(day,unlocked,rand=Math.random){
+ const bases=unlocked.bases.filter(k=>BASES[k]),frost=unlocked.frostings.filter(k=>FROSTINGS[k]),tops=unlocked.toppings.filter(k=>TOPPINGS[k]&&k!=='none');
+ const order={base:pick(bases,rand),frosting:pick(frost,rand),topping:'none'};
+ if(day>=3&&tops.length&&rand()<0.75)order.topping=pick(tops,rand);
+ return order;
+}
+function treatMatches(treat,order){return Boolean(treat&&treat.baked&&treat.base===order.base&&treat.frosting===order.frosting&&(treat.topping||'none')===order.topping)}
+function priceFor(order,patienceLeft,petBonus){return BASES[order.base].price+2+TOPPINGS[order.topping].price+Math.round(Math.max(0,Math.min(1,patienceLeft))*4)+petBonus}
+function petBonus(pet){if(!pet)return 0;return [0,1,2,3][pet.stage]+(pet.sparkle&&pet.stage>0?1:0)}
+function newEgg(rand=Math.random){return {stage:0,growth:0,type:-1,name:'',sparkle:false,egg:pick(EGG_COLORS,rand),id:Math.floor(rand()*1e9)}}
+// adds growth; returns a list of events like 'hatch' and 'grow'
+function growPet(pet,amount,rand=Math.random){
+ const events=[];if(!pet||pet.stage>=3)return events;
+ pet.growth+=amount;
+ while(pet.stage<3&&pet.growth>=STAGES[pet.stage].need){
+  pet.growth-=STAGES[pet.stage].need;
+  if(pet.stage===0){pet.type=Math.floor(rand()*PETS.length)%PETS.length;pet.sparkle=rand()<0.12;pet.name=pick(PET_NAMES,rand);events.push('hatch')}else events.push('grow');
+  pet.stage++;
+ }
+ if(pet.stage>=3)pet.growth=0;
+ return events;
+}
+function pathDone(day){return day%DAYS_PER_PATH===0}
+function defaultSave(){return {day:1,coins:0,served:0,totalServed:0,unlocked:{bases:['cupcake','cookie'],frostings:['strawberry','chocolate'],toppings:['none','sprinkles','cherry']},decor:[],pets:[newEgg()],active:0,relaxed:false,sound:true}}
+function normalizeSave(raw){
+ const d=defaultSave();if(!raw||typeof raw!=='object')return d;
+ d.day=Math.max(1,Math.floor(Number(raw.day))||1);d.coins=Math.max(0,Math.floor(Number(raw.coins))||0);d.totalServed=Math.max(0,Math.floor(Number(raw.totalServed))||0);
+ const keep=(list,table,base)=>[...new Set(base.concat(Array.isArray(list)?list.filter(k=>typeof k==='string'&&Object.hasOwn(table,k)):[]))];
+ if(raw.unlocked&&typeof raw.unlocked==='object'){d.unlocked.bases=keep(raw.unlocked.bases,BASES,d.unlocked.bases);d.unlocked.frostings=keep(raw.unlocked.frostings,FROSTINGS,d.unlocked.frostings);d.unlocked.toppings=keep(raw.unlocked.toppings,TOPPINGS,d.unlocked.toppings)}
+ d.decor=Array.isArray(raw.decor)?[...new Set(raw.decor.filter(k=>typeof k==='string'&&Object.hasOwn(DECOR,k)))]:[];
+ if(Array.isArray(raw.pets)&&raw.pets.length){const pets=raw.pets.filter(p=>p&&typeof p==='object').slice(0,200).map(p=>{const stage=Math.max(0,Math.min(3,Math.floor(Number(p.stage))||0)),type=Math.floor(Number(p.type));return {stage,growth:Math.max(0,Number(p.growth)||0),type:stage>0&&type>=0&&type<PETS.length?type:(stage>0?0:-1),name:typeof p.name==='string'?p.name.slice(0,24):'',sparkle:p.sparkle===true,egg:EGG_COLORS.includes(p.egg)?p.egg:EGG_COLORS[0],id:Number(p.id)||Math.floor(Math.random()*1e9)}});if(pets.length)d.pets=pets}
+ d.active=Math.max(0,Math.min(d.pets.length-1,Math.floor(Number(raw.active))||0));
+ d.relaxed=raw.relaxed===true;d.sound=raw.sound!==false;d.served=0;
+ return d;
+}
+const SAVE_KEY='mysteryEggBakery';
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- drawing ----------
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=(n>>16)+amt,g=(n>>8&255)+amt,b=(n&255)+amt;r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}
+function blob(c,x,y,rx,ry,fill){c.beginPath();c.ellipse(x,y,Math.max(.1,rx),Math.max(.1,ry),0,0,Math.PI*2);c.fillStyle=fill;c.fill()}
+function drawTopping(c,top,x,y,s){
+ if(top==='sprinkles'){const cols=['#ff7aa8','#7ac8ff','#ffd34d','#8fe3b0','#c79bff'];for(let i=0;i<9;i++){const a=i*2.2,r=(i%3)*6*s+4*s;c.save();c.translate(x+Math.cos(a)*r,y+Math.sin(a)*r*.5);c.rotate(a);c.fillStyle=cols[i%5];c.fillRect(-3*s,-1.2*s,6*s,2.4*s);c.restore()}}
+ else if(top==='cherry'){c.strokeStyle='#5a8a3a';c.lineWidth=2*s;c.beginPath();c.moveTo(x,y-6*s);c.quadraticCurveTo(x+4*s,y-16*s,x+9*s,y-18*s);c.stroke();blob(c,x,y-2*s,7*s,7*s,'#e0344f');blob(c,x-2*s,y-5*s,2.2*s,2.2*s,'#ffffff99')}
+ else if(top==='star'){c.fillStyle='#ffd34d';c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?4*s:9*s;c.lineTo(x+Math.cos(a)*r,y-4*s+Math.sin(a)*r)}c.closePath();c.fill();c.strokeStyle='#e0a91a';c.lineWidth=1.2*s;c.stroke()}
+ else if(top==='heart'){c.fillStyle='#ff5c8a';c.beginPath();c.moveTo(x,y+4*s);c.bezierCurveTo(x-12*s,y-4*s,x-6*s,y-14*s,x,y-7*s);c.bezierCurveTo(x+6*s,y-14*s,x+12*s,y-4*s,x,y+4*s);c.fill()}
+ else if(top==='strawberry'){c.fillStyle='#e8344e';c.beginPath();c.moveTo(x,y+6*s);c.quadraticCurveTo(x-10*s,y-2*s,x-6*s,y-9*s);c.quadraticCurveTo(x,y-12*s,x+6*s,y-9*s);c.quadraticCurveTo(x+10*s,y-2*s,x,y+6*s);c.fill();c.fillStyle='#ffe28a';for(const [dx,dy] of [[-3,-4],[2,-6],[3,-1],[-1,1]])blob(c,x+dx*s,y+dy*s,.9*s,1.2*s,'#ffe28a');c.fillStyle='#4fa34a';c.beginPath();c.moveTo(x-6*s,y-10*s);c.lineTo(x,y-7*s);c.lineTo(x+6*s,y-10*s);c.lineTo(x,y-14*s);c.closePath();c.fill()}
+}
+// draws a treat centered at (x, y) with unit size s (about 1 = a 100px treat)
+function drawTreat(c,t,x,y,s){
+ if(!t||!t.base)return;
+ const dough=t.baked?'#e7b16a':'#f6e1b6',doughDark=t.baked?'#c98f48':'#e3c993',fr=t.frosting?FROSTINGS[t.frosting].color:null;
+ c.save();
+ blob(c,x,y+40*s,38*s,7*s,'#00000014');
+ let topY=y;
+ if(t.base==='cupcake'){
+  c.fillStyle='#f3a7c0';c.beginPath();c.moveTo(x-30*s,y);c.lineTo(x+30*s,y);c.lineTo(x+22*s,y+38*s);c.lineTo(x-22*s,y+38*s);c.closePath();c.fill();
+  c.strokeStyle='#ffffff88';c.lineWidth=2*s;for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(x+i*11*s,y+2*s);c.lineTo(x+i*8*s,y+36*s);c.stroke()}
+  blob(c,x,y-2*s,32*s,16*s,dough);blob(c,x-8*s,y-6*s,10*s,5*s,'#ffffff30');
+  if(fr){blob(c,x,y-8*s,31*s,13*s,fr);blob(c,x,y-20*s,23*s,11*s,fr);blob(c,x,y-31*s,13*s,9*s,fr);blob(c,x+2*s,y-38*s,5*s,5*s,fr);blob(c,x-9*s,y-22*s,6*s,3*s,'#ffffff55');topY=y-40*s}else topY=y-14*s;
+ }else if(t.base==='cookie'){
+  blob(c,x,y+10*s,38*s,30*s,doughDark);blob(c,x,y+8*s,36*s,28*s,dough);
+  for(const [dx,dy] of [[-14,-2],[10,-10],[16,14],[-6,18],[-20,14],[4,4]])blob(c,x+dx*s,y+(8+dy)*s,3.6*s,3*s,t.baked?'#6b3f2a':'#c9a27a');
+  if(fr){c.strokeStyle=fr;c.lineWidth=6*s;c.lineCap='round';c.beginPath();for(let i=0;i<5;i++){const yy=y+(-8+i*8)*s;c.moveTo(x-24*s+(i%2)*6*s,yy);c.quadraticCurveTo(x,yy+6*s*(i%2?1:-1),x+24*s-(i%2)*6*s,yy)}c.stroke();c.lineCap='butt'}topY=y-6*s;
+ }else if(t.base==='donut'){
+  c.lineWidth=24*s;c.strokeStyle=doughDark;c.beginPath();c.ellipse(x,y+12*s,26*s,20*s,0,0,Math.PI*2);c.stroke();c.strokeStyle=dough;c.lineWidth=21*s;c.beginPath();c.ellipse(x,y+10*s,26*s,20*s,0,0,Math.PI*2);c.stroke();
+  if(fr){c.strokeStyle=fr;c.lineWidth=17*s;c.beginPath();c.ellipse(x,y+7*s,25*s,19*s,0,0,Math.PI*2);c.stroke();c.strokeStyle='#ffffff55';c.lineWidth=3*s;c.beginPath();c.ellipse(x,y+3*s,24*s,16*s,0,Math.PI*1.1,Math.PI*1.6);c.stroke()}topY=y-14*s;
+ }else if(t.base==='cake'){
+  c.fillStyle=doughDark;c.beginPath();c.moveTo(x-32*s,y+34*s);c.lineTo(x+32*s,y+34*s);c.lineTo(x+32*s,y-4*s);c.lineTo(x-32*s,y+10*s);c.closePath();c.fill();
+  c.fillStyle=dough;c.beginPath();c.moveTo(x-32*s,y+30*s);c.lineTo(x+32*s,y+30*s);c.lineTo(x+32*s,y);c.lineTo(x-32*s,y+12*s);c.closePath();c.fill();
+  c.fillStyle=fr||doughDark;c.fillRect(x-32*s,y+16*s,64*s,5*s);
+  if(fr){c.fillStyle=fr;c.beginPath();c.moveTo(x-34*s,y+12*s);c.lineTo(x+34*s,y-5*s);c.lineTo(x+34*s,y-12*s);c.lineTo(x-34*s,y+4*s);c.closePath();c.fill();for(let i=0;i<5;i++)blob(c,x-26*s+i*13*s,y+8*s-i*4*s,4*s,4*s,fr)}topY=y-12*s;
+ }else if(t.base==='pie'){
+  c.fillStyle='#e9e3f7';c.beginPath();c.ellipse(x,y+26*s,36*s,10*s,0,0,Math.PI*2);c.fill();
+  c.fillStyle=doughDark;c.beginPath();c.moveTo(x-34*s,y+24*s);c.quadraticCurveTo(x,y-26*s,x+34*s,y+24*s);c.closePath();c.fill();
+  c.fillStyle=dough;c.beginPath();c.moveTo(x-30*s,y+22*s);c.quadraticCurveTo(x,y-20*s,x+30*s,y+22*s);c.closePath();c.fill();
+  c.strokeStyle=doughDark;c.lineWidth=3*s;for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(x+i*10*s-6*s,y+22*s);c.lineTo(x+i*10*s+6*s,y-2*s);c.stroke()}
+  if(fr){blob(c,x,y-4*s,18*s,9*s,fr);blob(c,x,y-12*s,11*s,7*s,fr);blob(c,x,y-18*s,5*s,4*s,fr)}topY=y-20*s;
+ }
+ if(!t.baked){c.globalAlpha=.6;c.fillStyle='#fff';c.font=`${12*s}px system-ui`;c.textAlign='center';c.fillText('raw',x,y+54*s);c.globalAlpha=1}
+ if(t.topping&&t.topping!=='none')drawTopping(c,t.topping,x,topY+2*s,s);
+ c.restore();
+}
+function drawEgg(c,x,y,s,color,progress,time){
+ const wob=progress>0.66?Math.sin(time*9)*0.07*(progress-0.5):0;
+ c.save();c.translate(x,y);c.rotate(wob);
+ blob(c,0,46*s,34*s,8*s,'#00000018');
+ c.beginPath();c.moveTo(0,-50*s);c.bezierCurveTo(36*s,-48*s,42*s,10*s,38*s,20*s);c.bezierCurveTo(32*s,46*s,-32*s,46*s,-38*s,20*s);c.bezierCurveTo(-42*s,10*s,-36*s,-48*s,0,-50*s);c.closePath();c.fillStyle=color;c.fill();c.lineWidth=3*s;c.strokeStyle=shade(color,-40);c.stroke();
+ c.save();c.clip();for(const [dx,dy,r] of [[-14,-18,7],[12,-4,9],[-6,18,6],[20,22,5],[-24,6,5]])blob(c,dx*s,dy*s,r*s,r*s*0.85,shade(color,-26));blob(c,-14*s,-28*s,7*s,12*s,'#ffffff70');c.restore();
+ if(progress>0.4){c.strokeStyle=shade(color,-70);c.lineWidth=2.5*s;c.beginPath();c.moveTo(-18*s,-6*s);c.lineTo(-8*s,2*s);c.lineTo(-2*s,-8*s);c.lineTo(8*s,0);if(progress>0.75){c.lineTo(14*s,-10*s);c.lineTo(22*s,-2*s)}c.stroke()}
+ c.fillStyle='#ffffffcc';c.font=`800 ${26*s}px system-ui`;c.textAlign='center';c.textBaseline='middle';c.fillText('?',0,6*s);
+ c.restore();
+}
+function drawPet(c,pet,x,y,s,time){
+ if(!pet)return;
+ if(pet.stage===0){drawEgg(c,x,y,s,pet.egg,pet.growth/STAGES[0].need,time);return}
+ const size=[0,.62,.82,1][pet.stage],bob=Math.sin(time*3)*4*s;
+ blob(c,x,y+46*s,30*s*size+8*s,7*s,'#00000018');
+ if(pet.sparkle){c.save();c.globalAlpha=.55+.3*Math.sin(time*4);for(let i=0;i<6;i++){const a=time*1.2+i*Math.PI/3;c.fillStyle=['#ffd34d','#ff9fd6','#9fd8ff'][i%3];c.font=`${14*s}px system-ui`;c.textAlign='center';c.fillText('✦',x+Math.cos(a)*54*s,y-4*s+Math.sin(a)*44*s)}c.restore()}
+ c.save();c.font=`${92*s*size}px system-ui`;c.textAlign='center';c.textBaseline='middle';c.fillText(PETS[pet.type][0],x,y+bob+(1-size)*28*s);c.restore();
+ if(pet.stage===1){c.save();c.globalAlpha=.9;c.font=`${22*s}px system-ui`;c.textAlign='center';c.fillText('🥚',x+30*s,y+38*s);c.restore()}
+ if(pet.stage===3){c.save();c.font=`${26*s}px system-ui`;c.textAlign='center';c.fillText('👑',x,y-48*s+bob);c.restore()}
+}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+let S=loadSave(),customers=[null,null,null],treat=null,oven=null,spawnIn=1.2,open=false,last=0,clock=0,audio=null,shopTab='treats';
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({...S,served:0}))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.18,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+len);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+len)}catch(e){}}
+function chime(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.16),i*90))}
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2400)}
+const activePet=()=>S.pets[S.active];
+function petTitle(p){return p.stage===0?'Mystery egg':(p.sparkle?'✨ ':'')+p.name+' the '+PETS[p.type][1]}
+
+// ---- top bar, pet and kitchen rendering ----
+function renderTop(){$('#coins').textContent='● '+S.coins.toLocaleString('en-US');const g=goalFor(S.day);$('#dayLabel').textContent='Day '+S.day;$('#served').textContent=S.served+' / '+g+' served';$('#dayMeter').style.width=Math.min(100,S.served/g*100)+'%';$('#decor').textContent=S.decor.map(k=>DECOR[k].icon).join('')}
+function renderPet(){const p=activePet();$('#petName').textContent=petTitle(p);const need=STAGES[p.stage].need;$('#petStage').textContent=p.stage===0?'Sell and feed treats to help it hatch!':p.stage===3?'Grown-up helper · +'+petBonus(p)+' coins per order':STAGES[p.stage].name+' · growing up! · +'+petBonus(p)+' coins per order';$('#petGrowth').style.width=(p.stage===3?100:Math.min(100,p.growth/need*100))+'%'}
+function renderKitchen(){
+ const ready=treat&&treat.baked;
+ for(const b of document.querySelectorAll('[data-base]'))b.disabled=Boolean(treat)||!S.unlocked.bases.includes(b.dataset.base);
+ $('#bakeBtn').disabled=!treat||treat.baked||Boolean(oven);
+ for(const b of document.querySelectorAll('[data-frost]'))b.disabled=!ready||Boolean(treat.frosting)||!S.unlocked.frostings.includes(b.dataset.frost);
+ for(const b of document.querySelectorAll('[data-top]'))b.disabled=!ready||!treat.frosting||(treat.topping&&treat.topping!=='pending')||!S.unlocked.toppings.includes(b.dataset.top);
+ $('#trashBtn').disabled=!treat||Boolean(oven);$('#feedBtn').disabled=!ready||activePet().stage===3;
+ $('#feedBtn').textContent=activePet().stage===3?'💛 All grown up':'🍰 Feed this treat';
+ $('#status').textContent=!treat?'Pick a treat to start.':oven?'Baking… smells yummy!':!treat.baked?'Now put it in the oven.':!treat.frosting?'Pick a frosting.':!treat.topping?'Add a topping, or tap a customer to serve it plain.':'Ready! Tap the customer who ordered it.';
+ for(let i=0;i<3;i++){const el=document.querySelector('[data-slot="'+i+'"]');if(el)el.classList.toggle('ready-to-serve',Boolean(customers[i]&&ready&&treatMatches({...treat,topping:treat.topping||'none'},customers[i].order)))}
+}
+function buildKitchen(){
+ $('#baseRow').innerHTML='';$('#frostRow').innerHTML='';$('#topRow').innerHTML='';
+ for(const [k,b] of Object.entries(BASES)){const btn=document.createElement('button');btn.type='button';btn.className='opt'+(S.unlocked.bases.includes(k)?'':' locked');btn.dataset.base=k;btn.setAttribute('aria-label',b.name+(S.unlocked.bases.includes(k)?'':' (unlock in the shop)'));const cv=document.createElement('canvas');cv.width=80;cv.height=80;const c=cv.getContext('2d');drawTreat(c,{base:k,baked:true},40,36,.62);btn.append(cv,document.createTextNode(S.unlocked.bases.includes(k)?b.name:'🔒 '+b.name));btn.onclick=()=>{if(treat)return;treat={base:k,baked:false};tone(520,.06);renderAll()};$('#baseRow').append(btn)}
+ for(const [k,f] of Object.entries(FROSTINGS)){const btn=document.createElement('button');btn.type='button';btn.className='swatch';btn.dataset.frost=k;btn.style.background=f.color;btn.title=f.name;btn.setAttribute('aria-label',f.name+' frosting'+(S.unlocked.frostings.includes(k)?'':' (unlock in the shop)'));if(!S.unlocked.frostings.includes(k))btn.textContent='🔒';btn.onclick=()=>{treat.frosting=k;tone(700,.07);renderAll()};$('#frostRow').append(btn)}
+ for(const [k,t] of Object.entries(TOPPINGS)){if(k==='none')continue;const btn=document.createElement('button');btn.type='button';btn.className='opt'+(S.unlocked.toppings.includes(k)?'':' locked');btn.dataset.top=k;btn.setAttribute('aria-label',t.name+(S.unlocked.toppings.includes(k)?'':' (unlock in the shop)'));const cv=document.createElement('canvas');cv.width=80;cv.height=80;const c=cv.getContext('2d');drawTopping(c,k,40,50,2.5);btn.append(cv,document.createTextNode(S.unlocked.toppings.includes(k)?t.name:'🔒 '+t.name));btn.onclick=()=>{treat.topping=k;tone(880,.07);renderAll()};$('#topRow').append(btn)}
+}
+function drawTray(){const c=$('#trayCanvas').getContext('2d');c.clearRect(0,0,300,300);if(treat)drawTreat(c,treat,150,150,1.55);else{c.fillStyle='#d9b99d';c.font='800 26px system-ui';c.textAlign='center';c.fillText('empty tray',150,160)}}
+function drawPetCanvas(){const c=$('#petCanvas').getContext('2d');c.clearRect(0,0,300,300);drawPet(c,activePet(),150,150,1.4,clock)}
+
+// ---- customers ----
+function renderCounter(){
+ const box=$('#counter');box.innerHTML='';
+ customers.forEach((cu,i)=>{const el=document.createElement('div');el.dataset.slot=i;
+  if(!cu){el.className='customer';el.innerHTML='<span class="empty">'+(open?'…':'Closed')+'</span>';box.append(el);return}
+  el.className='customer here';el.setAttribute('role','button');el.tabIndex=0;
+  const o=cu.order,label=BASES[o.base].name+' with '+FROSTINGS[o.frosting].name.toLowerCase()+' frosting'+(o.topping!=='none'?' and '+TOPPINGS[o.topping].name.toLowerCase():'');
+  el.setAttribute('aria-label',cu.name+' wants a '+label+'. Tap to serve.');
+  el.innerHTML='<div class="face">'+cu.icon+'</div><div class="name">'+cu.name+'</div><div class="bubble"><canvas width="128" height="128"></canvas></div>'+(S.relaxed?'':'<div class="patience"><i></i></div>')+(cu.say?'<div class="say">'+cu.say+'</div>':'');
+  const c=el.querySelector('canvas').getContext('2d');drawTreat(c,{...o,baked:true},64,60,.95);
+  el.onclick=()=>serve(i);el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();serve(i)}};
+  box.append(el)});
+ updatePatience();renderKitchen();
+}
+function updatePatience(){customers.forEach((cu,i)=>{if(!cu||S.relaxed)return;const bar=document.querySelector('[data-slot="'+i+'"] .patience i');if(!bar)return;const r=Math.max(0,cu.patience/cu.max);bar.style.width=r*100+'%';bar.style.background=r>.5?'var(--mint)':r>.25?'var(--butter)':'var(--berry)';const face=document.querySelector('[data-slot="'+i+'"] .face');if(face)face.style.filter=r<.25?'saturate(.6)':''})}
+function spawn(){const i=customers.indexOf(null);if(i<0)return;const [icon,name]=pick(CUSTOMERS,Math.random),max=patienceFor(S.day);customers[i]={icon,name,order:makeOrder(S.day,S.unlocked),patience:max,max,say:''};tone(980,.06,'triangle');renderCounter()}
+function floatAt(i,text){const el=document.querySelector('[data-slot="'+i+'"]');if(!el)return;const f=document.createElement('div');f.className='float';f.textContent=text;el.append(f);setTimeout(()=>f.remove(),1200)}
+function serve(i){
+ const cu=customers[i];if(!cu||!open)return;
+ if(!treat||!treat.baked){cu.say=treat?'Is it baked yet?':'I’d like the treat in my bubble!';renderCounter();setTimeout(()=>{if(customers[i]===cu){cu.say='';renderCounter()}},1600);return}
+ const t={...treat,topping:treat.topping||'none'};
+ if(!treatMatches(t,cu.order)){cu.say='Hmm, that’s not my order!';tone(220,.15,'triangle');renderCounter();setTimeout(()=>{if(customers[i]===cu){cu.say='';renderCounter()}},1600);return}
+ const p=activePet(),coins=priceFor(cu.order,S.relaxed?1:cu.patience/cu.max,petBonus(p));
+ S.coins+=coins;S.served++;S.totalServed++;treat=null;customers[i]=null;if(customers.every(c=>!c))spawnIn=Math.min(spawnIn,1.2);
+ renderCounter();floatAt(i,'+'+coins+' ●  😍');chime();
+ const ev=growPet(p,1),done=S.served>=goalFor(S.day);save();renderAll();
+ if(ev.includes('hatch'))showHatch(p,done?endDay:null);else{handlePetEvents(ev,p);if(done)endDay()}
+}
+function handlePetEvents(ev,p){if(ev.includes('hatch'))showHatch(p);else if(ev.includes('grow'))notify(p.name+' grew up into a '+STAGES[p.stage].name.toLowerCase()+'! 🎉')}
+
+// ---- oven, feeding, trash ----
+$('#bakeBtn').onclick=()=>{if(!treat||treat.baked||oven)return;oven={t:0,len:1.6};tone(330,.2,'triangle');renderKitchen()};
+$('#trashBtn').onclick=()=>{if(!treat||oven)return;treat=null;tone(200,.08,'triangle');renderAll()};
+$('#feedBtn').onclick=()=>{const p=activePet();if(!treat||!treat.baked||p.stage===3)return;const amount=treat.frosting?3:2;treat=null;const ev=growPet(p,amount);notify(p.stage===0&&!ev.length?'The egg wiggles happily! 🥚':'Yum! +'+amount+' growth 💛');tone(600,.12);handlePetEvents(ev,p);save();renderAll()};
+
+// ---- days and paths ----
+function showDayIntro(){
+ open=false;customers=[null,null,null];treat=null;oven=null;S.served=0;renderAll();
+ const pathNo=Math.ceil(S.day/DAYS_PER_PATH),dayInPath=(S.day-1)%DAYS_PER_PATH+1;
+ $('#dayBody').innerHTML='<div class="big">🧁</div><h2>Day '+S.day+'</h2><p>Serve <b>'+goalFor(S.day)+' customers</b> to finish the day. This is day '+dayInPath+' of 4 on path '+pathNo+'. Finish the path to get a new mystery egg!</p><button class="primary" id="openShop" type="button">Open the bakery →</button>';
+ $('#dayDialog').showModal();$('#openShop').onclick=()=>{$('#dayDialog').close();open=true;spawnIn=.6;tone(520,.1);renderCounter()};
+}
+function endDay(){
+ open=false;customers=[null,null,null];oven=null;const finished=S.day,path=pathDone(finished);S.day++;let eggNote='';
+ if(path){const parent=activePet(),egg=newEgg();S.pets.push(egg);eggNote=parent.stage>0?'<p><b>'+parent.name+' laid a mystery egg!</b> 🥚 It’s waiting in your pet family. What could be inside?</p>':'<p><b>A new mystery egg appeared!</b> 🥚 It’s waiting in your pet family.</p>'}
+ save();renderAll();chime();
+ $('#dayBody').innerHTML='<div class="big">'+(path?'🥚':'🌟')+'</div><h2>Day '+finished+' done!</h2><p>You served everyone and the bakery is full of happy buddies.</p>'+eggNote+'<p class="stats">● '+S.coins.toLocaleString('en-US')+' coins · '+S.totalServed+' treats sold</p><button class="primary" id="nextDay" type="button">'+(path?'Meet your egg →':'Next day →')+'</button>';
+ $('#dayDialog').showModal();$('#nextDay').onclick=()=>{$('#dayDialog').close();if(path){S.active=S.pets.length-1;save();renderAll()}showDayIntro()};
+}
+function showHatch(p,after){
+ const resume=open;open=false;
+ $('#hatchTitle').textContent=(p.sparkle?'A rare sparkly ':'It’s a ')+PETS[p.type][1].toLowerCase()+'!';
+ $('#hatchText').textContent='Your mystery egg hatched into '+p.name+(p.sparkle?', a super rare sparkly pet':'')+'. Keep baking to help '+p.name+' grow up!';
+ $('#hatchDialog').showModal();chime();let t=0;const c=$('#hatchCanvas').getContext('2d');
+ const anim=()=>{if(!$('#hatchDialog').open)return;t+=1/60;c.clearRect(0,0,320,320);if(t<0.9){drawEgg(c,160,170,1.6,p.egg,1,t*3)}else{drawPet(c,p,160,170,1.6,t);for(let i=0;i<14;i++){const a=i*0.45+t,r=(t-0.9)*160;c.fillStyle=['#ff9fd6','#ffd34d','#9fd8ff','#8fe3b0'][i%4];c.fillRect(160+Math.cos(a)*r,170+Math.sin(a)*r,6,6)}}requestAnimationFrame(anim)};anim();
+ $('#hatchOk').onclick=()=>{$('#hatchDialog').close();if(after)after();else if(resume)open=true;renderAll()};
+}
+
+// ---- shop ----
+function shopItems(){
+ if(shopTab==='treats')return [...Object.entries(BASES).map(([k,v])=>['bases',k,v.name,v.cost,{base:k,baked:true}]),...Object.entries(FROSTINGS).map(([k,v])=>['frostings',k,v.name+' frosting',v.cost,{base:'cupcake',baked:true,frosting:k}]),...Object.entries(TOPPINGS).filter(([k])=>k!=='none').map(([k,v])=>['toppings',k,v.name,v.cost,{base:'cupcake',baked:true,frosting:'vanilla',topping:k}])];
+ return Object.entries(DECOR).map(([k,v])=>['decor',k,v.name,v.cost,null,v.icon]);
+}
+function renderShop(){
+ $('#shopCoins').textContent='● '+S.coins.toLocaleString('en-US')+' coins to spend';
+ $('#shopTabs').innerHTML=[['treats','🧁 Treats'],['decor','🎀 Decorations']].map(([k,n])=>'<button type="button" data-tab="'+k+'" class="'+(shopTab===k?'sel':'')+'" aria-pressed="'+(shopTab===k)+'">'+n+'</button>').join('');
+ const grid=$('#shopGrid');grid.innerHTML='';
+ for(const [kind,key,name,cost,preview,icon] of shopItems()){
+  const owned=kind==='decor'?S.decor.includes(key):S.unlocked[kind].includes(key),card=document.createElement('div');card.className='card';
+  if(preview){const cv=document.createElement('canvas');cv.width=112;cv.height=112;drawTreat(cv.getContext('2d'),preview,56,58,.75);card.append(cv)}else{const s=document.createElement('div');s.className='ico';s.textContent=icon;card.append(s)}
+  const n=document.createElement('strong');n.textContent=name;card.append(n);
+  if(owned){const o=document.createElement('span');o.className='owned';o.textContent=cost?'Yours ✓':'Starter ✓';card.append(o)}else{const b=document.createElement('button');b.type='button';b.textContent='Buy · ● '+cost;b.disabled=S.coins<cost;b.onclick=()=>buy(kind,key,cost,name);card.append(b)}
+  grid.append(card)}
+}
+function buy(kind,key,cost,name){if(S.coins<cost)return;S.coins-=cost;if(kind==='decor')S.decor.push(key);else S.unlocked[kind].push(key);save();chime();notify(kind==='decor'?name+' added to your bakery! 🎀':name+' unlocked! Customers may start ordering it. 🧁');buildKitchen();renderShop();renderAll()}
+$('#shopTabs').onclick=e=>{const b=e.target.closest('[data-tab]');if(b){shopTab=b.dataset.tab;renderShop()}};
+
+// ---- pet family ----
+function renderFamily(){const grid=$('#familyGrid');grid.innerHTML='';S.pets.forEach((p,i)=>{const card=document.createElement('div');card.className='card'+(i===S.active?' active':'');const cv=document.createElement('canvas');cv.width=112;cv.height=112;drawPet(cv.getContext('2d'),p,56,56,.55,0);const n=document.createElement('strong');n.textContent=p.stage===0?'Mystery egg':(p.sparkle?'✨ ':'')+p.name;const st=document.createElement('span');st.textContent=p.stage===0?'Waiting to hatch':STAGES[p.stage].name+' '+PETS[p.type][1].toLowerCase();const b=document.createElement('button');b.type='button';b.textContent=i===S.active?'Helping ✓':'Make helper';b.disabled=i===S.active;b.onclick=()=>{S.active=i;save();renderFamily();renderAll();notify((p.stage===0?'The mystery egg':p.name)+' is helping in the bakery now!')};card.append(cv,n,st,b);grid.append(card)})}
+
+// ---- dialogs: pause the day while one is open ----
+let pausedBy=null;function openDialog(id,render){if(open){open=false;pausedBy=id}render&&render();$(id).showModal()}
+for(const [id,close] of [['#shopDialog','#shopClose'],['#familyDialog','#familyClose'],['#settingsDialog','#settingsClose']]){$(close).onclick=()=>$(id).close();$(id).addEventListener('close',()=>{if(pausedBy===id){open=true;pausedBy=null}renderAll()})}
+$('#shopBtn').onclick=()=>openDialog('#shopDialog',renderShop);
+$('#familyBtn').onclick=()=>openDialog('#familyDialog',renderFamily);
+function renderSettings(){$('#relaxedState').textContent=S.relaxed?'On':'Off';$('#soundState').textContent=S.sound?'On':'Off';const hatched=S.pets.filter(p=>p.stage>0).length;$('#settingsStats').textContent=S.totalServed+' treats sold · '+hatched+' pets hatched · '+S.pets.filter(p=>p.stage===0).length+' eggs waiting'}
+$('#settingsBtn').onclick=()=>openDialog('#settingsDialog',renderSettings);
+$('#relaxedBtn').onclick=()=>{S.relaxed=!S.relaxed;save();renderSettings();renderCounter()};
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderSettings();if(S.sound)tone(660,.1)};
+
+function renderAll(){renderTop();renderPet();renderKitchen();drawTray()}
+function tick(now){
+ const dt=Math.min(.05,(now-last)/1000||0);last=now;clock+=dt;
+ if(oven){oven.t+=dt;$('#ovenBar').style.width=Math.min(100,oven.t/oven.len*100)+'%';if(oven.t>=oven.len){oven=null;treat.baked=true;$('#ovenBar').style.width='0%';tone(1100,.12);renderAll()}}
+ if(open){
+  spawnIn-=dt;if(spawnIn<=0){spawn();spawnIn=Math.max(3,6.5-S.day*.3)+Math.random()*2}
+  if(!S.relaxed){let changed=false;customers.forEach((cu,i)=>{if(!cu)return;cu.patience-=dt;if(cu.patience<=0){customers[i]=null;changed=true;if(customers.every(c=>!c))spawnIn=Math.min(spawnIn,1.2);notify(cu.name+' couldn’t wait and went home. 😢');tone(196,.2,'triangle')}});if(changed)renderCounter();else updatePatience()}
+ }
+ drawPetCanvas();
+ requestAnimationFrame(tick);
+}
+buildKitchen();renderAll();renderCounter();showDayIntro();requestAnimationFrame(tick);
+window.__bakery={get open(){return open},get spawnIn(){return spawnIn},get S(){return S},get customers(){return customers},get treat(){return treat},set treat(v){treat=v},serve,spawn,endDay,growPet,save,renderAll};
+}
+</script>
+</body>
+</html>

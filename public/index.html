@@ -8,14 +8,14 @@
 <meta name="apple-mobile-web-app-title" content="Super Emilia">
 <meta name="author" content="Emilia">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="description" content="Free browser games designed by Emilia. Play Super Emilia World, a buddy platform adventure with 144 levels, and watch for new games coming soon.">
+<meta name="description" content="Free browser games designed by Emilia. Play Super Emilia World, a buddy platform adventure, or hatch surprise pets in Mystery Egg Bakery.">
 <link rel="canonical" href="https://superemilia.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Super Emilia">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://superemilia.com/">
 <meta property="og:title" content="Super Emilia · Pick a Game">
-<meta property="og:description" content="Free browser games designed by Emilia. Play Super Emilia World, a buddy platform adventure with 144 levels, and watch for new games coming soon.">
+<meta property="og:description" content="Free browser games designed by Emilia. Play Super Emilia World, a buddy platform adventure, or hatch surprise pets in Mystery Egg Bakery.">
 <meta property="og:image" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta property="og:image:secure_url" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta property="og:image:type" content="image/png">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Super Emilia World: Emilia and her chick, kitten, and butterfly buddies exploring pastel floating lands.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Super Emilia · Pick a Game">
-<meta name="twitter:description" content="Free browser games designed by Emilia. Play Super Emilia World, a buddy platform adventure with 144 levels, and watch for new games coming soon.">
+<meta name="twitter:description" content="Free browser games designed by Emilia. Play Super Emilia World, a buddy platform adventure, or hatch surprise pets in Mystery Egg Bakery.">
 <meta name="twitter:image" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta name="twitter:image:alt" content="Emilia and her buddies in the colorful lands of Super Emilia World.">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
@@ -38,7 +38,7 @@
       "@id": "https://superemilia.com/#website",
       "url": "https://superemilia.com/",
       "name": "Super Emilia Games",
-      "description": "Free browser games designed by Emilia, starting with Super Emilia World.",
+      "description": "Free browser games designed by Emilia: Super Emilia World and Mystery Egg Bakery.",
       "inLanguage": "en-US"
     },
     {
@@ -47,7 +47,7 @@
       "url": "https://superemilia.com/",
       "name": "Super Emilia · Pick a Game",
       "isPartOf": { "@id": "https://superemilia.com/#website" },
-      "hasPart": [{ "@id": "https://superemilia.com/world/#game" }],
+      "hasPart": [{ "@id": "https://superemilia.com/world/#game" }, { "@id": "https://superemilia.com/bakery/#game" }],
       "inLanguage": "en-US"
     },
     {
@@ -56,6 +56,15 @@
       "name": "Super Emilia World",
       "url": "https://superemilia.com/world/",
       "image": "https://superemilia.com/assets/super-emilia-world-og-v1.png",
+      "author": { "@type": "Person", "name": "Emilia" },
+      "gamePlatform": "Web browser",
+      "isAccessibleForFree": true
+    },
+    {
+      "@type": "VideoGame",
+      "@id": "https://superemilia.com/bakery/#game",
+      "name": "Mystery Egg Bakery",
+      "url": "https://superemilia.com/bakery/",
       "author": { "@type": "Person", "name": "Emilia" },
       "gamePlatform": "Web browser",
       "isAccessibleForFree": true
@@ -80,7 +89,7 @@ header{display:flex;align-items:center;gap:14px}
 .eyebrow{margin:0;text-transform:uppercase;letter-spacing:2.4px;font-size:11px;font-weight:800;color:var(--mint)}
 h1{margin:2px 0 0;font-size:clamp(28px,5vw,40px);letter-spacing:-.8px;line-height:1.05;text-wrap:balance}
 .lede{margin:6px 0 0;color:var(--muted);font-size:15px;max-width:52ch}
-.shelf{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:18px;align-items:stretch}
+.shelf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:stretch}
 .card{position:relative;border-radius:26px;overflow:hidden;min-width:0}
 .game{display:grid;grid-template-rows:auto 1fr;background:var(--panel);border:1px solid #574a6e;box-shadow:0 10px 0 #110e1d,0 24px 60px #0007;text-decoration:none;color:inherit;transition:transform .18s ease,box-shadow .18s ease}
 .game:hover{transform:translateY(-3px);box-shadow:0 13px 0 #110e1d,0 30px 70px #0008}
@@ -96,15 +105,15 @@ h1{margin:2px 0 0;font-size:clamp(28px,5vw,40px);letter-spacing:-.8px;line-heigh
 .progress .star{color:var(--gold)}.progress .coin{color:#ffe39a}.progress .flag{color:var(--mint)}.progress .crown{color:var(--pink)}
 .play{justify-self:start;display:inline-flex;align-items:center;gap:10px;margin-top:6px;background:var(--mint);color:#233d32;font-weight:800;font-size:16px;border-radius:14px;padding:13px 22px;box-shadow:0 5px 0 #6fa98d}
 .game:hover .play{background:#c8f5de}
-.soon{display:grid;align-content:center;justify-items:center;text-align:center;gap:12px;padding:30px 22px;background:repeating-linear-gradient(135deg,#1f1b30 0 14px,#221e35 14px 28px);border:2px dashed #5b4d72;color:var(--muted)}
+.bakery-art{position:relative;aspect-ratio:1717/916;background:radial-gradient(circle at 30% 30%,#fff6ea 0 18%,transparent 19%),linear-gradient(160deg,#ffd6e3,#ffe9c9 60%,#d9f2e6);overflow:hidden}.bakery-art:before{content:'';position:absolute;inset:0 0 auto;height:22%;background:repeating-linear-gradient(90deg,#ef7fa4 0 26px,#fff 26px 52px)}.bakery-art span{position:absolute;line-height:1;filter:drop-shadow(0 6px 0 #0000001a)}.bakery-art .b1{font-size:clamp(54px,9vw,88px);left:14%;top:34%}.bakery-art .b2{font-size:clamp(60px,10vw,98px);left:42%;top:28%;animation:wiggle 2.4s ease-in-out infinite}.bakery-art .b3{font-size:clamp(44px,7vw,70px);right:12%;top:44%}.bakery-art .b4{font-size:clamp(26px,4vw,40px);left:60%;top:26%}.tag.pink{background:#ffd0de;color:#7a2448}@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}.soon{display:grid;align-content:center;justify-items:center;text-align:center;gap:12px;padding:30px 22px;background:repeating-linear-gradient(135deg,#1f1b30 0 14px,#221e35 14px 28px);border:2px dashed #5b4d72;color:var(--muted)}
 .soon .spark{font-size:44px;line-height:1;animation:twinkle 2.6s ease-in-out infinite}
 .soon h2{margin:0;color:var(--ink);font-size:21px;letter-spacing:-.3px}
 .soon p{margin:0;font-size:14px;line-height:1.5;max-width:30ch}
 .soon .pill{font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--lav);border:1px solid #5b4d72;border-radius:999px;padding:5px 11px}
 footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:#968da8;border-top:1px solid #2e2840;padding-top:16px}
 @keyframes twinkle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.12) rotate(8deg)}}
-@media (max-width:760px){.shelf{grid-template-columns:1fr}.cover{aspect-ratio:1/1;width:100%}.soon{padding:24px 18px}}
-@media (prefers-reduced-motion:reduce){.game,.soon .spark{transition:none;animation:none}.game:hover{transform:none}}
+@media (max-width:760px){.bakery-art{aspect-ratio:16/9}.shelf{grid-template-columns:1fr}.cover{aspect-ratio:1/1;width:100%}.soon{padding:24px 18px}}
+@media (prefers-reduced-motion:reduce){.game,.soon .spark,.bakery-art .b2{transition:none;animation:none}.game:hover{transform:none}}
 </style>
 </head>
 <body>
@@ -135,12 +144,18 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
    </div>
   </a>
 
-  <div class="card soon" role="note" aria-label="Another game is coming soon">
-   <span class="spark" aria-hidden="true">✨</span>
-   <span class="pill">Coming soon</span>
-   <h2>A new game is on the way</h2>
-   <p>Emilia is dreaming up the next adventure. Check back soon!</p>
-  </div>
+  <a class="card game bakery" href="/bakery/" id="playBakery" aria-describedby="bakeryAbout">
+   <div class="bakery-art" aria-hidden="true"><span class="b1">🧁</span><span class="b2">🥚</span><span class="b3">🍩</span><span class="b4">✨</span></div>
+   <div class="game-body">
+    <span class="tag pink">New · Bakery</span>
+    <h2>Mystery Egg Bakery</h2>
+    <p id="bakeryAbout">Bake treats for buddy customers and hatch mystery eggs into surprise pets. Every four days, your pet lays a new egg!</p>
+    <ul class="progress" id="bakeryProgress" aria-label="Your saved bakery progress">
+     <li class="flag">New bakery · start baking to save progress</li>
+    </ul>
+    <span class="play" aria-hidden="true">Play now →</span>
+   </div>
+  </a>
  </section>
 
  <footer>
@@ -165,6 +180,20 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
  var list=document.getElementById('worldProgress');list.textContent='';
  items.forEach(function(it){var li=document.createElement('li');li.className=it[0];li.textContent=it[1];list.appendChild(li)});
  var play=document.querySelector('#playWorld .play');if(play)play.textContent='Keep playing →';
+})();
+(function(){
+ // Show Mystery Egg Bakery progress from its own save.
+ var save=null;
+ try{save=JSON.parse(localStorage.getItem('mysteryEggBakery')||'null')}catch(e){save=null}
+ if(!save||typeof save!=='object')return;
+ var sold=Math.max(0,Math.floor(Number(save.totalServed))||0);if(!sold)return;
+ var day=Math.max(1,Math.floor(Number(save.day))||1),coins=Math.max(0,Math.floor(Number(save.coins))||0),pets=Array.isArray(save.pets)?save.pets:[];
+ var hatched=pets.filter(function(p){return p&&Number(p.stage)>0}).length,eggs=pets.length-hatched;
+ var fmt=function(n){return Number(n).toLocaleString('en-US')};
+ var items=[['flag','📅 Day '+day],['coin','● '+fmt(coins)+' coins'],['crown','🐾 '+hatched+' pet'+(hatched===1?'':'s')+' hatched'],['star','🥚 '+eggs+' egg'+(eggs===1?'':'s')+' waiting']];
+ var list=document.getElementById('bakeryProgress');if(!list)return;list.textContent='';
+ items.forEach(function(it){var li=document.createElement('li');li.className=it[0];li.textContent=it[1];list.appendChild(li)});
+ var play=document.querySelector('#playBakery .play');if(play)play.textContent='Keep baking →';
 })();
 </script>
 </body>
