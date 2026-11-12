@@ -53,6 +53,17 @@ Stars from blocks, bounces, gems, and finished stages can be spent in the **Star
 | 🌸 Flower crown | 40 | A hat to keep |
 | 🌈 Rainbow hat | 60 | A hat to keep |
 
+Coins from the secret coin rooms buy cosmetics in the same shop:
+
+| Item | Cost | What it does |
+| --- | --- | --- |
+| 💗 Heart, 🍃 leaf, 🫧 bubble, or ⭐ star trail | 30 / 35 / 40 / 50 coins | Little icons float behind Emilia while she runs; one trail at a time, tap again to stop |
+| Gold, Ruby, Ocean, or Midnight outfit | 40 coins each | Special outfit colors, also selectable in Characters once bought |
+| 👒 Sun hat / 🎓 Graduation cap | 45 / 50 coins | Hats to keep |
+| 🔄 Star swap | 10 coins | Trades for 6 stars |
+
+An equipped trail replaces the champion rainbow trail while it is on.
+
 Power-ups are kept in a bag (up to 9 of each) and switch on automatically when the next stage or boss battle starts, using one of each kind you own. Restarting a boss battle after running out of hearts uses them again. Purchases save in the browser.
 
 ## Grand prize

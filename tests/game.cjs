@@ -227,4 +227,20 @@ test('Shop hats are bought once, worn from the shop or studio, and milestone hat
  const kept=boot({storage:{laserLeapRewards:JSON.stringify({bank:2,starsSpent:40,ownedHats:[5,5,7],hat:7,powerups:{heart:3,star:50}})}});assert(kept('hat===7&&hatAvailable(3)&&ownedHats.length===2&&powerups.heart===3&&powerups.star===9'));
  const tampered=boot({storage:{laserLeapRewards:JSON.stringify({bank:2,starsSpent:'lots',ownedHats:[1,4,99,'5'],hat:6,powerups:{heart:-4,boots:'x'}})}});assert(tampered('hat===0&&starsSpent===0&&ownedHats.length===0&&powerups.heart===0&&powerups.boots===0'));
 });
+test('Coins buy trails, outfit colors, hats and star swaps without touching stars',()=>{
+ const run=boot();run(`sound=false;bank=7;coinBank=200;openShop()`);assert(run("$('#shopBalance').textContent.includes('200 coins')&&$('#shopItems').innerHTML.includes('Heart trail')&&$('#shopItems').innerHTML.includes('Midnight outfit')&&$('#shopItems').innerHTML.includes('Star swap')"));
+ run(`buyTrail('hearts')`);assert(run("coinBank===170&&coinsSpent===30&&trail==='hearts'&&ownedTrails.includes('hearts')&&bank===7"));
+ run(`buyTrail('hearts')`);assert.equal(run('coinBank'),170);
+ run(`useTrail('hearts')`);assert.equal(run('trail'),'');run(`useTrail('hearts')`);assert.equal(run('trail'),'hearts');run(`useTrail('stars')`);assert.equal(run('trail'),'hearts');
+ run(`buyColor('#f2c14e')`);assert(run("coinBank===130&&looks.hero.outfitColor==='#f2c14e'&&ownedColors.includes('#f2c14e')"));
+ run(`wearColor('#4a4270')`);assert.equal(run('looks.hero.outfitColor'),'#f2c14e');
+ run(`buyHat(8)`);assert(run('coinBank===85&&hat===8&&hatAvailable(8)&&bank===7'));
+ run(`swapCoins()`);assert(run('coinBank===75&&bank===13'));
+ run(`coinBank=3;buyTrail('stars');swapCoins()`);assert(run("!ownedTrails.includes('stars')&&coinBank===3&&bank===13&&$('#toast').textContent.includes('7 more coins')"));
+ run(`$('#shopDialog').close();openCharacterStudio()`);const html=run("$('#characterOptions').innerHTML");assert(html.includes('Midnight, buy it in the shop')&&!html.includes('Gold, buy it in the shop')&&html.includes('👒 Sun hat'));
+ run(`$('#characterDialog').close();chooseStage(1);start();p.vx=300;particles=[];for(let i=0;i<40;i++)updateEffects(1/60);render()`);assert(run("particles.some(a=>a.glyph==='💗')"));
+ const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.trail==='hearts'&&saved.ownedColors.includes('#f2c14e')&&saved.ownedHats.includes(8)&&saved.coinsSpent===125&&saved.coins===3);
+ const kept=boot({storage:{laserLeapRewards:JSON.stringify({ownedTrails:['bubbles','bubbles'],trail:'bubbles',ownedColors:['#4f8fd6'],appearance:{hero:{outfitColor:'#4f8fd6'}},ownedHats:[9],hat:9})}});assert(kept("trail==='bubbles'&&ownedTrails.length===1&&looks.hero.outfitColor==='#4f8fd6'&&hat===9"));
+ const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedTrails:['toString','lasers'],trail:'stars',ownedColors:['#000000','constructor'],appearance:{hero:{outfitColor:'#d9567a'}},hat:8,coinsSpent:-5})}});assert(tampered("trail===''&&ownedTrails.length===0&&ownedColors.length===0&&looks.hero.outfitColor==='world'&&hat===0&&coinsSpent===0"));
+});
 console.log(checks+' checks passed.');
