@@ -380,4 +380,9 @@ test('Bubble Reef stays hidden until the Rainbow Sky boss is cheered up, then un
  for(const acc of ['none','party','halo'])run(`drawBuddyLook(g,0,0,'finn',{...looks.finn,accessory:'${acc}'},1,1,-1)`);
  const stale=boot({storage:{laserLeapRewards:JSON.stringify({theme:'reef',level:3,bosses:{space:true,candy:true,forest:true,squishy:true,home:true}})}});assert(stale("theme==='space'"));
 });
+test('The fish avatar can be bought, worn, recolored and drawn',()=>{
+ const run=boot();run(`sound=false;coinBank=100;buyAvatar('fish')`);assert(run("ownedAvatars.includes('fish')&&looks.hero.avatar==='fish'&&coinBank===20"));
+ for(const walk of [true,false])for(const color of ['default','#9bc8e2'])run(`drawHeroLook(g,50,50,{...looks.hero,avatar:'fish',avatarColor:'${color}'},themes.reef,2,${walk},-1,6)`);
+ run(`bodyGear='fairy';chooseStage(0);start();render();shopTab='avatars';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Playing as Fish')"));
+});
 console.log(checks+' checks passed.');
