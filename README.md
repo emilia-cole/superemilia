@@ -81,6 +81,14 @@ More items added after that:
 - **Outfit colors:** Peach, Navy, Lime (30 coins), Rose gold (35 coins).
 - **Buddy gear:** 🦸 Tiny cape (30 coins), ⭐ Star clip (25 coins).
 
+Third batch:
+
+- **Avatars:** 🦁 Lion (110 coins), 🐶 Puppy (75 stars), 🦉 Owl (90 coins).
+- **Jump effects** (new tab): ☁️ Cloud puffs (30 coins), 🌟 Star pop (30 stars), 🫧 Bubble hop (35 coins), 🎶 Music hop (35 stars). Little icons pop out with every jump; tap again to turn it off.
+- **Hats:** 🍉 Watermelon (35 stars), 🐣 Chick buddy (40 stars), 🍦 Ice cream (40 coins), 🧸 Teddy (45 coins).
+- **Trails:** 🍓 strawberry and 🍭 lollipop (35 coins), 🪐 planet and 🎈 balloon (45 coins).
+- **Celebrations:** 🎂 Cake party (40 coins), 💫 Star storm (40 stars).
+
 An equipped trail replaces the champion rainbow trail while it is on.
 
 Power-ups are kept in a bag (up to 9 of each) and switch on automatically when the next stage or boss battle starts, using one of each kind you own. Restarting a boss battle after running out of hearts uses them again. Purchases save in the browser.

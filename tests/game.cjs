@@ -290,4 +290,16 @@ test('Celebrations, the lucky clover, new avatars and new buddy gear work and sa
  const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.celebration==='fireworks'&&saved.ownedCelebrations.length===2&&saved.ownedAvatars.includes('penguin'));
  const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedCelebrations:['__proto__','hearts'],celebration:'rainbows',powerups:{lucky:'x'}})}});assert(tampered("celebration===''&&ownedCelebrations.length===1&&powerups.lucky===0"));
 });
+test('Jump effects, lion, puppy and owl avatars, and the newest hats, trails and parties work',()=>{
+ const run=boot();run(`sound=false;bank=300;coinBank=300;shopTab='jump';openShop()`);assert(run("$('#shopItems').innerHTML.includes('Cloud puffs')&&$('#shopTabs').innerHTML.includes('Jump effects')"));
+ run(`buyJumpFx('stars')`);assert(run("bank===270&&jumpEffect==='stars'"));run(`buyJumpFx('clouds')`);assert(run("coinBank===270&&jumpEffect==='clouds'"));
+ run(`useJumpFx('clouds')`);assert.equal(run('jumpEffect'),'');run(`useJumpFx('stars')`);assert.equal(run('jumpEffect'),'stars');run(`useJumpFx('notes')`);assert.equal(run('jumpEffect'),'stars');
+ run(`$('#shopDialog').close();chooseStage(0);start();for(let i=0;i<3;i++)physics(STEP);particles=[];pressed('Space');physics(STEP)`);assert(run("particles.filter(a=>a.glyph==='🌟').length===4"));
+ run(`buyAvatar('lion');buyAvatar('puppy');buyAvatar('owl')`);assert(run("['lion','puppy','owl'].every(k=>ownedAvatars.includes(k))&&looks.hero.avatar==='owl'"));
+ for(const key of ['lion','puppy','owl'])for(const walk of [true,false])run(`drawHeroLook(g,50,50,{...looks.hero,avatar:'${key}',avatarColor:'#9bc8e2'},themes.space,2,${walk},-1,3)`);
+ run('render()');
+ run(`shopTab='hats';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Teddy hat')"));run(`shopTab='trails';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Balloon trail')"));run(`shopTab='party';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Star storm')"));
+ const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.jumpEffect==='stars'&&saved.ownedJumpFx.length===2&&saved.ownedAvatars.includes('lion'));
+ const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedJumpFx:['hasOwnProperty','notes','notes'],jumpEffect:'clouds'})}});assert(tampered("jumpEffect===''&&ownedJumpFx.length===1"));
+});
 console.log(checks+' checks passed.');
