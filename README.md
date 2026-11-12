@@ -1,6 +1,6 @@
 # Super Emilia World
 
-A little platform adventure with five lands plus two secret lands, 84 stages, seven boss battles, and ten companion buddies. Run, double jump, bounce on grumps, discover hidden pipe entrances, collect coins in mini-games, cheer up grumpy bosses, and rescue friends.
+A little platform adventure with five lands plus seven secret lands, 144 stages, twelve boss battles, and fifteen companion buddies. Run, double jump, bounce on grumps, discover hidden pipe entrances, collect coins in mini-games, cheer up grumpy bosses, and rescue friends.
 
 Play at **https://superemilia.com**. The game is hosted on GitHub Pages.
 
@@ -116,6 +116,20 @@ Power-ups are kept in a bag (up to 9 of each) and switch on automatically when t
 🐠 Bubble Reef stays locked until Grumbly Thundercloud at the top of Rainbow Sky is cheered up; beating that boss announces the new land and sends the player to it. Its 12 stages unlock one at a time, like Rainbow Sky's. It is an underwater world with light rays, seaweed, and rising bubbles; crab grumps that move 35% faster; bobbing jellyfish obstacles; and a **Bubble float** world power that floats like Moon float. Stage 12 ends with **Captain Crabby** (falling 🐚), who frees **Finn 🐠**, a tenth buddy.
 
 Hidden lands are listed in one table (`HIDDEN_LANDS`), each naming what unlocks it, so more secret lands can be chained after Bubble Reef.
+
+## Five more secret lands
+
+After Bubble Reef, five more hidden lands form a chain. Each stays locked until the boss of the land before it is cheered up, then opens one stage at a time like the other secret lands. Grumps get a little faster in each one.
+
+| Land | Unlocks after | Obstacles | World power | Boss (falling) | Buddy |
+| --- | --- | --- | --- | --- | --- |
+| 💎 Crystal Caves | Captain Crabby | Glowing crystal spikes | Crystal shield | Rocky the Grump Golem (🪨) | Echo 🦇 |
+| 🏔️ Frosty Peaks | Rocky the Grump Golem | Icicles | Snow bounce | The Snow Grump (❄️) | Snowy 🦭 |
+| 🏜️ Desert Dunes | The Snow Grump | Cactuses | Dune float | Sergeant Scorpio (🌵) | Dune 🐫 |
+| 🌋 Lava Peaks | Sergeant Scorpio | Lava geysers | Heat shield | Magma the Grumpy Mole (🔥) | Ember 🦎 |
+| 🏰 Dream Castle | Magma the Grumpy Mole | Magic orbs | Dream float | King Grumpus (👑) | Midnight 🐈‍⬛ |
+
+That brings the game to 12 lands, 144 stages, 12 bosses, and 15 buddies. The five newest buddies keep their own colors but can wear buddy gear. The map's land row scrolls sideways to fit every land.
 
 ## Grand prize
 

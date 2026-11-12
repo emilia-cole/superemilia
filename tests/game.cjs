@@ -372,11 +372,11 @@ test('Bubble Reef stays hidden until the Rainbow Sky boss is cheered up, then un
  run(`start();finish();start()`);assert(run("theme==='reef'&&level===1&&!stageUnlocked('reef',2)"));
  run(`ability()`);assert(run('p.power===3'));run(`p.vy=0;p.y=200;p.grounded=false;for(let i=0;i<60;i++)physics(STEP)`);assert(run('p.vy<=110'));
  run(`for(let i=1;i<11;i++)medals['reef:'+i]=1;chooseStage(11);start();finish();start()`);assert(run("boss&&boss.name==='Captain Crabby'"));
- run(`boss.hp=1;p.inv=2;boss.inv=0;boss.timer=99;boss.shots=[];p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;physics(STEP);for(let i=0;i<360;i++)physics(STEP)`);assert(run("bosses.reef&&buddyUnlocked(10)&&buddy===10&&newLand===''"));
- run('start()');assert.equal(run('theme'),'space');
+ run(`boss.hp=1;p.inv=2;boss.inv=0;boss.timer=99;boss.shots=[];p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;physics(STEP);for(let i=0;i<360;i++)physics(STEP)`);assert(run("bosses.reef&&buddyUnlocked(10)&&buddy===10&&newLand==='caves'"));
+ run('start()');assert(run("theme==='caves'&&level===0"));
  for(let i=0;i<12;i++)run(`theme='reef';level=${i};makeLevel();camera=goalX-700;time=${i}*.7;render();camera=1000;render()`);
  run(`theme='reef';level=3;makeLevel();state='playing';for(const type of [0,1,2,3]){enterBonus(pipes.find(a=>a.secret&&a.type===type)||pipes[0]);render();finishBonusRoom(true);returnToLevel()}`);
- run(`openWorldMap();mapTheme='reef';mapLevel=4;drawWorldMap()`);assert(run("$('#mapTotal').textContent.includes('/ 84 adventures')&&$('#mapTotal').textContent.includes('7 / 7 bosses')"));
+ run(`openWorldMap();mapTheme='reef';mapLevel=4;drawWorldMap()`);assert(run("$('#mapTotal').textContent.includes('/ 96 adventures')&&$('#mapTotal').textContent.includes('7 / 8 bosses')"));
  for(const acc of ['none','party','halo'])run(`drawBuddyLook(g,0,0,'finn',{...looks.finn,accessory:'${acc}'},1,1,-1)`);
  const stale=boot({storage:{laserLeapRewards:JSON.stringify({theme:'reef',level:3,bosses:{space:true,candy:true,forest:true,squishy:true,home:true}})}});assert(stale("theme==='space'"));
 });
@@ -384,5 +384,26 @@ test('The fish avatar can be bought, worn, recolored and drawn',()=>{
  const run=boot();run(`sound=false;coinBank=100;buyAvatar('fish')`);assert(run("ownedAvatars.includes('fish')&&looks.hero.avatar==='fish'&&coinBank===20"));
  for(const walk of [true,false])for(const color of ['default','#9bc8e2'])run(`drawHeroLook(g,50,50,{...looks.hero,avatar:'fish',avatarColor:'${color}'},themes.reef,2,${walk},-1,6)`);
  run(`bodyGear='fairy';chooseStage(0);start();render();shopTab='avatars';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Playing as Fish')"));
+});
+test('Five more secret lands unlock one after another, each locked level by level, with its own boss and buddy',()=>{
+ const run=boot();run(`sound=false;bosses={space:true,candy:true,forest:true,squishy:true,home:true,sky:true,reef:true}`);
+ const chain=[['caves','Rocky the Grump Golem',11],['frost','The Snow Grump',12],['desert','Sergeant Scorpio',13],['lava','Magma the Grumpy Mole',14],['castle','King Grumpus',15]];
+ for(let n=0;n<chain.length;n++){const [land,bossName,buddyId]=chain[n],next=chain[n+1]?.[0];
+  assert(run(`landUnlocked('${land}')&&stageUnlocked('${land}',0)&&!stageUnlocked('${land}',1)`),land+' opens at stage 1 only');
+  if(next){assert(run(`!landUnlocked('${next}')`),next+' still locked');run(`theme='${next}';chooseStage(0)`);assert(run(`theme==='space'&&$('#toast').textContent.includes('${bossName}')`),next+' hint names the boss');}
+  run(`theme='${land}';chooseStage(6)`);assert.equal(run('level'),0);
+  run(`openWorldMap();mapTheme='${land}';mapLevel=3;drawWorldMap()`);assert(run("$('#playMapLevel').disabled"));run("$('#mapDialog').close()");
+  run(`for(let i=0;i<11;i++)medals['${land}:'+i]=1;chooseStage(11);start();finish();start()`);assert(run(`boss&&boss.name==='${bossName}'`));
+  run(`ability();boss.hp=1;p.inv=2;boss.inv=0;boss.timer=99;boss.shots=[];boss.waves=[];p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;p.power=0;physics(STEP);for(let i=0;i<360;i++)physics(STEP)`);
+  assert(run(`state==='worldComplete'&&bosses['${land}']&&buddyUnlocked(${buddyId})&&buddy===${buddyId}&&newLand==='${next||''}'`),land+' boss frees its buddy');
+  run('start()');assert.equal(run('theme'),next||'space');
+ }
+ for(const [land] of chain){for(let i=0;i<12;i++)run(`theme='${land}';level=${i};makeLevel();camera=goalX-700;time=${i}*.9;render();camera=1000;time=${i}*.9+2;render()`);
+  run(`theme='${land}';level=2;makeLevel();state='playing';for(const type of [0,1,2,3]){enterBonus(pipes.find(a=>a.secret&&a.type===type)||pipes[0]);render();finishBonusRoom(true);returnToLevel()}`);
+  run(`theme='${land}';level=11;makeLevel();state='playing';finish();start();render();openWorldMap();mapTheme='${land}';drawWorldMap();$('#mapDialog').close()`);}
+ run(`theme='frost'`);assert.equal(run("powerKind()"),'bounce');run(`theme='caves'`);assert.equal(run('powerKind()'),'shield');run(`theme='desert'`);assert.equal(run('powerKind()'),'float');
+ for(const key of ['echo','snowy','dune','ember','midnight'])for(const acc of ['none','party'])run(`drawBuddyLook(g,0,0,'${key}',{...looks.${key},accessory:'${acc}'},1,1,-1)`);
+ run(`openCharacterStudio();studioTarget='dune';studioDraft={...looks.dune};renderStudioControls()`);assert(run("$('#characterOptions').innerHTML.includes('special colors')"));
+ run(`openWorldMap();drawWorldMap()`);assert(run("$('#mapTotal').textContent.includes('/ 144 adventures')"));
 });
 console.log(checks+' checks passed.');
