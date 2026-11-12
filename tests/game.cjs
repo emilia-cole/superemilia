@@ -302,4 +302,15 @@ test('Jump effects, lion, puppy and owl avatars, and the newest hats, trails and
  const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.jumpEffect==='stars'&&saved.ownedJumpFx.length===2&&saved.ownedAvatars.includes('lion'));
  const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedJumpFx:['hasOwnProperty','notes','notes'],jumpEffect:'clouds'})}});assert(tampered("jumpEffect===''&&ownedJumpFx.length===1"));
 });
+test('Koala, tiger, bee and turtle avatars, six new trails, and wings, halo and bandana gear work',()=>{
+ const run=boot();run(`sound=false;bank=300;coinBank=500;['koala','tiger','bee','turtle'].forEach(buyAvatar)`);assert(run("['koala','tiger','bee','turtle'].every(k=>ownedAvatars.includes(k))&&looks.hero.avatar==='turtle'&&bank===150&&coinBank===295"));
+ for(const key of ['koala','tiger','bee','turtle'])for(const walk of [true,false])run(`drawHeroLook(g,50,50,{...looks.hero,avatar:'${key}'},themes.candy,2,${walk},-1,10)`);
+ run(`['cookies','cherries','maple','lightning','fish','unicorns'].forEach(buyTrail)`);assert(run("ownedTrails.length===6&&trail==='unicorns'&&coinBank===295-250"));
+ run(`coinBank=200;buddy=3;['wings','halo','bandana'].forEach(buyGear)`);assert(run("ownedGear.length===3&&looks.luna.accessory==='bandana'&&coinBank===100"));
+ for(const acc of ['wings','halo','bandana'])for(const k of ['pip','mochi','luna','bloop'])run(`drawBuddyLook(g,0,0,'${k}',{...looks.${k},accessory:'${acc}'},1,1,1)`);
+ run(`openCharacterStudio();studioTarget='pip';studioDraft={...looks.pip};renderStudioControls()`);assert(run("$('#characterOptions').innerHTML.includes('🧚 Fairy wings')&&!$('#characterOptions').innerHTML.includes('Fairy wings · buy')"));run("$('#characterDialog').close()");
+ run(`chooseStage(0);start();p.vx=300;particles=[];for(let i=0;i<40;i++)updateEffects(1/60);render()`);assert(run("particles.some(a=>a.glyph==='🦄')"));
+ run(`shopTab='avatars';renderShop();shopTab='trails';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Lightning trail')"));run(`shopTab='gear';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Halo')"));
+ const kept=boot({storage:{laserLeapRewards:JSON.stringify({ownedGear:['halo'],appearance:{biscuit:{accessory:'halo'},orbit:{accessory:'wings'}}})}});assert(kept("looks.biscuit.accessory==='halo'&&looks.orbit.accessory==='none'"));
+});
 console.log(checks+' checks passed.');

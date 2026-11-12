@@ -89,6 +89,12 @@ Third batch:
 - **Trails:** 🍓 strawberry and 🍭 lollipop (35 coins), 🪐 planet and 🎈 balloon (45 coins).
 - **Celebrations:** 🎂 Cake party (40 coins), 💫 Star storm (40 stars).
 
+Fourth batch:
+
+- **Avatars:** 🐨 Koala (85 stars), 🐯 Tiger (120 coins), 🐝 Bee (65 stars), 🐢 Turtle (85 coins).
+- **Trails:** 🍪 cookie and 🍒 cherry (35 coins), 🍁 maple leaf and 🐟 fish (40 coins), ⚡ lightning (45 coins), 🦄 unicorn (55 coins).
+- **Buddy gear:** 🧚 Fairy wings (40 coins), 😇 Halo (35 coins), 🧣 Bandana (25 coins).
+
 An equipped trail replaces the champion rainbow trail while it is on.
 
 Power-ups are kept in a bag (up to 9 of each) and switch on automatically when the next stage or boss battle starts, using one of each kind you own. Restarting a boss battle after running out of hearts uses them again. Purchases save in the browser.
