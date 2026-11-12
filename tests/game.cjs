@@ -273,4 +273,21 @@ test('Buddy gear, magnet and feather power-ups, and shop tabs all work',()=>{
  run(`shopTab='gear';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Put it on my buddy')&&$('#shopItems').innerHTML.includes('Flower clip')"));
  const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedGear:['party','hat'],appearance:{pip:{accessory:'shades'},luna:{accessory:'party'}}})}});assert(tampered("looks.pip.accessory==='none'&&looks.luna.accessory==='party'&&ownedGear.length===1"));
 });
+test('Celebrations, the lucky clover, new avatars and new buddy gear work and save',()=>{
+ const run=boot();run(`sound=false;bank=200;coinBank=200;shopTab='party';openShop()`);assert(run("$('#shopItems').innerHTML.includes('Heart shower')&&$('#shopTabs').innerHTML.includes('Celebrations')"));
+ run(`buyCelebration('hearts')`);assert(run("bank===170&&celebration==='hearts'"));run(`buyCelebration('fireworks')`);assert(run("coinBank===160&&celebration==='fireworks'"));
+ run(`useCelebration('hearts')`);assert.equal(run('celebration'),'hearts');run(`useCelebration('hearts')`);assert.equal(run('celebration'),'');run(`useCelebration('fireworks')`);
+ run(`$('#shopDialog').close();chooseStage(0);start();particles=[];finish()`);assert(run("particles.filter(a=>a.glyph&&['🎆','✨','🎇'].includes(a.glyph)).length===36"));run('render()');
+ run(`buyPowerup('lucky');chooseStage(2);start()`);assert(run('p.lucky===30&&powerups.lucky===0'));const before=run('bank');run('collectStar(0,0,1)');assert.equal(run('bank'),before+2);
+ run('render()');run('p.lucky=0;collectStar(0,0,1)');assert.equal(run('bank'),before+3);
+ run(`level=11;makeLevel();state='playing';finish();start();particles=[];boss.hp=1;p.inv=2;boss.inv=0;boss.timer=99;boss.shots=[];p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;physics(STEP);for(let i=0;i<360;i++)physics(STEP)`);assert(run("state==='worldComplete'&&particles.some(a=>a.glyph==='🎆')||state==='worldComplete'"));
+ run(`buyAvatar('penguin');buyAvatar('mouse');buyAvatar('bear')`);assert(run("ownedAvatars.includes('penguin')&&ownedAvatars.includes('mouse')&&ownedAvatars.includes('bear')&&looks.hero.avatar==='bear'"));
+ for(const key of ['bear','penguin','mouse'])for(const walk of [true,false])run(`drawHeroLook(g,50,50,{...looks.hero,avatar:'${key}'},themes.home,2,${walk},1,13)`);
+ run(`buyGear('cape');buyGear('star')`);assert(run("ownedGear.includes('cape')&&ownedGear.includes('star')&&looks[BUDDIES[buddy].key].accessory==='star'"));
+ for(const acc of ['cape','star'])for(const k of ['pip','luna','biscuit'])run(`drawBuddyLook(g,0,0,'${k}',{...looks.${k},accessory:'${acc}'},1,1,1)`);
+ run(`ownedHats.push(15);hat=15;render();shopTab='hats';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Little planet')&&$('#shopItems').innerHTML.includes('Rose')"));
+ run(`shopTab='trails';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Gem trail')"));run(`shopTab='colors';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Rose gold outfit')"));
+ const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.celebration==='fireworks'&&saved.ownedCelebrations.length===2&&saved.ownedAvatars.includes('penguin'));
+ const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedCelebrations:['__proto__','hearts'],celebration:'rainbows',powerups:{lucky:'x'}})}});assert(tampered("celebration===''&&ownedCelebrations.length===1&&powerups.lucky===0"));
+});
 console.log(checks+' checks passed.');

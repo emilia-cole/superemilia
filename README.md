@@ -71,6 +71,16 @@ Later additions to the same shop, which is now split into tabs (Power-ups, Avata
 - **Outfit colors:** Coral, Teal, Lilac, and Silver (30 coins each).
 - **Buddy gear:** 🌼 Flower clip and 🕶️ Sunglasses (25 coins), 🎉 Party hat (30 coins), for any buddy.
 
+More items added after that:
+
+- **Avatars:** 🐻 Bear (70 stars), 🐧 Penguin (80 coins), 🐭 Mouse (50 stars).
+- **Celebrations** (new tab): 🎆 Fireworks (40 coins), 🎈 Balloon party (35 coins), 💖 Heart shower (30 stars), 🌈 Rainbow party (45 stars). The chosen one bursts out at every finish flag and boss win; tap again to turn it off.
+- **Power-up:** 🍀 Lucky clover (16 stars), every star counts double for the first 30 seconds.
+- **Hats:** 🌹 Rose and 🦋 Butterfly clip (30 stars), 🎈 Balloon (35 stars), 🍄 Mushroom cap (35 coins), 🍩 Donut hat (40 coins), 🪐 Little planet (45 coins).
+- **Trails:** 🍀 clover and 🐾 paw prints (35 coins), 🌙 moon (40 coins), 🦋 butterfly and 🌈 rainbow (45 coins), 💎 gems (50 coins).
+- **Outfit colors:** Peach, Navy, Lime (30 coins), Rose gold (35 coins).
+- **Buddy gear:** 🦸 Tiny cape (30 coins), ⭐ Star clip (25 coins).
+
 An equipped trail replaces the champion rainbow trail while it is on.
 
 Power-ups are kept in a bag (up to 9 of each) and switch on automatically when the next stage or boss battle starts, using one of each kind you own. Restarting a boss battle after running out of hearts uses them again. Purchases save in the browser.
