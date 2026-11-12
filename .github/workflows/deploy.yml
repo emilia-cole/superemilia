@@ -25,17 +25,19 @@ jobs:
     steps:
       - name: Check out the game
         uses: actions/checkout@v6
-      - name: Check the game script
+      - name: Check the menu and game scripts
         run: |
           node --input-type=module <<'JS'
           import fs from 'node:fs';
-          const html = fs.readFileSync('public/index.html', 'utf8');
-          const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
-          if (!script) throw new Error('The game script is missing.');
-          new Function(script);
-          console.log('Game script syntax passed.');
+          for (const file of ['public/index.html', 'public/world/index.html']) {
+            const html = fs.readFileSync(file, 'utf8');
+            const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+            if (!script) throw new Error('The script is missing from ' + file + '.');
+            new Function(script);
+            console.log('Script syntax passed: ' + file);
+          }
           JS
-      - name: Check gameplay, secret rooms, map, and character choices
+      - name: Check the menu, gameplay, secret rooms, map, and character choices
         run: node tests/game.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

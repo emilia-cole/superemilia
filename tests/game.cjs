@@ -1,5 +1,5 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
-const html=fs.readFileSync(process.argv[2]||'public/index.html','utf8');
+const html=fs.readFileSync(process.argv[2]||'public/world/index.html','utf8');
 const script=html.split('<script>')[1].split('</script>')[0];
 function boot(options={}){
  const nodes=new Map(),classes=new Set(),gradient={addColorStop(){}},ctx=new Proxy({createLinearGradient(){return gradient}},{get:(t,k)=>t[k]||(()=>{})});
@@ -123,16 +123,16 @@ test('Every world, bonus type and character outfit renders with saved customizat
 });
 test('Share previews are static, use the canonical domain, and declare the actual image sizes',()=>{
  const head=html.split('</head>')[0],tags=[...head.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)];
- assert(head.includes('<link rel="canonical" href="https://superemilia.com/">'));assert(html.includes('Designed with ❤️ in Smyrna by Emilia'));
+ assert(head.includes('<link rel="canonical" href="https://superemilia.com/world/">'));assert(html.includes('<a class="help-link quiet all-games" href="/">← All games</a>'));assert(html.includes('Designed with ❤️ in Smyrna by Emilia'));
  const pictures=[];for(const [,name,value] of tags){if(name==='og:image')pictures.push({url:value});else if(name.startsWith('og:image:'))pictures.at(-1)[name.slice(9)]=value}
  assert.equal(pictures.length,2);for(const picture of pictures){const url=new URL(picture.url);assert.equal(url.origin,'https://superemilia.com');assert.equal(picture.type,'image/png');assert(picture.alt.length>20);const data=fs.readFileSync(require('path').resolve(__dirname,'../public'+url.pathname));assert.equal(data.toString('hex',0,8),'89504e470d0a1a0a');assert.equal(data.readUInt32BE(16),Number(picture.width));assert.equal(data.readUInt32BE(20),Number(picture.height));assert(data.length<5*1024*1024)}
  assert(tags.some(([,name,value])=>name==='twitter:card'&&value==='summary_large_image'));assert(tags.some(([,name,value])=>name==='twitter:image'&&value===pictures[0].url));
- const meta=Object.fromEntries(tags.map(([,name,value])=>[name,value]));assert.equal(meta['og:description'],meta.description);assert.equal(meta['twitter:description'],meta.description);assert(meta.description.includes('60 levels')&&meta.description.includes('Pip, Mochi, and Luna')&&meta.description.length<200);assert.equal(meta['og:url'],'https://superemilia.com/');assert.equal(meta['og:title'],meta['twitter:title']);assert(meta['og:title'].length<70);
+ const meta=Object.fromEntries(tags.map(([,name,value])=>[name,value]));assert.equal(meta['og:description'],meta.description);assert.equal(meta['twitter:description'],meta.description);assert(meta.description.includes('144 levels')&&meta.description.includes('Pip, Mochi, Luna')&&meta.description.length<200);assert.equal(meta['og:url'],'https://superemilia.com/world/');assert.equal(meta['og:title'],meta['twitter:title']);assert(meta['og:title'].length<70);
 });
 test('Search and link readers receive connected game, site, and cover details without running JavaScript',()=>{
  const head=html.split('</head>')[0],data=JSON.parse(head.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
  assert.equal(data['@context'],'https://schema.org');const graph=data['@graph'],game=graph.find(n=>n['@type']==='VideoGame'),site=graph.find(n=>n['@type']==='WebSite'),page=graph.find(n=>n['@type']==='WebPage'),image=graph.find(n=>n['@id']===game.image['@id']);
- assert.equal(game.name,'Super Emilia World');assert.equal(game.author.name,'Emilia');assert.equal(game.isAccessibleForFree,true);assert.equal(game.playMode,'https://schema.org/SinglePlayer');assert.equal(page.mainEntity['@id'],game['@id']);assert.equal(page.isPartOf['@id'],site['@id']);assert.equal(image.width,1717);assert.equal(image.height,916);assert.equal(game.url,site.url);assert.equal(game.featureList.length,5);assert.equal(game.creditText,'Designed with ❤️ in Smyrna by Emilia');
+ assert.equal(game.name,'Super Emilia World');assert.equal(game.author.name,'Emilia');assert.equal(game.isAccessibleForFree,true);assert.equal(game.playMode,'https://schema.org/SinglePlayer');assert.equal(page.mainEntity['@id'],game['@id']);assert.equal(page.isPartOf['@id'],site['@id']);assert.equal(image.width,1717);assert.equal(image.height,916);assert.equal(game.url,page.url);assert.equal(page.url,'https://superemilia.com/world/');assert.equal(site.url,'https://superemilia.com/');assert.equal(game.featureList.length,5);assert.equal(game.creditText,'Designed with ❤️ in Smyrna by Emilia');
 });
 test('Stage 12 ends in a boss arena; head bounces cheer the boss up and free a new buddy',()=>{
  const run=boot();run(`level=11;makeLevel();state='playing';sound=false;finish()`);assert.equal(run('state'),'bossReady');
@@ -405,5 +405,18 @@ test('Five more secret lands unlock one after another, each locked level by leve
  for(const key of ['echo','snowy','dune','ember','midnight'])for(const acc of ['none','party'])run(`drawBuddyLook(g,0,0,'${key}',{...looks.${key},accessory:'${acc}'},1,1,-1)`);
  run(`openCharacterStudio();studioTarget='dune';studioDraft={...looks.dune};renderStudioControls()`);assert(run("$('#characterOptions').innerHTML.includes('special colors')"));
  run(`openWorldMap();drawWorldMap()`);assert(run("$('#mapTotal').textContent.includes('/ 144 adventures')"));
+});
+test('The home page is a game menu that links to Super Emilia World and shows saved progress',()=>{
+ const menu=fs.readFileSync('public/index.html','utf8'),head=menu.split('</head>')[0];
+ assert(head.includes('<link rel="canonical" href="https://superemilia.com/">')&&head.includes('<title>Super Emilia · Pick a Game</title>'));
+ assert(menu.includes('<a class="card game" href="/world/"')&&menu.includes('Coming soon'));
+ for(const [,src] of menu.matchAll(/(?:src|srcset|href)="(\/assets\/[^"]+)"/g))assert(fs.existsSync('public'+src),src);
+ const meta=Object.fromEntries([...head.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map(m=>[m[1],m[2]]));assert.equal(meta['og:url'],'https://superemilia.com/');assert.equal(meta['og:description'],meta.description);
+ const ld=JSON.parse(head.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert(ld['@graph'].some(n=>n['@type']==='VideoGame'&&n.url==='https://superemilia.com/world/'));
+ const code=menu.match(/<script>([\s\S]*?)<\/script>/)[1];
+ const make=(saved)=>{const items=[],list={textContent:'x',appendChild:li=>items.push(li)},play={textContent:'Play now →'};const sb={JSON,Object,Number,localStorage:{getItem:()=>saved},document:{getElementById:()=>list,createElement:()=>({}),querySelector:()=>play}};vm.createContext(sb);vm.runInContext(code,sb);return {items,list,play}};
+ let r=make(null);assert.equal(r.items.length,0);assert.equal(r.play.textContent,'Play now →');
+ r=make(JSON.stringify({bank:1234,coins:56,medals:{'space:0':2,'space:1':1},bosses:{space:true,candy:true}}));assert.equal(r.items.length,4);assert(r.items[0].textContent.includes('1,234 stars')&&r.items[2].textContent.includes('2 / 144')&&r.items[3].textContent.includes('2 / 12'));assert.equal(r.play.textContent,'Keep playing →');
+ r=make('{not json');assert.equal(r.items.length,0);
 });
 console.log(checks+' checks passed.');
