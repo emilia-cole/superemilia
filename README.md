@@ -62,6 +62,15 @@ Coins from the secret coin rooms buy cosmetics in the same shop:
 | 👒 Sun hat / 🎓 Graduation cap | 45 / 50 coins | Hats to keep |
 | 🔄 Star swap | 10 coins | Trades for 6 stars |
 
+Later additions to the same shop, which is now split into tabs (Power-ups, Avatars, Hats, Trails, Colors, Buddy gear):
+
+- **Avatars:** play the whole game as a 🐰 Bunny (60 stars), 🐱 Kitty (60 coins), 🐼 Panda (80 stars), 🐸 Frog (70 coins), 🦊 Fox (90 stars), 🤖 Robot (100 coins), 🦄 Unicorn (120 stars), or 🐉 Dragon (150 coins). Owned avatars can be recolored in Characters, still wear hats and trails, and Emilia is always free to switch back to.
+- **Power-ups:** 🧲 Star magnet (15 stars, pulls in nearby stars for 20 seconds) and 🪶 Feather jump (18 stars, triple jump for 15 seconds).
+- **Hats:** 🍓 Strawberry hat (30 stars), 🌻 Sunflower (35 stars), 🎧 Headphones (35 coins), 🧁 Cupcake hat (40 coins).
+- **Trails:** 🌸 flower and 🍬 candy (35 coins), 🎵 music and ❄️ snowflake (40 coins).
+- **Outfit colors:** Coral, Teal, Lilac, and Silver (30 coins each).
+- **Buddy gear:** 🌼 Flower clip and 🕶️ Sunglasses (25 coins), 🎉 Party hat (30 coins), for any buddy.
+
 An equipped trail replaces the champion rainbow trail while it is on.
 
 Power-ups are kept in a bag (up to 9 of each) and switch on automatically when the next stage or boss battle starts, using one of each kind you own. Restarting a boss battle after running out of hearts uses them again. Purchases save in the browser.

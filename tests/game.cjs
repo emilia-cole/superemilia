@@ -221,14 +221,14 @@ test('Shop hats are bought once, worn from the shop or studio, and milestone hat
  run('buyHat(5)');assert.equal(run('bank'),5);run('buyHat(6)');assert(run('!ownedHats.includes(6)&&bank===5'));
  run('wearHat(3)');assert.equal(run('hat'),3);run('wearHat(6)');assert.equal(run('hat'),3);
  run(`$('#outfit').onclick()`);assert.equal(run('hat'),5);run(`$('#outfit').onclick()`);assert.equal(run('hat'),0);
- run('renderShop()');assert(run("$('#shopItems').innerHTML.includes('Wear it')&&$('#shopItems').innerHTML.includes('Flower crown')"));
- run('openCharacterStudio()');assert(run("$('#characterOptions').innerHTML.includes('🧢 Cap')&&$('#characterOptions').innerHTML.includes('buy in the Star Shop')"));
+ run("shopTab='hats';renderShop()");assert(run("$('#shopItems').innerHTML.includes('Wear it')&&$('#shopItems').innerHTML.includes('Flower crown')"));
+ run('openCharacterStudio()');assert(run("$('#characterOptions').innerHTML.includes('🧢 Cap')&&$('#characterOptions').innerHTML.includes('buy in the shop')"));
  run(`hat=5;state='playing';makeLevel();render();updateUI()`);assert(run("$('#outfit').textContent==='Hat: 🧢'"));
  const kept=boot({storage:{laserLeapRewards:JSON.stringify({bank:2,starsSpent:40,ownedHats:[5,5,7],hat:7,powerups:{heart:3,star:50}})}});assert(kept('hat===7&&hatAvailable(3)&&ownedHats.length===2&&powerups.heart===3&&powerups.star===9'));
  const tampered=boot({storage:{laserLeapRewards:JSON.stringify({bank:2,starsSpent:'lots',ownedHats:[1,4,99,'5'],hat:6,powerups:{heart:-4,boots:'x'}})}});assert(tampered('hat===0&&starsSpent===0&&ownedHats.length===0&&powerups.heart===0&&powerups.boots===0'));
 });
 test('Coins buy trails, outfit colors, hats and star swaps without touching stars',()=>{
- const run=boot();run(`sound=false;bank=7;coinBank=200;openShop()`);assert(run("$('#shopBalance').textContent.includes('200 coins')&&$('#shopItems').innerHTML.includes('Heart trail')&&$('#shopItems').innerHTML.includes('Midnight outfit')&&$('#shopItems').innerHTML.includes('Star swap')"));
+ const run=boot();run(`sound=false;bank=7;coinBank=200;openShop()`);assert(run("$('#shopBalance').textContent.includes('200 coins')&&$('#shopItems').innerHTML.includes('Star swap')"));run("shopTab='trails';renderShop()");assert(run("$('#shopItems').innerHTML.includes('Heart trail')"));run("shopTab='colors';renderShop()");assert(run("$('#shopItems').innerHTML.includes('Midnight outfit')"));
  run(`buyTrail('hearts')`);assert(run("coinBank===170&&coinsSpent===30&&trail==='hearts'&&ownedTrails.includes('hearts')&&bank===7"));
  run(`buyTrail('hearts')`);assert.equal(run('coinBank'),170);
  run(`useTrail('hearts')`);assert.equal(run('trail'),'');run(`useTrail('hearts')`);assert.equal(run('trail'),'hearts');run(`useTrail('stars')`);assert.equal(run('trail'),'hearts');
@@ -242,5 +242,35 @@ test('Coins buy trails, outfit colors, hats and star swaps without touching star
  const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.trail==='hearts'&&saved.ownedColors.includes('#f2c14e')&&saved.ownedHats.includes(8)&&saved.coinsSpent===125&&saved.coins===3);
  const kept=boot({storage:{laserLeapRewards:JSON.stringify({ownedTrails:['bubbles','bubbles'],trail:'bubbles',ownedColors:['#4f8fd6'],appearance:{hero:{outfitColor:'#4f8fd6'}},ownedHats:[9],hat:9})}});assert(kept("trail==='bubbles'&&ownedTrails.length===1&&looks.hero.outfitColor==='#4f8fd6'&&hat===9"));
  const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedTrails:['toString','lasers'],trail:'stars',ownedColors:['#000000','constructor'],appearance:{hero:{outfitColor:'#d9567a'}},hat:8,coinsSpent:-5})}});assert(tampered("trail===''&&ownedTrails.length===0&&ownedColors.length===0&&looks.hero.outfitColor==='world'&&hat===0&&coinsSpent===0"));
+});
+test('Whole avatars can be bought, played, recolored, and saved, and every one renders',()=>{
+ const run=boot();run(`sound=false;bank=200;coinBank=300;openShop();shopTab='avatars';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Playing as Emilia')&&$('#shopItems').innerHTML.includes('Dragon')"));
+ run(`buyAvatar('bunny')`);assert(run("bank===140&&looks.hero.avatar==='bunny'&&ownedAvatars.includes('bunny')"));
+ run(`buyAvatar('robot')`);assert(run("coinBank===200&&looks.hero.avatar==='robot'"));
+ run(`bank=10;buyAvatar('unicorn')`);assert(run("!ownedAvatars.includes('unicorn')&&$('#toast').textContent.includes('110 more stars')"));
+ run(`useAvatar('dragon')`);assert.equal(run('looks.hero.avatar'),'robot');run(`useAvatar('emilia')`);assert.equal(run('looks.hero.avatar'),'emilia');run(`useAvatar('bunny')`);assert.equal(run('looks.hero.avatar'),'bunny');
+ run(`$('#shopDialog').close();openCharacterStudio()`);let html=run("$('#characterOptions').innerHTML");assert(html.includes('🐰 Bunny')&&html.includes('Avatar color')&&!html.includes('Hairstyle')&&html.includes('🦄 Unicorn · buy in the shop'));
+ run(`studioDraft.avatarColor='#9bc8e2';applyCharacterLook()`);assert(run("looks.hero.avatarColor==='#9bc8e2'&&looks.hero.avatar==='bunny'"));
+ run(`openCharacterStudio();studioDraft.avatar='emilia';renderStudioControls()`);html=run("$('#characterOptions').innerHTML");assert(html.includes('Hairstyle')&&html.includes('Avatar'));run("$('#characterDialog').close()");
+ for(const key of ['emilia','bunny','kitty','panda','frog','fox','robot','unicorn','dragon'])for(const walk of [true,false])run(`drawHeroLook(g,100,100,{...looks.hero,avatar:'${key}'},themes.space,1.3,${walk},-1,7)`);
+ run(`looks.hero.avatar='dragon';chooseStage(0);start();render()`);
+ const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.ownedAvatars.includes('robot')&&saved.appearance.hero.avatarColor==='#9bc8e2');
+ const kept=boot({storage:{laserLeapRewards:JSON.stringify({ownedAvatars:['fox'],appearance:{hero:{avatar:'fox',avatarColor:'#777185'}}})}});assert(kept("looks.hero.avatar==='fox'&&looks.hero.avatarColor==='#777185'"));
+ const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedAvatars:['emilia','constructor'],appearance:{hero:{avatar:'unicorn',avatarColor:'red'}}})}});assert(tampered("looks.hero.avatar==='emilia'&&looks.hero.avatarColor==='default'&&ownedAvatars.length===0"));
+});
+test('Buddy gear, magnet and feather power-ups, and shop tabs all work',()=>{
+ const run=boot();run(`sound=false;bank=100;coinBank=100;buddy=2;buyGear('glasses')`);assert(run("coinBank===75&&ownedGear.includes('glasses')&&looks.mochi.accessory==='shades'"));
+ run(`buddy=1;gearOn('glasses')`);assert.equal(run('looks.pip.accessory'),'shades');run(`gearOn('party')`);assert.equal(run('looks.pip.accessory'),'shades');
+ run(`openCharacterStudio();studioTarget='luna';studioDraft={...looks.luna};renderStudioControls()`);const html=run("$('#characterOptions').innerHTML");assert(html.includes('🕶️ Sunglasses')&&html.includes('🎉 Party hat · buy in the shop'));run("$('#characterDialog').close()");
+ for(const k of ['pip','mochi','luna','orbit','taffy','hazel','bloop','biscuit'])for(const acc of ['flower','shades','party'])run(`drawBuddyLook(g,0,0,'${k}',{...looks.${k},accessory:'${acc}'},1,1,1)`);
+ run(`buyPowerup('magnet');buyPowerup('feather')`);assert(run('bank===67&&powerups.magnet===1&&powerups.feather===1'));
+ run(`chooseStage(1);start()`);assert(run('p.magnet===20&&p.feather===15&&powerups.magnet===0'));
+ run(`const st=stars.find(a=>!a.got);p.x=st.x-17-90;p.y=st.y-23;physics(STEP)`);assert(run('stars.some(a=>a.got)'));
+ run(`clearKeys();p.y=200;p.vy=0;p.grounded=false;p.jumps=2;p.coyote=0;p.buffer=.1;physics(STEP)`);assert(run('p.jumps===3&&p.vy<0'));
+ run(`p.feather=0;p.jumps=2;p.buffer=.1;physics(STEP)`);assert.equal(run('p.jumps'),2);
+ run('render()');
+ for(const tab of ['power','avatars','hats','trails','colors','gear']){run(`shopTab='${tab}';renderShop()`);assert(run(`$('#shopTabs').innerHTML.includes('data-shop-tab="${tab}" class="selected"')`))}
+ run(`shopTab='gear';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Put it on my buddy')&&$('#shopItems').innerHTML.includes('Flower clip')"));
+ const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedGear:['party','hat'],appearance:{pip:{accessory:'shades'},luna:{accessory:'party'}}})}});assert(tampered("looks.pip.accessory==='none'&&looks.luna.accessory==='party'&&ownedGear.length===1"));
 });
 console.log(checks+' checks passed.');
