@@ -1,6 +1,6 @@
 # Super Emilia World
 
-A little platform adventure with five lands plus a secret sixth, 72 stages, six boss battles, and nine companion buddies. Run, double jump, bounce on grumps, discover hidden pipe entrances, collect coins in mini-games, cheer up grumpy bosses, and rescue friends.
+A little platform adventure with five lands plus two secret lands, 84 stages, seven boss battles, and ten companion buddies. Run, double jump, bounce on grumps, discover hidden pipe entrances, collect coins in mini-games, cheer up grumpy bosses, and rescue friends.
 
 Play at **https://superemilia.com**. The game is hosted on GitHub Pages.
 
@@ -110,6 +110,12 @@ Power-ups are kept in a bag (up to 9 of each) and switch on automatically when t
 ## Rainbow Sky, the secret sixth land
 
 🌈 Rainbow Sky stays locked (shown with a 🔒 on the map and in Settings) until all five original bosses are cheered up. Its 12 stages then unlock one at a time: only stage 1 is open at first, and finishing each stage opens the next. The map, Settings, saved progress, and every shortcut respect the locks. The land has cloud ground, a rainbow sky, storm-cloud grumps that move 25% faster, and lightning-cloud obstacles. Stage 12 ends with **Grumbly Thundercloud** (falling ⚡), who frees **Nimbus ☁️**, a ninth buddy. Beating the fifth original boss shows that the new land appeared and sends the player straight to it. The grand prize still counts only the original 60 stages and 5 bosses.
+
+## Bubble Reef, the secret seventh land
+
+🐠 Bubble Reef stays locked until Grumbly Thundercloud at the top of Rainbow Sky is cheered up; beating that boss announces the new land and sends the player to it. Its 12 stages unlock one at a time, like Rainbow Sky's. It is an underwater world with light rays, seaweed, and rising bubbles; crab grumps that move 35% faster; bobbing jellyfish obstacles; and a **Bubble float** world power that floats like Moon float. Stage 12 ends with **Captain Crabby** (falling 🐚), who frees **Finn 🐠**, a tenth buddy.
+
+Hidden lands are listed in one table (`HIDDEN_LANDS`), each naming what unlocks it, so more secret lands can be chained after Bubble Reef.
 
 ## Grand prize
 
