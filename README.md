@@ -95,6 +95,14 @@ Fourth batch:
 - **Trails:** 🍪 cookie and 🍒 cherry (35 coins), 🍁 maple leaf and 🐟 fish (40 coins), ⚡ lightning (45 coins), 🦄 unicorn (55 coins).
 - **Buddy gear:** 🧚 Fairy wings (40 coins), 😇 Halo (35 coins), 🧣 Bandana (25 coins).
 
+Fifth batch:
+
+- **Avatars:** 🐮 Cow (70 stars), 🐵 Monkey (90 coins), 🦝 Raccoon (100 coins), 🐹 Hamster (60 stars).
+- **Body gear** (new tab), worn by your character on any avatar: 🦸 Hero cape (45 coins), 🧚 Fairy wings (50 stars), 🪽 Angel wings (60 coins), 🚀 Jetpack with flames while airborne (70 coins), 🏅 Gold medal (35 stars), 🌺 Flower necklace (30 stars).
+- **Power-ups:** 🍄 Super jump (14 stars, 20% higher jumps for 20 seconds), ❄️ Freeze (22 stars, grumps and bosses slow down and obstacles switch off for 15 seconds), 🪙 Coin doubler (20 stars, double secret-room coins for the stage), ❤️‍🩹 Second chance (30 stars, hearts refill once instead of running out).
+- **Trails:** 🍕 pizza, 🎀 bow, 🌷 tulip (35 coins), 🐝 bee, 🫐 blueberry, 🍄 mushroom (40 coins).
+- **Outfit colors:** Bubblegum, Sunset, Grape, Mint chip, Lemon, Cocoa (30 coins each).
+
 An equipped trail replaces the champion rainbow trail while it is on.
 
 Power-ups are kept in a bag (up to 9 of each) and switch on automatically when the next stage or boss battle starts, using one of each kind you own. Restarting a boss battle after running out of hearts uses them again. Purchases save in the browser.

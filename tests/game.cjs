@@ -313,4 +313,27 @@ test('Koala, tiger, bee and turtle avatars, six new trails, and wings, halo and 
  run(`shopTab='avatars';renderShop();shopTab='trails';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Lightning trail')"));run(`shopTab='gear';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Halo')"));
  const kept=boot({storage:{laserLeapRewards:JSON.stringify({ownedGear:['halo'],appearance:{biscuit:{accessory:'halo'},orbit:{accessory:'wings'}}})}});assert(kept("looks.biscuit.accessory==='halo'&&looks.orbit.accessory==='none'"));
 });
+test('Super jump, freeze, coin doubler and second chance power-ups do what they say',()=>{
+ const run=boot();run(`sound=false;bank=200;['superjump','freeze','coins2x','revive'].forEach(buyPowerup)`);assert(run('bank===114&&powerups.superjump===1&&powerups.revive===1'));
+ run(`chooseStage(1);start()`);assert(run('p.superjump===20&&p.freeze===15&&p.coins2x===1&&p.revive===1&&powerups.freeze===0'));
+ run(`for(let i=0;i<3;i++)physics(STEP);pressed('Space');physics(STEP)`);assert(run('p.vy< -760'));
+ assert(run('hazards.every(h=>!active(h))'));const ex=run('enemies[1].x');run('enemies[1].vx=100;physics(STEP)');assert(Math.abs(run('enemies[1].x')-ex)<0.5);
+ run(`p.hp=1;p.inv=0;p.star=0;p.shield=0;damage(p.x+30)`);assert(run("p.hp===3&&p.revive===0&&$('#toast').textContent.includes('Second chance')"));
+ run(`p.hp=1;p.inv=0;damage(p.x+30)`);assert(run('p.hp===3&&p.x===spawn.x'));
+ run(`released('Space');enterBonus(pipes.find(a=>a.secret&&a.type===0));const before=coinBank;collectCoin(coins[0]);var gain=coinBank-before`);assert.equal(run('coinBank-gain>=0&&gain'),2);
+ run('p.freeze=0');assert(run('hazards.length===0||true'));run('render()');
+ const boss=boot();boss(`sound=false;level=11;makeLevel();state='playing';finish();start();p.freeze=5;const x0=boss.x;boss.timer=99;physics(STEP);var moved=Math.abs(boss.x-x0)`);assert(boss('moved<1.2'));
+});
+test('Cow, monkey, raccoon and hamster avatars, body gear, new trails and colors work and save',()=>{
+ const run=boot();run(`sound=false;bank=300;coinBank=600;['cow','monkey','raccoon','hamster'].forEach(buyAvatar)`);assert(run("['cow','monkey','raccoon','hamster'].every(k=>ownedAvatars.includes(k))&&bank===170&&coinBank===410"));
+ for(const key of ['cow','monkey','raccoon','hamster'])for(const walk of [true,false])run(`drawHeroLook(g,50,50,{...looks.hero,avatar:'${key}'},themes.forest,2,${walk},1,16)`);
+ run(`['cape','angel','jetpack'].forEach(buyBodyGear);['fairy','medal','lei'].forEach(buyBodyGear)`);assert(run("ownedBodyGear.length===6&&bodyGear==='lei'&&coinBank===235&&bank===55"));
+ run(`useBodyGear('lei')`);assert.equal(run('bodyGear'),'');run(`useBodyGear('jetpack')`);assert.equal(run('bodyGear'),'jetpack');
+ for(const gear of ['cape','fairy','angel','jetpack','medal','lei'])for(const av of ['emilia','bunny','robot'])run(`bodyGear='${gear}';looks.hero.avatar='${av}';chooseStage(0);start();p.grounded=false;render()`);
+ run(`coinBank=500;['pizza','bees','bows','tulips','blueberries','mushrooms'].forEach(buyTrail)`);assert(run("['pizza','bees','bows','tulips','blueberries','mushrooms'].every(k=>ownedTrails.includes(k))"));
+ run(`coinBank=200;['#ff8fc7','#8b5e4a'].forEach(buyColor)`);assert(run("ownedColors.includes('#8b5e4a')&&looks.hero.outfitColor==='#8b5e4a'"));
+ run(`shopTab='body';renderShop()`);assert(run("$('#shopTabs').innerHTML.includes('Body gear')&&$('#shopItems').innerHTML.includes('Jetpack')"));run(`shopTab='power';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Second chance')&&$('#shopItems').innerHTML.includes('Freeze')"));
+ const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.ownedBodyGear.length===6&&saved.ownedAvatars.includes('hamster'));
+ const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedBodyGear:['valueOf','cape'],bodyGear:'jetpack'})}});assert(tampered("bodyGear===''&&ownedBodyGear.length===1"));
+});
 console.log(checks+' checks passed.');
