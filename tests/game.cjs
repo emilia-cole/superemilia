@@ -191,7 +191,7 @@ test('Finishing every stage and boss awards the grand prize once, with a champio
  assert(run("champion&&prizeMoment&&hat===4&&state==='worldComplete'&&$('#overlayTitle').innerHTML.includes('Superstar')&&$('#start').textContent==='Keep exploring →'"));
  const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.champion===true&&saved.hat===4);
  assert(run("$('#stats').textContent.includes('🏆 Superstar')"));const bank=run('bank');
- run('start()');assert(run("!prizeMoment&&theme==='space'&&state==='playing'"));
+ run('start()');assert(run("!prizeMoment&&theme==='sky'&&level===0&&state==='playing'"));
  run(`theme='home';level=11;makeLevel();state='playing';finish();start();boss.hp=1;p.inv=2;boss.inv=0;boss.timer=99;boss.shots=[];p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;physics(STEP);for(let i=0;i<360;i++)physics(STEP)`);assert(run('!prizeMoment')&&run('bank')>bank&&run('bank')<bank+40);
  run(`hat=3;$('#outfit').onclick()`);assert.equal(run('hat'),4);run(`$('#outfit').onclick()`);assert.equal(run('hat'),0);
  run(`openCharacterStudio()`);assert(run("!$('#characterOptions').innerHTML.includes('win the grand prize')"));
@@ -335,5 +335,28 @@ test('Cow, monkey, raccoon and hamster avatars, body gear, new trails and colors
  run(`shopTab='body';renderShop()`);assert(run("$('#shopTabs').innerHTML.includes('Body gear')&&$('#shopItems').innerHTML.includes('Jetpack')"));run(`shopTab='power';renderShop()`);assert(run("$('#shopItems').innerHTML.includes('Second chance')&&$('#shopItems').innerHTML.includes('Freeze')"));
  const saved=JSON.parse(run("localStorage.getItem('laserLeapRewards')"));assert(saved.ownedBodyGear.length===6&&saved.ownedAvatars.includes('hamster'));
  const tampered=boot({storage:{laserLeapRewards:JSON.stringify({ownedBodyGear:['valueOf','cape'],bodyGear:'jetpack'})}});assert(tampered("bodyGear===''&&ownedBodyGear.length===1"));
+});
+test('Rainbow Sky stays locked until all 5 bosses are cheered up, then its levels unlock one at a time',()=>{
+ const run=boot();run(`sound=false`);assert(run("!landUnlocked('sky')&&!stageUnlocked('sky',0)"));
+ run(`theme='sky';chooseStage(3)`);assert(run("theme==='space'&&level===3&&$('#toast').textContent.includes('Rainbow Sky')"));
+ run(`$('#theme').onchange({target:{value:'sky'}})`);assert.equal(run('theme'),'space');
+ run(`openWorldMap();mapTheme='sky';mapLevel=0;drawWorldMap()`);assert(run("$('#mapLands').innerHTML.includes('Beat all 5 bosses')&&$('#playMapLevel').disabled&&$('#playMapLevel').textContent.includes('Locked')"));
+ run(`$('#playMapLevel').onclick()`);assert(run("theme==='space'"));run("$('#mapDialog').close()");
+ run(`bosses={space:true,candy:true,forest:true,squishy:true};theme='home';level=11;makeLevel();state='playing';finish();start();boss.hp=1;p.inv=2;boss.inv=0;boss.timer=99;boss.shots=[];p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;physics(STEP);for(let i=0;i<360;i++)physics(STEP)`);
+ assert(run("state==='worldComplete'&&skyJustOpened&&$('#overlayText').textContent.includes('Rainbow Sky')"));
+ run('start()');assert(run("theme==='sky'&&level===0&&state==='playing'&&!skyJustOpened&&gems.length===3"));
+ assert(run("stageUnlocked('sky',0)&&!stageUnlocked('sky',1)"));
+ run(`chooseStage(4)`);assert(run("level===0&&$('#toast').textContent.includes('Cloud Nine Steps')"));
+ run(`openWorldMap();mapTheme='sky';mapLevel=2;drawWorldMap()`);assert(run("$('#playMapLevel').disabled&&$('#mapLevelDetail').textContent.includes('Rainbow Runway')&&$('#landLevels').innerHTML.includes('🔒')"));run("$('#mapDialog').close()");
+ run(`chooseStage(0);start();finish()`);assert(run("medals['sky:0']&&stageUnlocked('sky',1)&&!stageUnlocked('sky',2)"));run('start()');assert(run("theme==='sky'&&level===1"));
+ run(`for(let i=1;i<11;i++)medals['sky:'+i]=1;chooseStage(11);start()`);assert(run("level===11"));run(`finish()`);assert.equal(run('state'),'bossReady');
+ run(`start()`);assert(run("boss&&boss.name==='Grumbly Thundercloud'&&!buddyUnlocked(9)"));
+ run(`boss.hp=1;p.inv=2;boss.inv=0;boss.timer=99;boss.shots=[];p.x=boss.x+40;p.y=boss.y-p.h-2;p.vy=300;physics(STEP);for(let i=0;i<360;i++)physics(STEP)`);assert(run("bosses.sky&&buddyUnlocked(9)&&buddy===9"));
+ run('start()');assert(run("theme==='space'"));
+ for(let i=0;i<12;i++)run(`theme='sky';level=${i};makeLevel();camera=goalX-700;render();camera=1000;render()`);
+ run(`theme='sky';level=4;makeLevel();state='playing';for(const type of [0,1,2,3]){enterBonus(pipes.find(a=>a.secret&&a.type===type)||pipes[0]);render();finishBonusRoom(true);returnToLevel()}`);
+ for(const acc of ['none','crown','wings'])run(`drawBuddyLook(g,0,0,'nimbus',{...looks.nimbus,accessory:'${acc}'},1,1,1)`);
+ const stale=boot({storage:{laserLeapRewards:JSON.stringify({theme:'sky',level:7})}});assert(stale("theme==='space'"));
+ const partial=boot({storage:{laserLeapRewards:JSON.stringify({theme:'sky',level:7,bosses:{space:true,candy:true,forest:true,squishy:true,home:true},medals:{'sky:0':1,'sky:1':1}})}});assert(partial("theme==='sky'&&level===2"));
 });
 console.log(checks+' checks passed.');
