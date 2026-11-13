@@ -147,6 +147,40 @@ h1{margin:2px 0 0;font-size:clamp(28px,5vw,40px);letter-spacing:-.8px;line-heigh
 .game p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.5;max-width:58ch}
 .progress{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 0;padding:0;list-style:none}
 .progress li{font-size:12.5px;font-weight:700;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:6px 11px;font-variant-numeric:tabular-nums}
+.prizebar{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;background:linear-gradient(120deg,#3a2f12,#2c2440 55%,#242035);border:1px solid #7a6436;border-radius:24px;padding:16px 20px;box-shadow:0 8px 0 #110e1d}
+.prizebar .trophy{font-size:48px;line-height:1;filter:drop-shadow(0 4px 0 #0006)}
+.prizebar h2{margin:0;font-size:22px;letter-spacing:-.3px}
+.prizebar p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.pb-row{display:flex;gap:4px;margin-top:6px;font-size:22px;line-height:1;flex-wrap:wrap}
+.pb-row .more{font-size:13px;font-weight:800;color:var(--gold);align-self:center;margin-left:4px}
+.pb-open{font:inherit;cursor:pointer;background:var(--gold);color:#3b2a00;font-weight:800;font-size:15px;border:none;border-radius:14px;padding:12px 18px;box-shadow:0 5px 0 #b8902e}
+.pb-open:focus-visible,#prizeClose:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+.pb-new{display:inline-block;background:var(--pink);color:#4a1230;font-size:11px;font-weight:900;letter-spacing:1px;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+#prizeDialog{border:1px solid #574a6e;border-radius:26px;padding:0;background:var(--panel);color:var(--ink);width:min(760px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #000a}
+#prizeDialog::backdrop{background:#0b0914cc;backdrop-filter:blur(4px)}
+.pr-head{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.pr-head h2{margin:0;font-size:24px;margin-right:auto}
+.pr-count{font-weight:800;color:var(--gold);font-size:14px}
+#prizeClose{font:inherit;cursor:pointer;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:6px 12px;font-weight:800}
+.pr-body{padding:14px 18px 20px;display:grid;gap:16px}
+.pr-game h3{margin:0 0 8px;font-size:16px;display:flex;align-items:center;gap:8px}
+.pr-game h3 small{color:var(--muted);font-weight:700;font-size:12.5px}
+.pr-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;padding-bottom:12px;border-bottom:8px solid #5a4430;border-radius:0 0 6px 6px;box-shadow:0 5px 0 -1px #3b2c1f}
+.prize{position:relative;display:grid;justify-items:center;gap:3px;padding:10px 6px 8px;border-radius:16px;background:linear-gradient(180deg,#3d3352,#2d283d);border:1px solid #6a5a84;text-align:center}
+.prize .pe{font-size:34px;line-height:1.1;filter:drop-shadow(0 0 8px #ffdb8655)}
+.prize .pn{font-size:12.5px;font-weight:800;line-height:1.15}
+.prize .ph{font-size:11px;color:var(--muted);font-weight:700;line-height:1.25}
+.prize.locked{background:var(--panel-2);border-style:dashed;border-color:var(--line)}
+.prize.locked .pe{filter:grayscale(1);opacity:.28}
+.prize.locked .pn{color:var(--muted)}
+.prize .bar{width:80%;height:6px;border-radius:9px;background:#ffffff1a;overflow:hidden;margin-top:2px}
+.prize .bar i{display:block;height:100%;background:var(--mint);border-radius:inherit}
+.prize.new{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.prize.new:after{content:'NEW';position:absolute;top:-8px;right:-6px;background:var(--pink);color:#4a1230;font-size:10px;font-weight:900;border-radius:999px;padding:2px 7px}
+.prize.grand{grid-column:1/-1;grid-template-columns:auto 1fr;justify-items:start;text-align:left;gap:2px 14px;padding:14px 16px}
+.prize.grand .pe{font-size:48px;grid-row:span 3}
+.prize.grand .pn{font-size:16px}
+@media (max-width:640px){.prizebar{grid-template-columns:auto 1fr}.pb-open{grid-column:1/-1}.prizebar .trophy{font-size:38px}.pr-shelf{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}}
 .progress .star{color:var(--gold)}.progress .coin{color:#ffe39a}.progress .flag{color:var(--mint)}.progress .crown{color:var(--pink)}
 .play{justify-self:start;display:inline-flex;align-items:center;gap:10px;margin-top:6px;background:var(--mint);color:#233d32;font-weight:800;font-size:16px;border-radius:14px;padding:13px 22px;box-shadow:0 5px 0 #6fa98d}
 .game:hover .play{background:#c8f5de}
@@ -194,6 +228,16 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
    <p class="lede">Free games you can play right here on a phone, tablet, or computer.</p>
   </div>
  </header>
+
+ <section class="prizebar" aria-labelledby="prizeBarTitle">
+  <div class="trophy" aria-hidden="true">🏆</div>
+  <div class="pb-text">
+   <h2 id="prizeBarTitle">Prize Room</h2>
+   <p id="prizeBarText">Win prizes in every game and they all show up here.</p>
+   <div class="pb-row" id="prizeBarRow" aria-hidden="true"></div>
+  </div>
+  <button type="button" class="pb-open" id="prizeOpen">Open Prize Room →</button>
+ </section>
 
  <section class="shelf" aria-label="Games">
   <a class="card game" href="/world/" id="playWorld" aria-describedby="worldAbout">
@@ -296,6 +340,10 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
   <span>Your progress saves in this browser.</span>
  </footer>
 </main>
+<dialog id="prizeDialog" aria-labelledby="prizeTitle">
+ <div class="pr-head"><h2 id="prizeTitle">🏆 Prize Room</h2><span class="pr-count" id="prizeCount"></span><button type="button" id="prizeClose" aria-label="Close the Prize Room">✕</button></div>
+ <div class="pr-body" id="prizeBody"></div>
+</dialog>
 <script>
 (function(){
  // Show Super Emilia World progress from the same save the game uses.
@@ -377,6 +425,61 @@ function count(v){var n=Math.floor(Number(v));return isFinite(n)&&n>0?n:0}
  if(!races)return;
  showProgress('raceProgress','#playRace .play',[['star','🏆 '+trophies+' / 6 trophies'],['flag','🏁 '+races+' race'+(races===1?'':'s')],['coin','🪙 '+coins.toLocaleString('en-US')+' coins']],'Keep racing →');
 })();
+</script>
+<script>
+'use strict';
+// ---------- The Prize Room: every game has prizes, worked out from that game's own save ----------
+// Each prize: [icon, name, how to win it, function(stats) -> [have, need]]
+var PRIZE_GAMES=[
+ {id:'world',name:'Super Emilia World',icon:'🌟',href:'/world/',key:'laserLeapRewards',stats:function(s){var m=s.medals&&typeof s.medals==='object'?s.medals:{},b=s.bosses&&typeof s.bosses==='object'?s.bosses:{};return{levels:Object.keys(m).filter(function(k){return m[k]}).length,bosses:Object.keys(b).filter(function(k){return b[k]===true}).length,stars:num(s.bank)}},
+  prizes:[['🎖️','First Steps','Finish your first level',function(t){return[t.levels,1]}],['🗺️','Explorer','Finish 25 levels',function(t){return[t.levels,25]}],['🐲','Boss Buddy','Cheer up a boss',function(t){return[t.bosses,1]}],['🌠','Star Saver','Save up 1,000 stars',function(t){return[t.stars,1000]}],['👑','Boss Champion','Cheer up all 12 bosses',function(t){return[t.bosses,12]}]]},
+ {id:'bakery',name:'Mystery Egg Bakery',icon:'🧁',href:'/bakery/',key:'mysteryEggBakery',stats:function(s){var pets=Array.isArray(s.pets)?s.pets:[];return{served:num(s.totalServed),day:num(s.day),hatched:pets.filter(function(p){return p&&Number(p.stage)>0}).length}},
+  prizes:[['🧁','First Customer','Serve your first treat',function(t){return[t.served,1]}],['🐣','Egg Hatcher','Hatch a mystery egg',function(t){return[t.hatched,1]}],['🍰','Busy Baker','Serve 50 customers',function(t){return[t.served,50]}],['📅','Bakery Pro','Reach day 10',function(t){return[t.day,10]}],['🏡','Pet Family','Hatch 5 pets',function(t){return[t.hatched,5]}]]},
+ {id:'memory',name:'Memory Match',icon:'🃏',href:'/memory/',key:'superEmiliaMemory',stats:function(s){var st=Array.isArray(s.stars)?s.stars:[],done=0,gold=0;for(var i=0;i<12;i++){var v=Math.floor(Number(st[i]));if(!(v>=1&&v<=3))break;done++;if(v===3)gold++}return{done:done,gold:gold}},
+  prizes:[['🃏','First Match','Win level 1',function(t){return[t.done,1]}],['🧠','Super Memory','Win 6 levels',function(t){return[t.done,6]}],['💫','Perfect Pairs','Get 3 stars on 6 levels',function(t){return[t.gold,6]}],['🎓','Memory Master','Win all 12 levels',function(t){return[t.done,12]}]]},
+ {id:'garden',name:'Buddy Garden',icon:'🌻',href:'/garden/',key:'superEmiliaGarden',stats:function(s){var seen={},n=0;if(Array.isArray(s.buddies))s.buddies.forEach(function(k){k=Number(k);if(k>=0&&k<12&&Math.floor(k)===k&&!seen[k]){seen[k]=1;n++}});return{harvests:num(s.harvests),buddies:n}},
+  prizes:[['🌱','Green Thumb','Pick your first plant',function(t){return[t.harvests,1]}],['🐝','Buddy Friend','Grow a buddy from a mystery seed',function(t){return[t.buddies,1]}],['🧺','Big Harvest','Pick 50 plants',function(t){return[t.harvests,50]}],['🌈','Full Garden','Find all 12 garden buddies',function(t){return[t.buddies,12]}]]},
+ {id:'studio',name:'Dress-Up Studio',icon:'👗',href:'/studio/',key:'superEmiliaStudio',stats:function(s){var b=s.best&&typeof s.best==='object'?s.best:{},three=0;for(var k in b)if(num(b[k])===3)three++;return{shows:num(s.shows),three:three}},
+  prizes:[['🎤','First Show','Walk the runway',function(t){return[t.shows,1]}],['⭐','Star Stylist','Get 3 stars in a show',function(t){return[t.three,1]}],['👠','Fashion Week','Walk the runway 10 times',function(t){return[t.shows,10]}],['💎','Style Icon','Get 3 stars in all 9 shows',function(t){return[t.three,9]}]]},
+ {id:'vet',name:'Pet Vet Clinic',icon:'🩺',href:'/vet/',key:'superEmiliaVet',stats:function(s){var h=s.helped&&typeof s.helped==='object'?s.helped:{};return{treated:num(s.treated),day:num(s.day),rare:['Sparkle','Ember','Rex'].filter(function(n){return num(h[n])>0}).length}},
+  prizes:[['🩹','First Patient','Help your first pet',function(t){return[t.treated,1]}],['💖','Caring Vet','Help 25 pets',function(t){return[t.treated,25]}],['🦄','Rare Visitor','Help a unicorn, dragon or dino',function(t){return[t.rare,1]}],['🏥','Busy Clinic','Reach day 7',function(t){return[t.day,7]}],['🏅','Super Vet','Help 100 pets',function(t){return[t.treated,100]}]]},
+ {id:'race',name:'Buddy Kart Racing',icon:'🏎️',href:'/race/',key:'superEmiliaRace',stats:function(s){var b=s.best&&typeof s.best==='object'?s.best:{},ids=['candy','beach','jungle','snow','space','rainbow'],top=0,wins=0;ids.forEach(function(id){var v=num(b[id]);if(v>=1&&v<=3)top++;if(v===1)wins++});return{races:num(s.races),top:top,wins:wins,rainbow:num(b.rainbow)>=1&&num(b.rainbow)<=3?1:0}},
+  prizes:[['🏁','First Race','Finish a race',function(t){return[t.races,1]}],['🥇','Winner','Win 1st place on any track',function(t){return[t.wins,1]}],['🏆','Trophy Hunter','Get trophies on 3 tracks',function(t){return[t.top,3]}],['🌈','Rainbow Racer','Finish top 3 on Rainbow Road',function(t){return[t.rainbow,1]}],['👑','Racing Legend','Win 1st place on all 6 tracks',function(t){return[t.wins,6]}]]}
+];
+function num(v){var n=Math.floor(Number(v));return isFinite(n)&&n>0?n:0}
+// works out every prize. read(key) returns that game's save (or null). Also adds the grand prize for winning something in every game.
+function prizeRoom(read){var games=PRIZE_GAMES.map(function(g){var save=null;try{save=read(g.key)}catch(e){save=null}if(!save||typeof save!=='object')save={};var t=g.stats(save);
+  var list=g.prizes.map(function(p,i){var hn=p[3](t),have=Math.min(hn[0],hn[1]);return{id:g.id+':'+i,icon:p[0],name:p[1],how:p[2],have:have,need:hn[1],won:hn[0]>=hn[1]}});return{id:g.id,name:g.name,icon:g.icon,href:g.href,prizes:list}});
+ var everyGame=games.filter(function(g){return g.prizes.some(function(p){return p.won})}).length;
+ var grand={id:'grand',icon:'🌟',name:'Super Emilia Superstar',how:'Win a prize in all 7 games',have:everyGame,need:games.length,won:everyGame===games.length};
+ var all=[].concat.apply([],games.map(function(g){return g.prizes})).concat([grand]);
+ return{games:games,grand:grand,won:all.filter(function(p){return p.won}),total:all.length}}
+
+if(typeof document!=='undefined'){(function(){
+ var SEEN='superEmiliaPrizeRoom';
+ function read(key){try{var v=JSON.parse(localStorage.getItem(key)||'null');return v&&typeof v==='object'?v:null}catch(e){return null}}
+ var room=prizeRoom(read),seen=[];try{seen=JSON.parse(localStorage.getItem(SEEN)||'[]');if(!Array.isArray(seen))seen=[]}catch(e){seen=[]}
+ var fresh=room.won.filter(function(p){return seen.indexOf(p.id)<0});
+ // the banner on the menu
+ var n=room.won.length,text=document.getElementById('prizeBarText');
+ text.textContent=n?'You have won '+n+' of '+room.total+' prizes!':'Win prizes in every game and they all show up here. You have 0 of '+room.total+' so far.';
+ if(fresh.length&&n){var b=document.createElement('span');b.className='pb-new';b.textContent=fresh.length+' NEW';text.appendChild(b)}
+ var row=document.getElementById('prizeBarRow');room.won.slice(-12).forEach(function(p){var s=document.createElement('span');s.textContent=p.icon;row.appendChild(s)});if(n>12){var m=document.createElement('span');m.className='more';m.textContent='+'+(n-12)+' more';row.appendChild(m)}
+ function tile(p,cls){var d=document.createElement('div');d.className='prize'+(p.won?'':' locked')+(cls||'')+(p.won&&fresh.indexOf(p)>=0?' new':'');d.setAttribute('role','img');
+  d.setAttribute('aria-label',p.name+(p.won?', won':', not won yet: '+p.how+(p.need>1?', '+p.have+' of '+p.need:'')));
+  var e=document.createElement('span');e.className='pe';e.setAttribute('aria-hidden','true');e.textContent=p.icon;var nm=document.createElement('span');nm.className='pn';nm.textContent=p.name;var h=document.createElement('span');h.className='ph';h.textContent=p.won?p.how+' ✓':p.how;d.appendChild(e);d.appendChild(nm);d.appendChild(h);
+  if(!p.won&&p.need>1){var bar=document.createElement('span');bar.className='bar';var i=document.createElement('i');i.style.width=Math.round(p.have/p.need*100)+'%';bar.appendChild(i);d.appendChild(bar);var c=document.createElement('span');c.className='ph';c.textContent=p.have.toLocaleString('en-US')+' / '+p.need.toLocaleString('en-US');d.appendChild(c)}return d}
+ function open(){var body=document.getElementById('prizeBody');body.textContent='';document.getElementById('prizeCount').textContent=n+' / '+room.total+' won';
+  var gs=document.createElement('div');gs.className='pr-game';var gh=document.createElement('div');gh.className='pr-shelf';gh.appendChild(tile(room.grand,' grand'));gs.appendChild(gh);body.appendChild(gs);
+  room.games.forEach(function(g){var sec=document.createElement('section');sec.className='pr-game';var h=document.createElement('h3');h.textContent=g.icon+' '+g.name+' ';var sm=document.createElement('small');sm.textContent=g.prizes.filter(function(p){return p.won}).length+' / '+g.prizes.length;h.appendChild(sm);sec.appendChild(h);var sh=document.createElement('div');sh.className='pr-shelf';g.prizes.forEach(function(p){sh.appendChild(tile(p))});sec.appendChild(sh);body.appendChild(sec)});
+  document.getElementById('prizeDialog').showModal();
+  // remember which prizes have been seen, so NEW only shows once
+  try{localStorage.setItem(SEEN,JSON.stringify(room.won.map(function(p){return p.id})))}catch(e){}
+  var badge=document.querySelector('.pb-new');if(badge)setTimeout(function(){badge.remove()},400)}
+ document.getElementById('prizeOpen').addEventListener('click',open);
+ document.getElementById('prizeClose').addEventListener('click',function(){document.getElementById('prizeDialog').close();fresh=[]});
+ document.getElementById('prizeDialog').addEventListener('click',function(e){if(e.target===this){this.close();fresh=[]}});
+})()}
 </script>
 </body>
 </html>
