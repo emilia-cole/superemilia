@@ -58,8 +58,10 @@ h1{margin:4px 0 0;font-size:clamp(26px,5vw,36px);letter-spacing:-.6px;text-wrap:
 .card .inner{position:absolute;inset:0;transition:transform .35s ease;transform-style:preserve-3d}
 .card.up .inner,.card.matched .inner{transform:rotateY(180deg)}
 .face{position:absolute;inset:0;border-radius:inherit;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:grid;place-items:center}
-.back{background:linear-gradient(145deg,#a58cf0,#7c5fd8);border:3px solid #fff;box-shadow:0 4px 0 #5a40b0}
-.back:before{content:"✦";color:#fff;font-size:clamp(18px,4vw,30px);opacity:.9}
+.back{background:linear-gradient(145deg,var(--b1,#a58cf0),var(--b2,#7c5fd8));border:3px solid var(--bline,#fff);box-shadow:0 4px 0 var(--b3,#5a40b0);overflow:hidden}
+.back:before{content:var(--bsym,"✦");color:#fff;font-size:var(--bsize,clamp(18px,4vw,30px));opacity:.95;filter:drop-shadow(0 2px 0 #0002)}
+.board.shiny .back{animation:shine 3s ease-in-out infinite}
+@keyframes shine{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12) saturate(1.15)}}
 .back:after{content:"";position:absolute;inset:7px;border:2px dashed #ffffff66;border-radius:11px}
 .front{background:var(--paper);border:3px solid var(--line);transform:rotateY(180deg);font-size:var(--emoji,40px);line-height:1;box-shadow:0 4px 0 var(--line)}
 .card.matched .front{border-color:var(--mint);box-shadow:0 4px 0 #4fb894;animation:pop .45s ease}
@@ -94,6 +96,33 @@ dialog::backdrop{background:#33285a66;backdrop-filter:blur(4px)}
 .winprize .big{font-size:54px;line-height:1.1;animation:pop .6s ease both .35s}
 .winprize strong{font-size:18px}
 .winprize small{color:var(--soft);font-weight:700;font-size:13px}
+button.prize{font:inherit;cursor:pointer;transition:transform .12s ease}
+button.prize:hover{transform:translateY(-2px)}
+.prize.chosen{outline:3px solid var(--grape);outline-offset:2px}
+.prize .on{font-size:9.5px;font-weight:900;color:#fff;background:var(--grape);border-radius:999px;padding:1px 6px;letter-spacing:.3px}
+.shelf-tip{margin:-4px 0 10px;color:var(--soft);font-weight:600;font-size:13.5px}
+.showoff{margin-left:auto;background:linear-gradient(160deg,#fff4c7,#ffe08a);border-color:#e8b62f;box-shadow:0 3px 0 #d39e1a}
+/* Prize room: a show-off case with wooden shelves. */
+#roomDialog{width:min(620px,calc(100vw - 20px))}
+.room{padding:20px 18px 18px;display:grid;gap:12px;text-align:center;background:radial-gradient(500px 220px at 50% 0,#fff6d6,transparent 70%)}
+.room h2{margin:0;font-size:clamp(24px,5vw,30px);letter-spacing:-.5px}
+.room .sub{margin:0;color:var(--soft);font-weight:700}
+.case{background:linear-gradient(180deg,#fdf7ee,#f6ead8);border:4px solid #c99a63;border-radius:20px;padding:10px 10px 0;box-shadow:inset 0 0 0 3px #f9eedd}
+.ledge{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:end;gap:4px;padding:8px 4px 0;border-bottom:10px solid #b9824a;border-radius:0 0 4px 4px;margin-bottom:14px;box-shadow:0 6px 0 -2px #93612f}
+.ledge.top{grid-template-columns:repeat(2,minmax(0,1fr));max-width:280px;margin:0 auto 14px}
+.slot{display:grid;justify-items:center;gap:2px;padding-bottom:4px;min-height:74px;align-content:end}
+.slot .ic{font-size:clamp(28px,6vw,40px);line-height:1;animation:bob 2.6s ease-in-out infinite}
+.slot:nth-child(2n) .ic{animation-delay:-1.3s}.slot:nth-child(3n) .ic{animation-delay:-.6s}
+.slot .nm{font-size:10.5px;font-weight:800;color:#6b4b2a;line-height:1.1}
+.slot.gold .ic{filter:drop-shadow(0 0 8px #ffcc4d)}
+.slot.gold .nm{color:#a77400}
+.slot.empty .ic{animation:none;opacity:.22;filter:grayscale(1)}
+.slot.empty .nm{color:#c2a98c}
+.ledge.top .slot .ic{font-size:clamp(40px,9vw,56px)}
+.confetti{position:fixed;top:-40px;font-size:24px;pointer-events:none;z-index:1000;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media (max-width:520px){.ledge{grid-template-columns:repeat(4,minmax(0,1fr))}}
 [hidden]{display:none!important}
 @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes float{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-90%)}}
@@ -113,7 +142,8 @@ dialog::backdrop{background:#33285a66;backdrop-filter:blur(4px)}
   <h1>Find the matching pairs!</h1>
   <p class="lede">Flip two cards at a time. Finish a level to unlock the next one, and use fewer turns to earn more stars.</p>
   <div class="levels" id="levels" style="margin-top:14px"></div>
-  <div class="shelf-head"><h2>🎁 Prize shelf</h2><span id="prizeCount">Win a level to get its prize</span></div>
+  <div class="shelf-head"><h2>🎁 Prize shelf</h2><span id="prizeCount">Win a level to get its prize</span><button type="button" class="showoff" id="showoffBtn">✨ Show off</button></div>
+  <p class="shelf-tip" id="shelfTip">Prizes you win can decorate the back of your cards.</p>
   <div class="prizes" id="prizes"></div>
  </section>
 
@@ -129,6 +159,7 @@ dialog::backdrop{background:#33285a66;backdrop-filter:blur(4px)}
  </section>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<dialog id="roomDialog" aria-labelledby="roomTitle"><div class="room"><h2 id="roomTitle">🏆 My Prize Room</h2><p class="sub" id="roomSub"></p><div class="case" id="roomCase"></div><div class="row"><button type="button" class="primary" id="roomClose">Close</button></div></div></dialog>
 <dialog id="winDialog"><div class="dlg"><div class="bigstars" id="winStars" aria-hidden="true"></div><h2 id="winTitle">You did it!</h2><p id="winText"></p><div class="winprize" id="winPrize" hidden></div><div class="row"><button type="button" id="againBtn">↻ Play again</button><button type="button" class="primary" id="nextBtn">Next level →</button></div></div></dialog>
 
 <script>
@@ -144,6 +175,8 @@ const LEVELS=[[2,3,'buddies'],[3,4,'treats'],[3,4,'pets'],[4,4,'lands'],[4,4,'bu
 const SAVE_KEY='superEmiliaMemory';
 // One prize for winning each level; it turns gold with 3 stars. Two grand prizes for finishing everything.
 const PRIZES=[['🎀','Ribbon'],['🧸','Teddy bear'],['🪀','Yo-yo'],['🪁','Kite'],['🎨','Paint set'],['🎺','Trumpet'],['🛼','Roller skates'],['🔮','Crystal ball'],['🎠','Carousel'],['🎡','Ferris wheel'],['🚀','Rocket'],['🛸','Spaceship']].map(([icon,name])=>({icon,name}));
+// What each prize looks like on the back of the cards: [light color, dark color, edge color]
+const BACK_COLORS=[['#ff9ab8','#e2557f','#b8345c'],['#d9a878','#a8723f','#7d5126'],['#7ad3ff','#3d9ee0','#2475b0'],['#9be7a0','#3fb86b','#2a8a4c'],['#ffd27a','#f29b38','#c9701a'],['#ffe27a','#e7b524','#b8880c'],['#ffa6e6','#d65bc3','#a43993'],['#c4a6ff','#8a5ce6','#6236c2'],['#ffb3a6','#ea6d5b','#bb4636'],['#9fe4e0','#33b3ad','#1f8681'],['#93a9ff','#4d61d6','#3242a8'],['#a6f0c6','#3cc489','#25915f']];
 const GRAND={trophy:{icon:'🏆',name:'Memory Champion trophy',hint:'Win all 12 levels'},crown:{icon:'👑',name:'Golden crown',hint:'Get all 36 stars'}};
 
 // ---------- pure game logic (also used by the tests) ----------
@@ -152,9 +185,10 @@ function makeDeck(level,rand=Math.random){const L=LEVELS[level],chosen=shuffle(D
 function starsFor(moves,pairs){return moves<=Math.ceil(pairs*1.5)?3:moves<=Math.ceil(pairs*2.2)?2:1}
 function levelOpen(i,stars){return i===0||(stars[i-1]||0)>0}
 function totalStars(stars){return stars.reduce((a,b)=>a+(b||0),0)}
-function normalizeSave(raw){const s={stars:LEVELS.map(()=>0),best:LEVELS.map(()=>0)};if(!raw||typeof raw!=='object')return s;for(let i=0;i<LEVELS.length;i++){const st=Math.floor(Number(raw.stars?.[i]));if(st>=1&&st<=3)s.stars[i]=st;const b=Math.floor(Number(raw.best?.[i]));if(b>0&&s.stars[i])s.best[i]=b}
+function normalizeSave(raw){const s={stars:LEVELS.map(()=>0),best:LEVELS.map(()=>0),back:'plain'};if(!raw||typeof raw!=='object')return s;for(let i=0;i<LEVELS.length;i++){const st=Math.floor(Number(raw.stars?.[i]));if(st>=1&&st<=3)s.stars[i]=st;const b=Math.floor(Number(raw.best?.[i]));if(b>0&&s.stars[i])s.best[i]=b}
  // a level only counts if the one before it was finished
  for(let i=1;i<LEVELS.length;i++)if(!s.stars[i-1]){s.stars[i]=0;s.best[i]=0}
+ s.back=typeof raw.back==='string'&&/^(plain|trophy|crown|p([0-9]|1[01]))$/.test(raw.back)?raw.back:'plain';
  return s}
 // which prizes a set of stars has earned
 function prizesFor(stars){const won=[],gold=[];stars.forEach((st,i)=>{if(st>0)won.push(i);if(st===3)gold.push(i)});return{won,gold,trophy:won.length===LEVELS.length,crown:gold.length===LEVELS.length}}
@@ -165,6 +199,13 @@ function newPrizes(before,after){const a=prizesFor(before),b=prizesFor(after),ou
  if(b.trophy&&!a.trophy)out.push({kind:'trophy',...GRAND.trophy});
  if(b.crown&&!a.crown)out.push({kind:'crown',...GRAND.crown});
  return out}
+// card backs you can use: the plain one, every prize you've won, and the grand prizes
+function backsOwned(stars){const P=prizesFor(stars),out=['plain'];for(const i of P.won)out.push('p'+i);if(P.trophy)out.push('trophy');if(P.crown)out.push('crown');return out}
+function backLook(key,stars){const owned=backsOwned(stars);if(!owned.includes(key))key='plain';
+ if(key==='plain')return{key,sym:'✦',c:['#a58cf0','#7c5fd8','#5a40b0'],line:'#fff',shiny:false};
+ if(key==='trophy')return{key,sym:'🏆',c:['#ffe58a','#f0b52e','#c48a0c'],line:'#fff6cc',shiny:true};
+ if(key==='crown')return{key,sym:'👑',c:['#ffd6f0','#ff8fc8','#d65a9f'],line:'#ffe9a8',shiny:true};
+ const i=+key.slice(1),gold=stars[i]===3;return{key,sym:PRIZES[i].icon,c:BACK_COLORS[i],line:gold?'#ffd75e':'#fff',shiny:gold}}
 function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return normalizeSave(null)}}
 // applies a finished level to the save; returns what changed
 function recordWin(save,level,moves){const L=LEVELS[level],stars=starsFor(moves,L.pairs),firstTime=!save.stars[level],better=stars>save.stars[level],unlockedNext=firstTime&&level+1<LEVELS.length;save.stars[level]=Math.max(save.stars[level],stars);save.best[level]=save.best[level]?Math.min(save.best[level],moves):moves;return {stars,firstTime,better,unlockedNext}}
@@ -189,15 +230,37 @@ function renderPicker(){
  renderPrizes();
 }
 function renderPrizes(){
- const box=$('#prizes'),P=prizesFor(S.stars);box.innerHTML='';
- const add=(cls,icon,name,label)=>{const d=document.createElement('div');d.className='prize '+cls;d.setAttribute('role','img');d.setAttribute('aria-label',label);d.innerHTML='<span class="pe" aria-hidden="true"></span><span class="pn"></span>';d.firstChild.textContent=icon;d.lastChild.textContent=name;box.append(d)};
+ const box=$('#prizes'),P=prizesFor(S.stars),chosen=backLook(S.back,S.stars).key;box.innerHTML='';
+ const add=(key,cls,icon,name,label)=>{const d=document.createElement(key?'button':'div');d.className='prize '+cls+(key&&key===chosen?' chosen':'');
+  if(key){d.type='button';d.setAttribute('aria-pressed',key===chosen);d.setAttribute('aria-label',label+(key===chosen?', on your cards now':', tap to put it on your cards'));d.onclick=()=>chooseBack(key)}else{d.setAttribute('role','img');d.setAttribute('aria-label',label)}
+  d.innerHTML='<span class="pe" aria-hidden="true"></span><span class="pn"></span>';d.firstChild.textContent=icon;d.lastChild.textContent=name;
+  if(key&&key===chosen){const on=document.createElement('span');on.className='on';on.textContent='ON CARDS';d.append(on)}box.append(d)};
  PRIZES.forEach((p,i)=>{const won=P.won.includes(i),gold=P.gold.includes(i);
-  if(won)add(gold?'gold':'',p.icon,(gold?'Gold ':'')+p.name,(gold?'Gold ':'')+p.name+', from level '+(i+1));
-  else add('locked','🎁','Level '+(i+1),'Mystery prize, win level '+(i+1)+' to get it')});
- for(const [key,g] of Object.entries(GRAND)){const has=P[key];add(has?'gold grand':'locked grand',has?g.icon:'❔',has?g.name:g.hint,has?g.name:'Grand prize: '+g.hint)}
+  if(won)add('p'+i,gold?'gold':'',p.icon,(gold?'Gold ':'')+p.name,(gold?'Gold ':'')+p.name+', from level '+(i+1));
+  else add(null,'locked','🎁','Level '+(i+1),'Mystery prize, win level '+(i+1)+' to get it')});
+ for(const [key,g] of Object.entries(GRAND)){const has=P[key];if(has)add(key,'gold grand',g.icon,g.name,g.name);else add(null,'locked grand','❔',g.hint,'Grand prize: '+g.hint)}
  const n=P.won.length+(P.trophy?1:0)+(P.crown?1:0);
  $('#prizeCount').textContent=n?n+' of '+(PRIZES.length+2)+' prizes'+(P.gold.length?' · '+P.gold.length+' gold':''):'Win a level to get its prize';
+ $('#shelfTip').textContent=n?(chosen==='plain'?'Tap a prize to put it on the back of your cards!':'Your cards show your '+(chosen==='trophy'||chosen==='crown'?GRAND[chosen].name:PRIZES[+chosen.slice(1)].name)+'. Tap another prize to switch, or tap it again for plain cards.'):'Prizes you win can decorate the back of your cards.';
+ $('#showoffBtn').disabled=!n;
 }
+function chooseBack(key){S.back=S.back===key?'plain':key;save();renderPrizes();tone(880,.08,'triangle');notify(S.back==='plain'?'Plain cards are back':'Your cards are decorated! ✨')}
+function applyBack(){const b=backLook(S.back,S.stars),board=$('#board');board.style.setProperty('--bsym',JSON.stringify(b.sym));board.style.setProperty('--b1',b.c[0]);board.style.setProperty('--b2',b.c[1]);board.style.setProperty('--b3',b.c[2]);board.style.setProperty('--bline',b.line);board.style.setProperty('--bsize',b.key==='plain'?'clamp(18px,4vw,30px)':'calc(var(--emoji,40px) * .8)');board.classList.toggle('shiny',b.shiny)}
+function openRoom(){
+ const P=prizesFor(S.stars),box=$('#roomCase');box.innerHTML='';
+ const slot=(icon,name,cls)=>{const d=document.createElement('div');d.className='slot '+cls;d.innerHTML='<span class="ic" aria-hidden="true"></span><span class="nm"></span>';d.firstChild.textContent=icon;d.lastChild.textContent=name;return d};
+ const top=document.createElement('div');top.className='ledge top';
+ for(const [key,g] of Object.entries(GRAND))top.append(P[key]?slot(g.icon,g.name,'gold'):slot(g.icon,'???','empty'));
+ box.append(top);
+ for(const part of [PRIZES.slice(0,7),PRIZES.slice(7)]){const row=document.createElement('div');row.className='ledge';
+  part.forEach(p=>{const i=PRIZES.indexOf(p);row.append(P.won.includes(i)?slot(p.icon,(P.gold.includes(i)?'Gold ':'')+p.name,P.gold.includes(i)?'gold':''):slot(p.icon,'Level '+(i+1),'empty'))});box.append(row)}
+ const n=P.won.length+(P.trophy?1:0)+(P.crown?1:0);
+ $('#roomSub').textContent=n===PRIZES.length+2?'Every prize collected. You are a Memory Match legend!':n+' of '+(PRIZES.length+2)+' prizes'+(P.gold.length?' · '+P.gold.length+' gold':'')+' · ★ '+totalStars(S.stars)+' stars';
+ $('#roomDialog').showModal();chime();confetti(P);
+}
+function confetti(P){if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;const pool=P.won.map(i=>PRIZES[i].icon).concat(['✨','⭐','🎉']);for(let k=0;k<26;k++){const c=document.createElement('div');c.className='confetti';c.textContent=pool[k%pool.length];c.style.left=Math.random()*100+'vw';c.style.animationDuration=(1.8+Math.random()*1.6)+'s';c.style.animationDelay=Math.random()*.5+'s';document.body.append(c);setTimeout(()=>c.remove(),4200)}}
+$('#showoffBtn').onclick=openRoom;
+$('#roomClose').onclick=()=>$('#roomDialog').close();
 function sizeBoard(){
  const L=LEVELS[current],board=$('#board'),w=Math.min($('#play').clientWidth||document.querySelector('.app').clientWidth-28,952),h=window.innerHeight-170;
  const gap=L.cols>=6||w<500?7:10,cw=Math.min((w-gap*(L.cols-1))/L.cols,((h-gap*(L.rows-1))/L.rows)*0.75);const cardW=Math.max(44,Math.floor(cw));
@@ -206,7 +269,7 @@ function sizeBoard(){
 function renderBoard(){
  const board=$('#board');board.innerHTML='';
  deck.forEach((sym,i)=>{const b=document.createElement('button');b.type='button';b.className='card'+(up.includes(i)?' up':'')+(matched.has(i)?' matched':'');b.dataset.i=i;b.setAttribute('aria-label',matched.has(i)?'Matched '+sym:up.includes(i)?sym:'Card '+(i+1)+', face down');b.innerHTML='<span class="inner"><span class="face back"></span><span class="face front">'+sym+'</span></span>';b.onclick=()=>flip(i);board.append(b)});
- sizeBoard();renderStats();
+ applyBack();sizeBoard();renderStats();
 }
 function renderStats(){const L=LEVELS[current];$('#moves').textContent=moves+(moves===1?' turn':' turns');$('#pairs').textContent=matched.size/2+' / '+L.pairs+' pairs';$('#peekBtn').disabled=peeked||busy}
 function setCard(i){const b=document.querySelector('.card[data-i="'+i+'"]');if(!b)return;b.classList.toggle('up',up.includes(i));b.classList.toggle('matched',matched.has(i));b.setAttribute('aria-label',matched.has(i)?'Matched '+deck[i]:up.includes(i)?deck[i]:'Card '+(i+1)+', face down')}
@@ -248,7 +311,7 @@ function showPicker(){$('#play').hidden=true;$('#picker').hidden=false;renderPic
 $('#backBtn').onclick=showPicker;
 window.addEventListener('resize',()=>{if(!$('#play').hidden)sizeBoard()});
 renderPicker();
-window.__memory={showPrize,get S(){return S},get deck(){return deck},get moves(){return moves},flip,startLevel};
+window.__memory={showPrize,openRoom,chooseBack,get S(){return S},get deck(){return deck},get moves(){return moves},flip,startLevel};
 }
 </script>
 </body>

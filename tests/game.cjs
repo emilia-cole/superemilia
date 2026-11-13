@@ -419,6 +419,6 @@ test('The home page is a game menu that links to all three games and shows saved
  r=make(JSON.stringify({bank:1234,coins:56,medals:{'space:0':2,'space:1':1},bosses:{space:true,candy:true}}));assert.equal(r.items.length,4);assert(r.items[0].textContent.includes('1,234 stars')&&r.items[2].textContent.includes('2 / 144')&&r.items[3].textContent.includes('2 / 12'));assert.equal(r.play.textContent,'Keep playing →');
  r=make('{not json','{also not json');assert.equal(r.items.length,0);
  r=make(null,JSON.stringify({day:6,coins:90,totalServed:22,pets:[{stage:2},{stage:0}]}));assert.equal(r.items.length,4);assert(r.items[0].textContent.includes('Day 6')&&r.items[2].textContent.includes('1 pet hatched')&&r.items[3].textContent.includes('1 egg waiting'));assert.equal(r.play.textContent,'Keep baking →');
- r=make(null,null,JSON.stringify({stars:[3,2,1,0,3]}));assert.equal(r.items.length,2);assert(r.items[0].textContent.includes('6 / 36')&&r.items[1].textContent.includes('3 / 12'));assert.equal(r.play.textContent,'Keep matching →');
+ r=make(null,null,JSON.stringify({stars:[3,2,1,0,3]}));assert.equal(r.items.length,3);assert(r.items[0].textContent.includes('6 / 36')&&r.items[1].textContent.includes('3 / 12')&&r.items[2].textContent.includes('3 / 14 prizes · 1 gold'));assert.equal(r.play.textContent,'Keep matching →');
 });
 console.log(checks+' checks passed.');

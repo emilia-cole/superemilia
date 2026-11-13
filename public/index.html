@@ -222,10 +222,11 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
  var save=null;
  try{save=JSON.parse(localStorage.getItem('superEmiliaMemory')||'null')}catch(e){save=null}
  if(!save||typeof save!=='object'||!Array.isArray(save.stars))return;
- var stars=0,done=0;
- for(var i=0;i<12;i++){var st=Math.floor(Number(save.stars[i]));if(!(st>=1&&st<=3))break;stars+=st;done++}
+ var stars=0,done=0,gold=0;
+ for(var i=0;i<12;i++){var st=Math.floor(Number(save.stars[i]));if(!(st>=1&&st<=3))break;stars+=st;done++;if(st===3)gold++}
  if(!done)return;
- var items=[['star','★ '+stars+' / 36 stars'],['flag','⚑ '+done+' / 12 levels']];
+ var prizes=done+(done===12?1:0)+(gold===12?1:0);
+ var items=[['star','★ '+stars+' / 36 stars'],['flag','⚑ '+done+' / 12 levels'],['crown','🎁 '+prizes+' / 14 prizes'+(gold?' · '+gold+' gold':'')]];
  var list=document.getElementById('memoryProgress');if(!list)return;list.textContent='';
  items.forEach(function(it){var li=document.createElement('li');li.className=it[0];li.textContent=it[1];list.appendChild(li)});
  var play=document.querySelector('#playMemory .play');if(play)play.textContent='Keep matching →';

@@ -48,4 +48,14 @@ test('Winning a level gives its prize, 3 stars turns it gold, and finishing ever
  run('for(let i=2;i<11;i++)recordWin(s,i,1)');before=run('JSON.stringify(s.stars)');run('recordWin(s,11,1)');got=run(`newPrizes(${before},s.stars).map(g=>g.kind)`);assert.deepEqual([...got],['gold','crown']);
  assert(run('(()=>{const p=prizesFor(s.stars);return p.won.length===12&&p.gold.length===12&&p.trophy&&p.crown})()'));
 });
+test('Prizes you have won can go on the back of the cards, and the choice is saved',()=>{
+ const run=load();run('var s=normalizeSave(null)');
+ assert.deepEqual([...run('backsOwned(s.stars)')],['plain']);assert.equal(run("backLook('p0',s.stars).key"),'plain','a prize you have not won cannot be used');
+ run('recordWin(s,0,9)');assert.deepEqual([...run('backsOwned(s.stars)')],['plain','p0']);
+ assert(run("(()=>{const b=backLook('p0',s.stars);return b.sym==='🎀'&&!b.shiny})()"));run('recordWin(s,0,3)');assert(run("backLook('p0',s.stars).shiny"),'gold prizes shine');
+ run('for(let i=1;i<12;i++)recordWin(s,i,1)');assert(run("backsOwned(s.stars).includes('trophy')&&backsOwned(s.stars).includes('crown')&&backLook('crown',s.stars).sym==='👑'"));
+ const saved=load({superEmiliaMemory:JSON.stringify({stars:[3,1],back:'p1'})});assert.equal(saved("loadSave().back"),'p1');assert.equal(saved("backLook(loadSave().back,loadSave().stars).sym"),'🧸');
+ const odd=load({superEmiliaMemory:JSON.stringify({stars:[3],back:'<b>'})});assert.equal(odd('loadSave().back'),'plain');
+ const notYet=load({superEmiliaMemory:JSON.stringify({stars:[3],back:'crown'})});assert.equal(notYet("backLook(loadSave().back,loadSave().stars).key"),'plain');
+});
 console.log(checks+' memory checks passed.');
