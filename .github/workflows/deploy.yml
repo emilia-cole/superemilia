@@ -29,7 +29,7 @@ jobs:
         run: |
           node --input-type=module <<'JS'
           import fs from 'node:fs';
-          for (const file of ['public/index.html', 'public/world/index.html', 'public/bakery/index.html', 'public/memory/index.html', 'public/garden/index.html', 'public/studio/index.html', 'public/vet/index.html', 'public/race/index.html']) {
+          for (const file of ['public/index.html', 'public/world/index.html', 'public/bakery/index.html', 'public/memory/index.html', 'public/garden/index.html', 'public/studio/index.html', 'public/vet/index.html', 'public/race/index.html', 'public/fish/index.html']) {
             const html = fs.readFileSync(file, 'utf8');
             const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
             if (!scripts.length) throw new Error('The script is missing from ' + file + '.');
@@ -51,6 +51,8 @@ jobs:
         run: node tests/vet.cjs
       - name: Check Buddy Kart Racing
         run: node tests/race.cjs
+      - name: Check Fishing Friends
+        run: node tests/fish.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload the game

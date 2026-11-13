@@ -8,14 +8,14 @@
 <meta name="apple-mobile-web-app-title" content="Super Emilia">
 <meta name="author" content="Emilia">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, and Buddy Kart Racing.">
+<meta name="description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, Buddy Kart Racing, and Fishing Friends.">
 <link rel="canonical" href="https://superemilia.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Super Emilia">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://superemilia.com/">
 <meta property="og:title" content="Super Emilia · Pick a Game">
-<meta property="og:description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, and Buddy Kart Racing.">
+<meta property="og:description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, Buddy Kart Racing, and Fishing Friends.">
 <meta property="og:image" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta property="og:image:secure_url" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta property="og:image:type" content="image/png">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Super Emilia World: Emilia and her chick, kitten, and butterfly buddies exploring pastel floating lands.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Super Emilia · Pick a Game">
-<meta name="twitter:description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, and Buddy Kart Racing.">
+<meta name="twitter:description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, Buddy Kart Racing, and Fishing Friends.">
 <meta name="twitter:image" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta name="twitter:image:alt" content="Emilia and her buddies in the colorful lands of Super Emilia World.">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
@@ -38,7 +38,7 @@
       "@id": "https://superemilia.com/#website",
       "url": "https://superemilia.com/",
       "name": "Super Emilia Games",
-      "description": "Free browser games designed by Emilia: Super Emilia World, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, and Buddy Kart Racing.",
+      "description": "Free browser games designed by Emilia: Super Emilia World, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, Buddy Kart Racing, and Fishing Friends.",
       "inLanguage": "en-US"
     },
     {
@@ -47,7 +47,7 @@
       "url": "https://superemilia.com/",
       "name": "Super Emilia · Pick a Game",
       "isPartOf": { "@id": "https://superemilia.com/#website" },
-      "hasPart": [{ "@id": "https://superemilia.com/world/#game" }, { "@id": "https://superemilia.com/bakery/#game" }, { "@id": "https://superemilia.com/memory/#game" }, { "@id": "https://superemilia.com/garden/#game" }, { "@id": "https://superemilia.com/studio/#game" }, { "@id": "https://superemilia.com/vet/#game" }, { "@id": "https://superemilia.com/race/#game" }],
+      "hasPart": [{ "@id": "https://superemilia.com/world/#game" }, { "@id": "https://superemilia.com/bakery/#game" }, { "@id": "https://superemilia.com/memory/#game" }, { "@id": "https://superemilia.com/garden/#game" }, { "@id": "https://superemilia.com/studio/#game" }, { "@id": "https://superemilia.com/vet/#game" }, { "@id": "https://superemilia.com/race/#game" }, { "@id": "https://superemilia.com/fish/#game" }],
       "inLanguage": "en-US"
     },
     {
@@ -110,6 +110,15 @@
       "@id": "https://superemilia.com/race/#game",
       "name": "Buddy Kart Racing",
       "url": "https://superemilia.com/race/",
+      "author": { "@type": "Person", "name": "Emilia" },
+      "gamePlatform": "Web browser",
+      "isAccessibleForFree": true
+    },
+    {
+      "@type": "VideoGame",
+      "@id": "https://superemilia.com/fish/#game",
+      "name": "Fishing Friends",
+      "url": "https://superemilia.com/fish/",
       "author": { "@type": "Person", "name": "Emilia" },
       "gamePlatform": "Web browser",
       "isAccessibleForFree": true
@@ -184,7 +193,12 @@ h1{margin:2px 0 0;font-size:clamp(28px,5vw,40px);letter-spacing:-.8px;line-heigh
 .progress .star{color:var(--gold)}.progress .coin{color:#ffe39a}.progress .flag{color:var(--mint)}.progress .crown{color:var(--pink)}
 .play{justify-self:start;display:inline-flex;align-items:center;gap:10px;margin-top:6px;background:var(--mint);color:#233d32;font-weight:800;font-size:16px;border-radius:14px;padding:13px 22px;box-shadow:0 5px 0 #6fa98d}
 .game:hover .play{background:#c8f5de}
-.bakery-art{position:relative;aspect-ratio:1717/916;background:radial-gradient(circle at 30% 30%,#fff6ea 0 18%,transparent 19%),linear-gradient(160deg,#ffd6e3,#ffe9c9 60%,#d9f2e6);overflow:hidden}.bakery-art:before{content:'';position:absolute;inset:0 0 auto;height:22%;background:repeating-linear-gradient(90deg,#ef7fa4 0 26px,#fff 26px 52px)}.bakery-art span{position:absolute;line-height:1;filter:drop-shadow(0 6px 0 #0000001a)}.bakery-art .b1{font-size:clamp(54px,9vw,88px);left:14%;top:34%}.bakery-art .b2{font-size:clamp(60px,10vw,98px);left:42%;top:28%;animation:wiggle 2.4s ease-in-out infinite}.bakery-art .b3{font-size:clamp(44px,7vw,70px);right:12%;top:44%}.bakery-art .b4{font-size:clamp(26px,4vw,40px);left:60%;top:26%}.tag.pink{background:#ffd0de;color:#7a2448}.tag.grape{background:#e3d9ff;color:#4b3596}.tag.green{background:#d6f5c8;color:#2f6b22}.tag.rose{background:#ffd6ea;color:#8a2459}.tag.teal{background:#cff3ef;color:#14625b}.tag.red{background:#ffd9da;color:#8f2226}
+.bakery-art{position:relative;aspect-ratio:1717/916;background:radial-gradient(circle at 30% 30%,#fff6ea 0 18%,transparent 19%),linear-gradient(160deg,#ffd6e3,#ffe9c9 60%,#d9f2e6);overflow:hidden}.bakery-art:before{content:'';position:absolute;inset:0 0 auto;height:22%;background:repeating-linear-gradient(90deg,#ef7fa4 0 26px,#fff 26px 52px)}.bakery-art span{position:absolute;line-height:1;filter:drop-shadow(0 6px 0 #0000001a)}.bakery-art .b1{font-size:clamp(54px,9vw,88px);left:14%;top:34%}.bakery-art .b2{font-size:clamp(60px,10vw,98px);left:42%;top:28%;animation:wiggle 2.4s ease-in-out infinite}.bakery-art .b3{font-size:clamp(44px,7vw,70px);right:12%;top:44%}.bakery-art .b4{font-size:clamp(26px,4vw,40px);left:60%;top:26%}.tag.pink{background:#ffd0de;color:#7a2448}.tag.grape{background:#e3d9ff;color:#4b3596}.tag.green{background:#d6f5c8;color:#2f6b22}.tag.rose{background:#ffd6ea;color:#8a2459}.tag.teal{background:#cff3ef;color:#14625b}.tag.red{background:#ffd9da;color:#8f2226}.tag.sea{background:#cfeaff;color:#14507a}
+.fish-art{position:relative;aspect-ratio:1717/916;overflow:hidden;background:linear-gradient(180deg,#9fd8ff 0 48%,#4fb3e8 48%,#1f78b8)}
+.fish-art:before{content:"";position:absolute;left:0;top:52%;width:28%;height:12px;background:#a86e3d;border-radius:0 6px 6px 0;box-shadow:0 5px 0 #7a4c26}
+.fish-art span{position:absolute;line-height:1}
+.fish-art .f1{left:6%;top:30%;font-size:clamp(36px,5vw,50px)}.fish-art .f2{left:52%;top:68%;font-size:30px}.fish-art .f3{left:72%;top:60%;font-size:26px;opacity:.7}.fish-art .f4{left:36%;top:78%;font-size:26px;opacity:.75}.fish-art .f5{right:8%;top:8%;font-size:34px}
+.fish-art .bob{left:60%;top:46%;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#fff 0 30%,#ff5a5f 31%);border:2px solid #fff}
 .vet-art{position:relative;aspect-ratio:1717/916;overflow:hidden;background:radial-gradient(circle at 50% 45%,#fff 0,#fff0 45%),linear-gradient(180deg,#d8f1f4,#bfe6e9)}
 .vet-art:after{content:"";position:absolute;left:26%;right:26%;bottom:10%;height:20%;border-radius:14px;background:#fff;box-shadow:0 5px 0 #a9cfd3}
 .vet-art span{position:absolute;line-height:1;z-index:1;filter:drop-shadow(0 3px 0 #0002)}
@@ -214,7 +228,7 @@ h1{margin:2px 0 0;font-size:clamp(28px,5vw,40px);letter-spacing:-.8px;line-heigh
 .soon .pill{font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--lav);border:1px solid #5b4d72;border-radius:999px;padding:5px 11px}
 footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:#968da8;border-top:1px solid #2e2840;padding-top:16px}
 @keyframes twinkle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.12) rotate(8deg)}}
-@media (max-width:1000px) and (min-width:761px){.shelf{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:760px){.bakery-art{aspect-ratio:16/9}.memory-art{aspect-ratio:16/9}.garden-art{aspect-ratio:16/9}.studio-art{aspect-ratio:16/9}.vet-art{aspect-ratio:16/9}.race-art{aspect-ratio:16/9}.shelf{grid-template-columns:1fr}.cover{aspect-ratio:1/1;width:100%}.soon{padding:24px 18px}}
+@media (max-width:1000px) and (min-width:761px){.shelf{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:760px){.bakery-art{aspect-ratio:16/9}.memory-art{aspect-ratio:16/9}.garden-art{aspect-ratio:16/9}.studio-art{aspect-ratio:16/9}.vet-art{aspect-ratio:16/9}.race-art{aspect-ratio:16/9}.fish-art{aspect-ratio:16/9}.shelf{grid-template-columns:1fr}.cover{aspect-ratio:1/1;width:100%}.soon{padding:24px 18px}}
 @media (prefers-reduced-motion:reduce){.game,.soon .spark,.bakery-art .b2{transition:none;animation:none}.game:hover{transform:none}}
 </style>
 </head>
@@ -333,6 +347,19 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
     <span class="play" aria-hidden="true">Play now →</span>
    </div>
   </a>
+
+  <a class="card game fish" href="/fish/" id="playFish" aria-describedby="fishAbout">
+   <div class="fish-art" aria-hidden="true"><span class="f1">🐱</span><span class="f2">🐠</span><span class="f3">🐟</span><span class="f4">🐙</span><span class="f5">☀️</span><span class="bob"></span></div>
+   <div class="game-body">
+    <span class="tag sea">New · Fishing</span>
+    <h2>Fishing Friends</h2>
+    <p id="fishAbout">Cast your line at a pond, river, lake, ocean, and more. Reel in silly fish and treasure, fill your fish book, and build an aquarium.</p>
+    <ul class="progress" id="fishProgress" aria-label="Your saved Fishing Friends progress">
+     <li class="flag">31 fish to find · grab your rod</li>
+    </ul>
+    <span class="play" aria-hidden="true">Play now →</span>
+   </div>
+  </a>
  </section>
 
  <footer>
@@ -425,6 +452,14 @@ function count(v){var n=Math.floor(Number(v));return isFinite(n)&&n>0?n:0}
  if(!races)return;
  showProgress('raceProgress','#playRace .play',[['star','🏆 '+trophies+' / 6 trophies'],['flag','🏁 '+races+' race'+(races===1?'':'s')],['coin','🪙 '+coins.toLocaleString('en-US')+' coins']],'Keep racing →');
 })();
+(function(){
+ // Fishing Friends progress
+ var save=readSave('superEmiliaFish');if(!save)return;
+ var caught=count(save.caught),coins=count(save.coins),kinds=0,book=save.book&&typeof save.book==='object'?save.book:{},ids=['minnow','goldfish','frog','turtle','koi','trout','salmon','crawdad','otterfish','rainbow','bluegill','catfish','snapper','pike','nessie','clown','crab','puffer','octopus','shark','whale','icefish','shrimp','squid','seal','bluewhale','jelly','starfish','dolphin','mermaidfish','seadragon'];
+ ids.forEach(function(id){if(book[id]&&count(book[id].count)>0)kinds++});
+ if(!caught)return;
+ showProgress('fishProgress','#playFish .play',[['star','🐟 '+kinds+' / 31 fish'],['flag','🎣 '+caught+' catch'+(caught===1?'':'es')],['coin','🪙 '+coins.toLocaleString('en-US')+' coins']],'Keep fishing →');
+})();
 </script>
 <script>
 'use strict';
@@ -443,6 +478,8 @@ var PRIZE_GAMES=[
   prizes:[['🎤','First Show','Walk the runway',function(t){return[t.shows,1]}],['⭐','Star Stylist','Get 3 stars in a show',function(t){return[t.three,1]}],['👠','Fashion Week','Walk the runway 10 times',function(t){return[t.shows,10]}],['💎','Style Icon','Get 3 stars in all 9 shows',function(t){return[t.three,9]}]]},
  {id:'vet',name:'Pet Vet Clinic',icon:'🩺',href:'/vet/',key:'superEmiliaVet',stats:function(s){var h=s.helped&&typeof s.helped==='object'?s.helped:{};return{treated:num(s.treated),day:num(s.day),rare:['Sparkle','Ember','Rex'].filter(function(n){return num(h[n])>0}).length}},
   prizes:[['🩹','First Patient','Help your first pet',function(t){return[t.treated,1]}],['💖','Caring Vet','Help 25 pets',function(t){return[t.treated,25]}],['🦄','Rare Visitor','Help a unicorn, dragon or dino',function(t){return[t.rare,1]}],['🏥','Busy Clinic','Reach day 7',function(t){return[t.day,7]}],['🏅','Super Vet','Help 100 pets',function(t){return[t.treated,100]}]]},
+ {id:'fish',name:'Fishing Friends',icon:'🎣',href:'/fish/',key:'superEmiliaFish',stats:function(s){var b=s.book&&typeof s.book==='object'?s.book:{},kinds=0,legend=0,treasure=0,fish=['minnow','goldfish','frog','turtle','koi','trout','salmon','crawdad','otterfish','rainbow','bluegill','catfish','snapper','pike','nessie','clown','crab','puffer','octopus','shark','whale','icefish','shrimp','squid','seal','bluewhale','jelly','starfish','dolphin','mermaidfish','seadragon'],legends=['koi','rainbow','nessie','whale','bluewhale','seadragon'];fish.forEach(function(id){if(b[id]&&num(b[id].count)>0){kinds++;if(legends.indexOf(id)>=0)legend++}});['chest','gem'].forEach(function(id){if(b[id]&&num(b[id].count)>0)treasure++});return{caught:num(s.caught),kinds:kinds,legend:legend,treasure:treasure}},
+  prizes:[['🐟','First Catch','Catch your first fish',function(t){return[t.caught,1]}],['💰','Treasure Hunter','Fish up a treasure chest or gem',function(t){return[t.treasure,1]}],['📖','Fish Collector','Find 15 kinds of fish',function(t){return[t.kinds,15]}],['🐳','Legend Catcher','Catch a legendary fish',function(t){return[t.legend,1]}],['🏆','Master Angler','Find all 31 kinds of fish',function(t){return[t.kinds,31]}]]},
  {id:'race',name:'Buddy Kart Racing',icon:'🏎️',href:'/race/',key:'superEmiliaRace',stats:function(s){var b=s.best&&typeof s.best==='object'?s.best:{},ids=['candy','beach','jungle','snow','space','rainbow'],top=0,wins=0;ids.forEach(function(id){var v=num(b[id]);if(v>=1&&v<=3)top++;if(v===1)wins++});return{races:num(s.races),top:top,wins:wins,rainbow:num(b.rainbow)>=1&&num(b.rainbow)<=3?1:0}},
   prizes:[['🏁','First Race','Finish a race',function(t){return[t.races,1]}],['🥇','Winner','Win 1st place on any track',function(t){return[t.wins,1]}],['🏆','Trophy Hunter','Get trophies on 3 tracks',function(t){return[t.top,3]}],['🌈','Rainbow Racer','Finish top 3 on Rainbow Road',function(t){return[t.rainbow,1]}],['👑','Racing Legend','Win 1st place on all 6 tracks',function(t){return[t.wins,6]}]]}
 ];
@@ -451,7 +488,7 @@ function num(v){var n=Math.floor(Number(v));return isFinite(n)&&n>0?n:0}
 function prizeRoom(read){var games=PRIZE_GAMES.map(function(g){var save=null;try{save=read(g.key)}catch(e){save=null}if(!save||typeof save!=='object')save={};var t=g.stats(save);
   var list=g.prizes.map(function(p,i){var hn=p[3](t),have=Math.min(hn[0],hn[1]);return{id:g.id+':'+i,icon:p[0],name:p[1],how:p[2],have:have,need:hn[1],won:hn[0]>=hn[1]}});return{id:g.id,name:g.name,icon:g.icon,href:g.href,prizes:list}});
  var everyGame=games.filter(function(g){return g.prizes.some(function(p){return p.won})}).length;
- var grand={id:'grand',icon:'🌟',name:'Super Emilia Superstar',how:'Win a prize in all 7 games',have:everyGame,need:games.length,won:everyGame===games.length};
+ var grand={id:'grand',icon:'🌟',name:'Super Emilia Superstar',how:'Win a prize in all 8 games',have:everyGame,need:games.length,won:everyGame===games.length};
  var all=[].concat.apply([],games.map(function(g){return g.prizes})).concat([grand]);
  return{games:games,grand:grand,won:all.filter(function(p){return p.won}),total:all.length}}
 
