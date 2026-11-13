@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#dff3c8">
+<meta name="author" content="Emilia">
+<meta name="description" content="Plant magic seeds, water them, and grow flowers and fruit. Mystery seeds can grow into buddies who move into your garden. A free garden game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/garden/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/garden/">
+<meta property="og:title" content="Buddy Garden · A Super Emilia Game">
+<meta property="og:description" content="Plant magic seeds, water them, and grow flowers and fruit. Mystery seeds can grow into buddies who move into your garden. A free garden game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Buddy Garden</title>
+<style>
+/* Layout: a top bar, a tip line, the garden (a lawn with up to 12 soil plots, decorations along the top and buddies wandering over it), then the seed bar. Dialogs for the shop, the garden book and new buddies. */
+:root{
+ color-scheme:light;
+ --sky:#e8f6ff; --lawn:#9fd67a; --lawn-2:#86c663; --lawn-deep:#5f9e45; --soil:#8a5a3b; --soil-2:#a26c47; --soil-deep:#5e3a24;
+ --paper:#fffdf6; --line:#d8e8c6; --ink:#2f3b25; --soft:#6a7a5b; --leaf:#4caf50; --leaf-deep:#2f8a3a; --sun:#ffcf4d; --water:#4fb3ff; --pink:#ff8fb8;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:linear-gradient(180deg,var(--sky) 0,#f3fbe9 260px,#eef8e1 100%);color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .12s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--leaf-deep);outline-offset:2px}
+.app{max-width:900px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--leaf-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.coins{color:#a06b00;border-color:#f2d98a;background:#fff8dc}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:9px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;display:flex;align-items:center;gap:8px}
+.tip b{color:var(--ink)}
+/* the garden */
+.garden{position:relative;border-radius:26px;padding:56px 14px 16px;background:radial-gradient(circle at 20% 30%,#ffffff22 0 2px,transparent 3px) 0 0/34px 34px,linear-gradient(180deg,var(--lawn),var(--lawn-2));border:4px solid var(--lawn-deep);box-shadow:0 6px 0 #4f8a38;overflow:hidden}
+.decor{position:absolute;left:12px;right:12px;top:8px;height:42px;display:flex;align-items:flex-end;gap:6px;font-size:30px;line-height:1;pointer-events:none;overflow:hidden}
+.decor .fence{position:absolute;left:0;right:0;bottom:4px;height:10px;background:repeating-linear-gradient(90deg,#fff8e6 0 8px,transparent 8px 22px);opacity:.75}
+.decor span{position:relative;filter:drop-shadow(0 3px 0 #0002)}
+.decor .empty{font-size:13px;font-weight:800;color:#ffffffcc;align-self:center;margin:auto}
+.plots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;position:relative;z-index:1}
+.plot{position:relative;aspect-ratio:1;border-radius:20px;border:none;padding:0;background:radial-gradient(circle at 30% 35%,#ffffff18 0 3px,transparent 4px) 0 0/16px 16px,linear-gradient(180deg,var(--soil-2),var(--soil));box-shadow:inset 0 -6px 0 var(--soil-deep),0 4px 0 #0000001f;display:grid;place-items:center;overflow:visible}
+.plot.wet{background:radial-gradient(circle at 30% 35%,#ffffff22 0 3px,transparent 4px) 0 0/16px 16px,linear-gradient(180deg,#7a4c30,#5f3a23)}
+.plot .plant{font-size:clamp(34px,8vw,58px);line-height:1;transform-origin:50% 90%;transition:transform .3s ease}
+.plot .plant.s0{font-size:clamp(18px,4vw,26px)}
+.plot .plant.s1{font-size:clamp(26px,6vw,40px)}
+.plot .plant.s2{font-size:clamp(32px,7vw,50px)}
+.plot.ready .plant{animation:wiggle 1.6s ease-in-out infinite}
+.plot .need{position:absolute;top:-8px;right:-6px;background:#fff;border:2px solid #bfe3ff;border-radius:999px;font-size:16px;padding:2px 6px;box-shadow:0 2px 0 #9fd0f5;animation:bounce 1.2s ease-in-out infinite}
+.plot .need.pick{border-color:#ffe08a;box-shadow:0 2px 0 #e8b62f;font-size:13px;font-weight:900;padding:3px 8px}
+.plot .bar{position:absolute;left:12%;right:12%;bottom:10px;height:8px;border-radius:99px;background:#00000033;overflow:hidden}
+.plot .bar i{display:block;height:100%;background:linear-gradient(90deg,#8ff0a4,#4fd07a);border-radius:inherit;transition:width .9s linear}
+.plot .label{position:absolute;left:0;right:0;bottom:-2px;font-size:10.5px;font-weight:900;color:#fff;text-shadow:0 1px 0 #0006;text-align:center}
+.plot.empty .plant{opacity:.35;font-size:24px}
+.plot.locked{background:#ffffff38;box-shadow:inset 0 0 0 3px #ffffff66;color:#fff;font-weight:900;display:grid;place-content:center;gap:2px;text-align:center;font-size:13px;text-shadow:0 1px 0 #0004}
+.plot.locked big{font-size:24px;line-height:1}
+.plot.locked.cant{opacity:.6}
+.buddy{position:absolute;z-index:3;font-size:clamp(26px,5vw,36px);line-height:1;transition:left 2.6s ease-in-out,top 2.6s ease-in-out;cursor:pointer;filter:drop-shadow(0 4px 0 #0002);border:none;background:none;padding:0;animation:hop .9s ease-in-out infinite}
+.heart{position:absolute;z-index:4;font-size:22px;pointer-events:none;animation:rise 1s ease-out forwards}
+.float{position:absolute;z-index:5;font-weight:900;font-size:20px;color:#7a5200;text-shadow:0 2px 0 #fff;pointer-events:none;animation:rise 1.1s ease-out forwards;white-space:nowrap}
+/* seed bar */
+.seedbar{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:thin}
+.seed{flex:0 0 auto;display:grid;justify-items:center;gap:1px;min-width:78px;padding:8px 8px 6px;border-radius:16px;background:var(--paper);box-shadow:0 4px 0 var(--line)}
+.seed .ic{font-size:28px;line-height:1.1}
+.seed .nm{font-size:11.5px;font-weight:800}
+.seed .ct{font-size:12px;font-weight:900;color:var(--leaf-deep)}
+.seed.on{border-color:var(--leaf);box-shadow:0 4px 0 var(--leaf-deep);background:#f0ffe8}
+.seed.none .ct{color:#b07070}
+.seed.buy{background:#fff8dc;border-color:#f2d98a;box-shadow:0 4px 0 #e2bf55}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools button{display:flex;align-items:center;gap:6px}
+.primary{background:var(--leaf);border-color:var(--leaf-deep);color:#fff;box-shadow:0 4px 0 var(--leaf-deep)}
+/* dialogs */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(560px,calc(100vw - 20px));max-height:calc(100dvh - 30px);box-shadow:0 30px 80px #2f3b2555}
+dialog::backdrop{background:#2f3b2566;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px;margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.tabs{display:flex;gap:6px}
+.tabs button{flex:1}
+.tabs button[aria-selected="true"]{background:var(--leaf);border-color:var(--leaf-deep);color:#fff}
+.items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:min(58dvh,460px);overflow:auto;padding:2px}
+.item{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;padding:10px;border-radius:16px;border:2px solid var(--line);background:#fff}
+.item .ic{font-size:32px;grid-row:span 2}
+.item .nm{font-weight:900;font-size:15px}
+.item .ds{font-size:12px;color:var(--soft);font-weight:700;line-height:1.3}
+.item .buys{grid-column:1/-1;display:flex;gap:6px}
+.item .buys button{flex:1;padding:6px 8px;font-size:13.5px}
+.item.locked{opacity:.6;background:#f6f8f2}
+.item.owned{background:#f0ffe8;border-color:#bfe6a8}
+.book{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.entry{display:grid;justify-items:center;gap:1px;padding:10px 4px 8px;border-radius:14px;background:#fff;border:2px solid var(--line);text-align:center}
+.entry .ic{font-size:30px;line-height:1.1}
+.entry .nm{font-size:11.5px;font-weight:900;line-height:1.15}
+.entry .ct{font-size:11px;font-weight:700;color:var(--soft)}
+.entry.unknown{background:#f3f6ee;border-style:dashed;color:#9aa88c}
+.entry.unknown .ic{opacity:.45}
+.book-h{margin:6px 0 0;font-size:16px}
+.newbuddy{display:grid;justify-items:center;gap:8px;text-align:center;padding:22px 18px 18px}
+.newbuddy .big{font-size:84px;line-height:1;animation:pop .6s ease both}
+.newbuddy h2{margin:0;font-size:26px}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,0) scale(.8)}20%{opacity:1;transform:translate(-50%,-10px) scale(1.05)}100%{opacity:0;transform:translate(-50%,-56px)}}
+@keyframes pop{0%{transform:scale(.4)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+@media (min-width:860px){.plots{grid-template-columns:repeat(6,minmax(0,1fr))}.plot .plant{font-size:52px}}
+@media (max-width:620px){.plots{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.garden{padding:52px 10px 12px}.title strong{font-size:17px}.items{grid-template-columns:1fr}.book{grid-template-columns:repeat(3,minmax(0,1fr))}.decor{font-size:26px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Buddy Garden</strong></div>
+  <span class="chip coins" id="coins" aria-label="Coins">🪙 0</span>
+ </div>
+ <div class="tools">
+  <button type="button" id="shopBtn">🛒 Shop</button>
+  <button type="button" id="bookBtn">📖 Garden book</button>
+  <button type="button" id="waterAllBtn" hidden>🚿 Water all</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <p class="tip" id="tip" role="status">🌱 Pick a seed, then tap an empty plot to plant it.</p>
+ <section class="garden" id="garden" aria-label="Your garden">
+  <div class="decor" id="decor" aria-label="Garden decorations"><div class="fence"></div></div>
+  <div class="plots" id="plots"></div>
+ </section>
+ <div class="seedbar" id="seedbar" role="group" aria-label="Your seeds"></div>
+</div>
+
+<dialog id="shopDialog" aria-labelledby="shopTitle"><div class="dlg">
+ <header><h2 id="shopTitle">🛒 Garden shop</h2><span class="chip coins" id="shopCoins">🪙 0</span><button type="button" id="shopClose" aria-label="Close shop">✕</button></header>
+ <div class="tabs" role="tablist"><button type="button" role="tab" data-tab="seeds" aria-selected="true">🌱 Seeds</button><button type="button" role="tab" data-tab="garden" aria-selected="false">🏡 Garden</button></div>
+ <div class="items" id="shopItems"></div>
+</div></dialog>
+
+<dialog id="bookDialog" aria-labelledby="bookTitle"><div class="dlg">
+ <header><h2 id="bookTitle">📖 Garden book</h2><button type="button" id="bookClose" aria-label="Close garden book">✕</button></header>
+ <p id="bookSub"></p>
+ <div style="max-height:min(62dvh,520px);overflow:auto;display:grid;gap:8px">
+  <h3 class="book-h">Plants</h3><div class="book" id="bookPlants"></div>
+  <h3 class="book-h">Buddies</h3><div class="book" id="bookBuddies"></div>
+ </div>
+</div></dialog>
+
+<dialog id="buddyDialog" aria-labelledby="buddyTitle"><div class="newbuddy">
+ <div class="big" id="buddyBig" aria-hidden="true">🐝</div>
+ <h2 id="buddyTitle">A buddy moved in!</h2>
+ <p id="buddyText"></p>
+ <button type="button" class="primary" id="buddyOk">Yay! 🎉</button>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+// Seeds unlock as you harvest more. Times are seconds for each of the 3 growing steps (each step needs water first).
+const SEEDS=[
+ {id:'sunflower',icon:'🌻',name:'Sunflower',cost:3,reward:6,secs:5,unlock:0},
+ {id:'tulip',icon:'🌷',name:'Tulip',cost:5,reward:10,secs:7,unlock:3},
+ {id:'mystery',icon:'🎁',name:'Mystery seed',cost:20,reward:12,secs:9,unlock:5,mystery:true},
+ {id:'strawberry',icon:'🍓',name:'Strawberry',cost:8,reward:17,secs:9,unlock:7},
+ {id:'carrot',icon:'🥕',name:'Carrot',cost:11,reward:24,secs:10,unlock:11},
+ {id:'pumpkin',icon:'🎃',name:'Pumpkin',cost:16,reward:36,secs:12,unlock:16},
+ {id:'blossom',icon:'🌸',name:'Cherry blossom',cost:22,reward:50,secs:14,unlock:22},
+ {id:'rose',icon:'🌹',name:'Rainbow rose',cost:32,reward:76,secs:16,unlock:30}
+];
+const RARE={id:'hibiscus',icon:'🌺',name:'Lucky flower',reward:40};
+// Garden buddies: each one that moves in adds +1 coin to every harvest.
+const BUDDIES=[['🐝','Bumble'],['🐞','Dot'],['🦋','Flutter'],['🐛','Wiggles'],['🐌','Shelly'],['🐸','Hopper'],['🐰','Clover'],['🐿️','Nutty'],['🦔','Prickles'],['🐦','Tweet'],['🐢','Moss'],['🦉','Hoot']].map(([icon,name])=>({icon,name}));
+const DECOR=[
+ {id:'rock',icon:'🪨',name:'Shiny rock',cost:10},{id:'mushroom',icon:'🍄',name:'Mushroom',cost:15},{id:'flags',icon:'🎏',name:'Flags',cost:20},
+ {id:'lantern',icon:'🏮',name:'Lantern',cost:25},{id:'bench',icon:'🪑',name:'Bench',cost:30},{id:'nest',icon:'🪺',name:'Bird nest',cost:35},
+ {id:'tent',icon:'⛺',name:'Tent',cost:50},{id:'fountain',icon:'⛲',name:'Fountain',cost:80},{id:'house',icon:'🏡',name:'Cottage',cost:120},{id:'rainbow',icon:'🌈',name:'Rainbow',cost:150}
+];
+const UPGRADES=[
+ {id:'can',icon:'🚿',name:'Big watering can',cost:60,desc:'Water every thirsty plant at once.'},
+ {id:'soil',icon:'✨',name:'Magic soil',cost:120,desc:'Plants grow 25% faster.'}
+];
+const START_PLOTS=6,MAX_PLOTS=12;
+const STAGE_ICON=['🫘','🌱','🌿'];
+const SAVE_KEY='superEmiliaGarden';
+
+// ---------- pure game logic (also used by the tests) ----------
+const seedById=id=>SEEDS.find(s=>s.id===id);
+function seedUnlocked(seed,harvests){return harvests>=seed.unlock}
+function plotPrice(owned){return [30,45,60,80,100,130][owned-START_PLOTS]??Infinity}
+function harvestBonus(save){return save.buddies.length}
+function defaultSave(){return{coins:20,seeds:{sunflower:3},plots:Array(START_PLOTS).fill(null),harvests:0,grown:{},buddies:[],decor:[],upgrades:[],sound:true}}
+function growTime(seed,save){return Math.round(seed.secs*1000*(save.upgrades.includes('soil')?0.75:1))}
+// plot states: null (empty), {weed:true}, or {seed, stage 0-3, watered, readyAt}. Stage 3 is ready to pick.
+function plant(save,i,seedId){const seed=seedById(seedId);if(!seed||save.plots[i]!==null||!(save.seeds[seedId]>0))return false;save.seeds[seedId]--;save.plots[i]={seed:seedId,stage:0,watered:false,readyAt:0};return true}
+function needsWater(p){return!!p&&!p.weed&&p.stage<3&&!p.watered}
+function water(save,i,now){const p=save.plots[i];if(!needsWater(p))return false;p.watered=true;p.readyAt=now+growTime(seedById(p.seed),save);return true}
+// moves watered plants on to their next stage when their time is up; returns the plots that changed
+function grow(save,now){const changed=[];save.plots.forEach((p,i)=>{if(p&&!p.weed&&p.watered&&p.stage<3&&now>=p.readyAt){p.stage++;p.watered=false;p.readyAt=0;changed.push(i)}});return changed}
+// picks a ready plant: coins, the garden book, and for mystery seeds maybe a new buddy
+function harvest(save,i,rand=Math.random){const p=save.plots[i];if(!p||p.weed||p.stage<3)return null;const seed=seedById(p.seed);save.plots[i]=null;save.harvests++;
+ let item=seed,buddy=null;
+ if(seed.mystery){const left=BUDDIES.map((_,k)=>k).filter(k=>!save.buddies.includes(k));if(left.length&&(save.buddies.length===0||rand()<0.6)){buddy=left[Math.floor(rand()*left.length)];save.buddies.push(buddy)}else item=RARE}
+ const coins=item.reward+harvestBonus(save)-(buddy!==null?1:0);save.coins+=coins;save.grown[item.id]=(save.grown[item.id]||0)+1;
+ return{coins,item,buddy}}
+function pullWeed(save,i){if(!save.plots[i]?.weed)return false;save.plots[i]=null;save.coins+=1;return true}
+function buySeed(save,seedId,n=1){const seed=seedById(seedId);if(!seed||!seedUnlocked(seed,save.harvests)||save.coins<seed.cost*n)return false;save.coins-=seed.cost*n;save.seeds[seedId]=(save.seeds[seedId]||0)+n;return true}
+function buyPlot(save){const price=plotPrice(save.plots.length);if(save.plots.length>=MAX_PLOTS||save.coins<price)return false;save.coins-=price;save.plots.push(null);return true}
+function buyThing(save,kind,id){const list=kind==='decor'?DECOR:UPGRADES,item=list.find(x=>x.id===id),owned=kind==='decor'?save.decor:save.upgrades;if(!item||owned.includes(id)||save.coins<item.cost)return false;save.coins-=item.cost;owned.push(id);return true}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;
+ const num=(v,min=0)=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=min?n:null};
+ s.coins=num(raw.coins)??s.coins;s.harvests=num(raw.harvests)??0;
+ if(raw.seeds&&typeof raw.seeds==='object'){s.seeds={};for(const seed of SEEDS){const n=num(raw.seeds[seed.id]);if(n)s.seeds[seed.id]=Math.min(n,999)}}
+ if(Array.isArray(raw.plots)){const n=Math.min(Math.max(raw.plots.length,START_PLOTS),MAX_PLOTS);s.plots=[];for(let i=0;i<n;i++){const p=raw.plots[i];
+  if(p&&p.weed)s.plots.push({weed:true});
+  else if(p&&seedById(p.seed)){const stage=Math.min(num(p.stage)??0,3);s.plots.push({seed:p.seed,stage,watered:stage<3&&!!p.watered,readyAt:stage<3&&p.watered?(Number(p.readyAt)||0):0})}
+  else s.plots.push(null)}}
+ if(raw.grown&&typeof raw.grown==='object')for(const id of SEEDS.map(x=>x.id).concat(RARE.id)){const n=num(raw.grown[id]);if(n)s.grown[id]=n}
+ if(Array.isArray(raw.buddies))s.buddies=[...new Set(raw.buddies.map(Number).filter(k=>Number.isInteger(k)&&k>=0&&k<BUDDIES.length))];
+ if(Array.isArray(raw.decor))s.decor=[...new Set(raw.decor.filter(id=>DECOR.some(d=>d.id===id)))];
+ if(Array.isArray(raw.upgrades))s.upgrades=[...new Set(raw.upgrades.filter(id=>UPGRADES.some(u=>u.id===id)))];
+ s.sound=raw.sound!==false;
+ return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+let S=loadSave(),chosen=null,audio=null,shopTab='seeds',weedT=0;
+// pick the first seed you have
+chosen=SEEDS.find(x=>S.seeds[x.id]>0)?.id||'sunflower';
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.25,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sounds={plant:()=>tone(420,.08,'triangle'),water:()=>[700,820,940].forEach((f,i)=>setTimeout(()=>tone(f,.05,'sine',.03),i*50)),grow:()=>tone(880,.1,'triangle',.04),pick:()=>[660,880,1100].forEach((f,i)=>setTimeout(()=>tone(f,.1),i*70)),buy:()=>tone(990,.12,'square',.03),buddy:()=>[523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>tone(f,.16,'triangle'),i*100)),no:()=>tone(200,.12,'sawtooth',.03)};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function setTip(html){$('#tip').innerHTML=html}
+
+function render(){renderTop();renderPlots();renderSeeds();renderDecor();renderBuddies()}
+function renderTop(){$('#coins').textContent='🪙 '+S.coins;$('#shopCoins').textContent='🪙 '+S.coins;$('#waterAllBtn').hidden=!S.upgrades.includes('can');$('#waterAllBtn').disabled=!S.plots.some(needsWater);$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
+function plotHTML(p,i,now){
+ if(p===null){const seed=seedById(chosen);return{cls:'plot empty',html:'<span class="plant" aria-hidden="true">'+(seed&&S.seeds[chosen]>0?seed.icon:'＋')+'</span>',label:'Empty plot '+(i+1)+(seed&&S.seeds[chosen]>0?', tap to plant '+seed.name:'')}}
+ if(p.weed)return{cls:'plot',html:'<span class="plant" aria-hidden="true">🌾</span><span class="need pick">Pull!</span>',label:'Weed in plot '+(i+1)+', tap to pull it'};
+ const seed=seedById(p.seed);
+ if(p.stage>=3)return{cls:'plot ready',html:'<span class="plant" aria-hidden="true">'+(seed.mystery?'🎁':seed.icon)+'</span><span class="need pick">Pick!</span>',label:seed.name+' is ready, tap to pick it'};
+ const icon=STAGE_ICON[p.stage];
+ if(!p.watered)return{cls:'plot',html:'<span class="plant s'+p.stage+'" aria-hidden="true">'+icon+'</span><span class="need" aria-hidden="true">💧</span><span class="label">'+seed.name+'</span>',label:seed.name+' is thirsty, tap to water it'};
+ const total=growTime(seed,S),left=Math.max(0,p.readyAt-now),pct=Math.min(100,Math.round((1-left/total)*100));
+ return{cls:'plot wet',html:'<span class="plant s'+p.stage+'" aria-hidden="true">'+icon+'</span><span class="bar"><i style="width:'+pct+'%"></i></span>',label:seed.name+' is growing, '+Math.ceil(left/1000)+' seconds left'};
+}
+function renderPlots(){
+ const box=$('#plots'),now=Date.now();
+ if(box.children.length!==MAX_PLOTS){box.innerHTML='';for(let i=0;i<MAX_PLOTS;i++){const b=document.createElement('button');b.type='button';b.dataset.i=i;b.onclick=()=>tapPlot(i);box.append(b)}}
+ for(let i=0;i<MAX_PLOTS;i++){const b=box.children[i];
+  if(i>=S.plots.length){const first=i===S.plots.length,price=plotPrice(S.plots.length);const cls='plot locked'+(first&&S.coins>=price?'':' cant');const html=first?'<big aria-hidden="true">＋</big>New plot<br>🪙 '+price:'<big aria-hidden="true">🌿</big>';const label=first?'Buy a new plot for '+price+' coins':'More plots later';if(b.className!==cls)b.className=cls;if(b.dataset.h!==html){b.innerHTML=html;b.dataset.h=html}b.setAttribute('aria-label',label);b.disabled=!first;continue}
+  b.disabled=false;const v=plotHTML(S.plots[i],i,now);if(b.className!==v.cls)b.className=v.cls;
+  const key=v.html.replace(/width:\d+%/,'');if(b.dataset.h!==key){b.innerHTML=v.html;b.dataset.h=key}else{const bar=b.querySelector('.bar i');const m=v.html.match(/width:(\d+)%/);if(bar&&m)bar.style.width=m[1]+'%'}
+  b.setAttribute('aria-label',v.label)}
+}
+function renderSeeds(){
+ const bar=$('#seedbar');bar.innerHTML='';
+ for(const seed of SEEDS){if(!seedUnlocked(seed,S.harvests)&&!(S.seeds[seed.id]>0))continue;const n=S.seeds[seed.id]||0,b=document.createElement('button');b.type='button';b.className='seed'+(seed.id===chosen?' on':'')+(n?'':' none');b.setAttribute('aria-pressed',seed.id===chosen);b.setAttribute('aria-label',seed.name+', '+n+' seeds');
+  b.innerHTML='<span class="ic" aria-hidden="true">'+seed.icon+'</span><span class="nm">'+seed.name+'</span><span class="ct">'+(n?'× '+n:'buy more')+'</span>';
+  b.onclick=()=>{if(!n){openShop('seeds');return}chosen=seed.id;tone(600,.05,'triangle');renderSeeds();renderPlots();setTip('🌱 <b>'+seed.name+'</b> picked. Tap an empty plot to plant it.')};bar.append(b)}
+ const next=SEEDS.find(x=>!seedUnlocked(x,S.harvests));
+ const shop=document.createElement('button');shop.type='button';shop.className='seed buy';shop.innerHTML='<span class="ic" aria-hidden="true">🛒</span><span class="nm">Buy seeds</span><span class="ct">'+(next?next.icon+' at '+next.unlock+' 🧺':'All seeds!')+'</span>';shop.setAttribute('aria-label','Buy seeds'+(next?'. '+next.name+' unlocks after '+next.unlock+' harvests':''));shop.onclick=()=>openShop('seeds');bar.append(shop);
+}
+function renderDecor(){const box=$('#decor');box.querySelectorAll('span').forEach(s=>s.remove());if(!S.decor.length){const e=document.createElement('span');e.className='empty';e.textContent='Buy decorations in the shop to make your garden pretty';box.append(e);return}for(const d of DECOR)if(S.decor.includes(d.id)){const e=document.createElement('span');e.textContent=d.icon;e.title=d.name;box.append(e)}}
+// buddies wander around on top of the garden
+const buddyEls=new Map();
+function renderBuddies(){const g=$('#garden');for(const k of S.buddies){if(buddyEls.has(k))continue;const b=document.createElement('button');b.type='button';b.className='buddy';b.textContent=BUDDIES[k].icon;b.setAttribute('aria-label',BUDDIES[k].name+' the buddy');b.style.left=(10+Math.random()*75)+'%';b.style.top=(25+Math.random()*60)+'%';b.style.animationDelay=(-Math.random())+'s';b.onclick=e=>{e.stopPropagation();heart(b);tone(1200,.08,'triangle',.04);notify(BUDDIES[k].name+' says hi! 💚')};g.append(b);buddyEls.set(k,b)}}
+function wander(){for(const b of buddyEls.values()){b.style.left=(6+Math.random()*82)+'%';b.style.top=(18+Math.random()*68)+'%'}}
+function heart(el){const h=document.createElement('div');h.className='heart';h.textContent='💚';h.style.left=(el.offsetLeft+el.offsetWidth/2)+'px';h.style.top=el.offsetTop+'px';$('#garden').append(h);setTimeout(()=>h.remove(),1000)}
+function floatText(i,text){const b=$('#plots').children[i],g=$('#garden');if(!b)return;const r=b.getBoundingClientRect(),gr=g.getBoundingClientRect(),f=document.createElement('div');f.className='float';f.textContent=text;f.style.left=(r.left-gr.left+r.width/2)+'px';f.style.top=(r.top-gr.top+r.height*.3)+'px';g.append(f);setTimeout(()=>f.remove(),1100)}
+
+function tapPlot(i){
+ if(i>=S.plots.length){if(i===S.plots.length){if(buyPlot(S)){save();sounds.buy();notify('New plot! 🌱');render()}else{sounds.no();notify('You need 🪙 '+plotPrice(S.plots.length)+' for a new plot')}}return}
+ const now=Date.now();if(grow(S,now).length)save();const p=S.plots[i];
+ if(p===null){
+  if(!(S.seeds[chosen]>0)){const have=SEEDS.find(x=>S.seeds[x.id]>0);if(have){chosen=have.id}else{sounds.no();setTip('🛒 You are out of seeds. Open the <b>Shop</b> to buy more!');openShop('seeds');return}}
+  plant(S,i,chosen);save();sounds.plant();const seed=seedById(chosen);setTip('💧 Now tap your <b>'+seed.name+'</b> to water it.');
+  if(!(S.seeds[chosen]>0)){const have=SEEDS.find(x=>S.seeds[x.id]>0);if(have)chosen=have.id}
+  render();return}
+ if(p.weed){pullWeed(S,i);save();sounds.plant();floatText(i,'+1 🪙');render();return}
+ if(needsWater(p)){water(S,i,now);save();sounds.water();setTip('⏳ Growing! Each plant needs water <b>3 times</b> before it blooms.');render();return}
+ if(p.stage>=3){const r=harvest(S,i);save();sounds.pick();floatText(i,'+'+r.coins+' 🪙');
+  if(r.buddy!==null){setTimeout(()=>showBuddy(r.buddy),400)}else if(r.item===RARE){notify('🌺 A lucky flower! +'+r.coins+' coins')}
+  const unlocked=SEEDS.find(x=>x.unlock===S.harvests);if(unlocked)setTimeout(()=>{notify('New seed unlocked: '+unlocked.icon+' '+unlocked.name+'!');sounds.buy()},r.buddy!==null?0:600);
+  setTip(S.plots.some(x=>x===null)?'🌱 Plant another seed!':'🌼 Nice! You have '+S.harvests+' harvests.');render();return}
+ const left=Math.ceil((p.readyAt-now)/1000);notify('Still growing… '+left+' more second'+(left===1?'':'s'));
+}
+function showBuddy(k){const B=BUDDIES[k];$('#buddyBig').textContent=B.icon;$('#buddyTitle').textContent=B.name+' moved in!';$('#buddyText').textContent='A buddy grew out of your mystery seed! '+B.name+' will live in your garden and help out: every harvest now gives +'+S.buddies.length+' extra coin'+(S.buddies.length===1?'':'s')+'. ('+S.buddies.length+' of '+BUDDIES.length+' buddies found)';sounds.buddy();renderBuddies();$('#buddyDialog').showModal()}
+$('#buddyOk').onclick=()=>$('#buddyDialog').close();
+
+// shop
+function openShop(tab){shopTab=tab||shopTab;renderShop();if(!$('#shopDialog').open)$('#shopDialog').showModal()}
+function item(icon,name,desc,cls){const d=document.createElement('div');d.className='item '+(cls||'');d.innerHTML='<span class="ic" aria-hidden="true"></span><span class="nm"></span><span class="ds"></span><div class="buys"></div>';d.children[0].textContent=icon;d.children[1].textContent=name;d.children[2].textContent=desc;return d}
+function buyBtn(text,can,fn,label){const b=document.createElement('button');b.type='button';b.textContent=text;b.disabled=!can;if(label)b.setAttribute('aria-label',label);b.onclick=()=>{if(fn()){save();sounds.buy();render();renderShop()}};return b}
+function renderShop(){
+ renderTop();document.querySelectorAll('.tabs [data-tab]').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===shopTab));
+ const box=$('#shopItems');box.innerHTML='';
+ if(shopTab==='seeds'){for(const seed of SEEDS){const open=seedUnlocked(seed,S.harvests);
+  if(!open){box.append(item('🔒',seed.name,'Unlocks after '+seed.unlock+' harvests (you have '+S.harvests+').','locked'));continue}
+  const d=item(seed.icon,seed.name,seed.mystery?'Might grow into a buddy! Otherwise a lucky flower. You have '+(S.seeds[seed.id]||0)+'.':'Sells for 🪙 '+seed.reward+'. You have '+(S.seeds[seed.id]||0)+'.');
+  d.lastChild.append(buyBtn('1 for 🪙 '+seed.cost,S.coins>=seed.cost,()=>buySeed(S,seed.id,1),'Buy 1 '+seed.name+' seed for '+seed.cost+' coins'),buyBtn('5 for 🪙 '+seed.cost*5,S.coins>=seed.cost*5,()=>buySeed(S,seed.id,5),'Buy 5 '+seed.name+' seeds for '+seed.cost*5+' coins'));box.append(d)}}
+ else{
+  if(S.plots.length<MAX_PLOTS){const price=plotPrice(S.plots.length),d=item('🟫','New plot','Room for one more plant. You have '+S.plots.length+' of '+MAX_PLOTS+'.');d.lastChild.append(buyBtn('🪙 '+price,S.coins>=price,()=>buyPlot(S),'Buy a new plot for '+price+' coins'));box.append(d)}
+  for(const u of UPGRADES){const own=S.upgrades.includes(u.id),d=item(u.icon,u.name,u.desc,own?'owned':'');d.lastChild.append(own?Object.assign(document.createElement('button'),{type:'button',disabled:true,textContent:'✓ Yours'}):buyBtn('🪙 '+u.cost,S.coins>=u.cost,()=>buyThing(S,'upgrade',u.id),'Buy '+u.name+' for '+u.cost+' coins'));box.append(d)}
+  for(const x of DECOR){const own=S.decor.includes(x.id),d=item(x.icon,x.name,'A decoration for your garden.',own?'owned':'');d.lastChild.append(own?Object.assign(document.createElement('button'),{type:'button',disabled:true,textContent:'✓ In your garden'}):buyBtn('🪙 '+x.cost,S.coins>=x.cost,()=>buyThing(S,'decor',x.id),'Buy '+x.name+' for '+x.cost+' coins'));box.append(d)}
+ }
+}
+document.querySelectorAll('.tabs [data-tab]').forEach(t=>t.onclick=()=>{shopTab=t.dataset.tab;renderShop()});
+$('#shopBtn').onclick=()=>openShop();$('#shopClose').onclick=()=>$('#shopDialog').close();
+
+// garden book
+function openBook(){
+ const plants=$('#bookPlants'),buddies=$('#bookBuddies');plants.innerHTML='';buddies.innerHTML='';
+ const entry=(box,icon,name,ct,known)=>{const d=document.createElement('div');d.className='entry'+(known?'':' unknown');d.innerHTML='<span class="ic" aria-hidden="true"></span><span class="nm"></span><span class="ct"></span>';d.children[0].textContent=known?icon:'❔';d.children[1].textContent=known?name:'???';d.children[2].textContent=ct;box.append(d)};
+ for(const seed of SEEDS.filter(x=>!x.mystery).concat(RARE)){const n=S.grown[seed.id]||0;entry(plants,seed.icon,seed.name,n?'Grown '+n+'×':seed===RARE?'From mystery seeds':'Not grown yet',n>0)}
+ BUDDIES.forEach((B,k)=>{const has=S.buddies.includes(k);entry(buddies,B.icon,B.name,has?'Lives here':'Grow mystery seeds',has)});
+ const kinds=SEEDS.filter(x=>!x.mystery).concat(RARE).filter(x=>S.grown[x.id]).length;
+ $('#bookSub').textContent=S.harvests+' harvests · '+kinds+' of '+(SEEDS.length)+' plants · '+S.buddies.length+' of '+BUDDIES.length+' buddies';
+ $('#bookDialog').showModal()}
+$('#bookBtn').onclick=openBook;$('#bookClose').onclick=()=>$('#bookDialog').close();
+$('#waterAllBtn').onclick=()=>{const now=Date.now();let n=0;S.plots.forEach((p,i)=>{if(water(S,i,now))n++});if(n){save();sounds.water();notify('Watered '+n+' plant'+(n===1?'':'s')+'! 💧');render()}};
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
+
+// the clock: grow plants, sometimes sprout a weed, and let buddies wander
+function tick(){const now=Date.now(),changed=grow(S,now);if(changed.length){save();sounds.grow();if(S.plots.some(p=>p&&!p.weed&&p.stage>=3))setTip('🧺 Something is ready! Tap it to <b>pick</b> it.');else if(S.plots.some(needsWater))setTip('💧 A plant grew! Tap it to water it again.')}
+ if(++weedT>=30){weedT=0;const empty=S.plots.map((p,i)=>p===null?i:-1).filter(i=>i>=0);if(empty.length>1&&Math.random()<.5){S.plots[empty[Math.floor(Math.random()*empty.length)]]={weed:true};save()}}
+ renderPlots();renderTop()}
+// on the very first visit, explain the game
+if(S.harvests===0&&S.plots.every(p=>p===null))setTip('🌻 Welcome to your garden! Tap an empty plot to plant a <b>Sunflower</b>.');
+grow(S,Date.now());save();render();setInterval(tick,1000);setInterval(wander,3200);setTimeout(wander,300);
+window.__garden={get S(){return S},tapPlot,openShop,openBook,showBuddy,render,save};
+}
+</script>
+</body>
+</html>
