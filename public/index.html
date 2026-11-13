@@ -8,14 +8,14 @@
 <meta name="apple-mobile-web-app-title" content="Super Emilia">
 <meta name="author" content="Emilia">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, and Dress-Up Studio.">
+<meta name="description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, and Buddy Kart Racing.">
 <link rel="canonical" href="https://superemilia.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Super Emilia">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://superemilia.com/">
 <meta property="og:title" content="Super Emilia · Pick a Game">
-<meta property="og:description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, and Dress-Up Studio.">
+<meta property="og:description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, and Buddy Kart Racing.">
 <meta property="og:image" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta property="og:image:secure_url" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta property="og:image:type" content="image/png">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Super Emilia World: Emilia and her chick, kitten, and butterfly buddies exploring pastel floating lands.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Super Emilia · Pick a Game">
-<meta name="twitter:description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, and Dress-Up Studio.">
+<meta name="twitter:description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, and Buddy Kart Racing.">
 <meta name="twitter:image" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta name="twitter:image:alt" content="Emilia and her buddies in the colorful lands of Super Emilia World.">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
@@ -38,7 +38,7 @@
       "@id": "https://superemilia.com/#website",
       "url": "https://superemilia.com/",
       "name": "Super Emilia Games",
-      "description": "Free browser games designed by Emilia: Super Emilia World, Mystery Egg Bakery, Memory Match, Buddy Garden, and Dress-Up Studio.",
+      "description": "Free browser games designed by Emilia: Super Emilia World, Mystery Egg Bakery, Memory Match, Buddy Garden, Dress-Up Studio, Pet Vet Clinic, and Buddy Kart Racing.",
       "inLanguage": "en-US"
     },
     {
@@ -47,7 +47,7 @@
       "url": "https://superemilia.com/",
       "name": "Super Emilia · Pick a Game",
       "isPartOf": { "@id": "https://superemilia.com/#website" },
-      "hasPart": [{ "@id": "https://superemilia.com/world/#game" }, { "@id": "https://superemilia.com/bakery/#game" }, { "@id": "https://superemilia.com/memory/#game" }, { "@id": "https://superemilia.com/garden/#game" }, { "@id": "https://superemilia.com/studio/#game" }],
+      "hasPart": [{ "@id": "https://superemilia.com/world/#game" }, { "@id": "https://superemilia.com/bakery/#game" }, { "@id": "https://superemilia.com/memory/#game" }, { "@id": "https://superemilia.com/garden/#game" }, { "@id": "https://superemilia.com/studio/#game" }, { "@id": "https://superemilia.com/vet/#game" }, { "@id": "https://superemilia.com/race/#game" }],
       "inLanguage": "en-US"
     },
     {
@@ -95,6 +95,24 @@
       "author": { "@type": "Person", "name": "Emilia" },
       "gamePlatform": "Web browser",
       "isAccessibleForFree": true
+    },
+    {
+      "@type": "VideoGame",
+      "@id": "https://superemilia.com/vet/#game",
+      "name": "Pet Vet Clinic",
+      "url": "https://superemilia.com/vet/",
+      "author": { "@type": "Person", "name": "Emilia" },
+      "gamePlatform": "Web browser",
+      "isAccessibleForFree": true
+    },
+    {
+      "@type": "VideoGame",
+      "@id": "https://superemilia.com/race/#game",
+      "name": "Buddy Kart Racing",
+      "url": "https://superemilia.com/race/",
+      "author": { "@type": "Person", "name": "Emilia" },
+      "gamePlatform": "Web browser",
+      "isAccessibleForFree": true
     }
   ]
 }
@@ -132,7 +150,17 @@ h1{margin:2px 0 0;font-size:clamp(28px,5vw,40px);letter-spacing:-.8px;line-heigh
 .progress .star{color:var(--gold)}.progress .coin{color:#ffe39a}.progress .flag{color:var(--mint)}.progress .crown{color:var(--pink)}
 .play{justify-self:start;display:inline-flex;align-items:center;gap:10px;margin-top:6px;background:var(--mint);color:#233d32;font-weight:800;font-size:16px;border-radius:14px;padding:13px 22px;box-shadow:0 5px 0 #6fa98d}
 .game:hover .play{background:#c8f5de}
-.bakery-art{position:relative;aspect-ratio:1717/916;background:radial-gradient(circle at 30% 30%,#fff6ea 0 18%,transparent 19%),linear-gradient(160deg,#ffd6e3,#ffe9c9 60%,#d9f2e6);overflow:hidden}.bakery-art:before{content:'';position:absolute;inset:0 0 auto;height:22%;background:repeating-linear-gradient(90deg,#ef7fa4 0 26px,#fff 26px 52px)}.bakery-art span{position:absolute;line-height:1;filter:drop-shadow(0 6px 0 #0000001a)}.bakery-art .b1{font-size:clamp(54px,9vw,88px);left:14%;top:34%}.bakery-art .b2{font-size:clamp(60px,10vw,98px);left:42%;top:28%;animation:wiggle 2.4s ease-in-out infinite}.bakery-art .b3{font-size:clamp(44px,7vw,70px);right:12%;top:44%}.bakery-art .b4{font-size:clamp(26px,4vw,40px);left:60%;top:26%}.tag.pink{background:#ffd0de;color:#7a2448}.tag.grape{background:#e3d9ff;color:#4b3596}.tag.green{background:#d6f5c8;color:#2f6b22}.tag.rose{background:#ffd6ea;color:#8a2459}
+.bakery-art{position:relative;aspect-ratio:1717/916;background:radial-gradient(circle at 30% 30%,#fff6ea 0 18%,transparent 19%),linear-gradient(160deg,#ffd6e3,#ffe9c9 60%,#d9f2e6);overflow:hidden}.bakery-art:before{content:'';position:absolute;inset:0 0 auto;height:22%;background:repeating-linear-gradient(90deg,#ef7fa4 0 26px,#fff 26px 52px)}.bakery-art span{position:absolute;line-height:1;filter:drop-shadow(0 6px 0 #0000001a)}.bakery-art .b1{font-size:clamp(54px,9vw,88px);left:14%;top:34%}.bakery-art .b2{font-size:clamp(60px,10vw,98px);left:42%;top:28%;animation:wiggle 2.4s ease-in-out infinite}.bakery-art .b3{font-size:clamp(44px,7vw,70px);right:12%;top:44%}.bakery-art .b4{font-size:clamp(26px,4vw,40px);left:60%;top:26%}.tag.pink{background:#ffd0de;color:#7a2448}.tag.grape{background:#e3d9ff;color:#4b3596}.tag.green{background:#d6f5c8;color:#2f6b22}.tag.rose{background:#ffd6ea;color:#8a2459}.tag.teal{background:#cff3ef;color:#14625b}.tag.red{background:#ffd9da;color:#8f2226}
+.vet-art{position:relative;aspect-ratio:1717/916;overflow:hidden;background:radial-gradient(circle at 50% 45%,#fff 0,#fff0 45%),linear-gradient(180deg,#d8f1f4,#bfe6e9)}
+.vet-art:after{content:"";position:absolute;left:26%;right:26%;bottom:10%;height:20%;border-radius:14px;background:#fff;box-shadow:0 5px 0 #a9cfd3}
+.vet-art span{position:absolute;line-height:1;z-index:1;filter:drop-shadow(0 3px 0 #0002)}
+.vet-art .v1{left:50%;top:18%;transform:translateX(-50%);font-size:clamp(54px,8vw,80px)}
+.vet-art .v2{left:56%;top:46%;font-size:26px}.vet-art .v3{left:8%;top:18%;font-size:34px}.vet-art .v4{right:9%;top:22%;font-size:32px}.vet-art .v5{left:12%;bottom:12%;font-size:34px}.vet-art .v6{right:12%;bottom:14%;font-size:28px}
+.race-art{position:relative;aspect-ratio:1717/916;overflow:hidden;background:linear-gradient(90deg,#ffd3e8 0 30%,#b98ab0 30% 70%,#ffd3e8 70%)}
+.race-art:before{content:"";position:absolute;left:49%;width:2%;top:0;bottom:0;background:repeating-linear-gradient(180deg,#fff9 0 16px,transparent 16px 32px)}
+.race-art span{position:absolute;line-height:1;filter:drop-shadow(0 3px 0 #0003)}
+.race-art .k1{left:50%;top:32%;transform:translateX(-50%) rotate(90deg);font-size:clamp(50px,7vw,72px)}.race-art .k2{left:50%;top:14%;transform:translateX(-50%);font-size:30px}
+.race-art .k3{left:8%;top:20%;font-size:34px}.race-art .k4{right:8%;top:16%;font-size:34px}.race-art .k5{left:36%;bottom:12%;font-size:26px}
 .garden-art{position:relative;aspect-ratio:1717/916;overflow:hidden;background:radial-gradient(circle at 20% 30%,#ffffff33 0 2px,transparent 3px) 0 0/26px 26px,linear-gradient(180deg,#d9f2ff 0 28%,#a6dc82 28%,#8fcb6a)}
 .garden-art span{position:absolute;line-height:1;filter:drop-shadow(0 3px 0 #0002)}
 .garden-art .g1,.garden-art .g2,.garden-art .g3,.garden-art .g4{bottom:14%;width:20%;aspect-ratio:1.4;display:grid;place-items:center;font-size:clamp(26px,3.6vw,40px);background:linear-gradient(180deg,#a26c47,#8a5a3b);border-radius:14px;box-shadow:inset 0 -5px 0 #5e3a24}
@@ -152,7 +180,7 @@ h1{margin:2px 0 0;font-size:clamp(28px,5vw,40px);letter-spacing:-.8px;line-heigh
 .soon .pill{font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--lav);border:1px solid #5b4d72;border-radius:999px;padding:5px 11px}
 footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:#968da8;border-top:1px solid #2e2840;padding-top:16px}
 @keyframes twinkle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.12) rotate(8deg)}}
-@media (max-width:1000px) and (min-width:761px){.shelf{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:760px){.bakery-art{aspect-ratio:16/9}.memory-art{aspect-ratio:16/9}.garden-art{aspect-ratio:16/9}.studio-art{aspect-ratio:16/9}.shelf{grid-template-columns:1fr}.cover{aspect-ratio:1/1;width:100%}.soon{padding:24px 18px}}
+@media (max-width:1000px) and (min-width:761px){.shelf{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:760px){.bakery-art{aspect-ratio:16/9}.memory-art{aspect-ratio:16/9}.garden-art{aspect-ratio:16/9}.studio-art{aspect-ratio:16/9}.vet-art{aspect-ratio:16/9}.race-art{aspect-ratio:16/9}.shelf{grid-template-columns:1fr}.cover{aspect-ratio:1/1;width:100%}.soon{padding:24px 18px}}
 @media (prefers-reduced-motion:reduce){.game,.soon .spark,.bakery-art .b2{transition:none;animation:none}.game:hover{transform:none}}
 </style>
 </head>
@@ -235,6 +263,32 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
     <span class="play" aria-hidden="true">Play now →</span>
    </div>
   </a>
+
+  <a class="card game vet" href="/vet/" id="playVet" aria-describedby="vetAbout">
+   <div class="vet-art" aria-hidden="true"><span class="v1">🐶</span><span class="v2">🩹</span><span class="v3">🌡️</span><span class="v4">💊</span><span class="v5">🩺</span><span class="v6">💖</span></div>
+   <div class="game-body">
+    <span class="tag teal">New · Pet care</span>
+    <h2>Pet Vet Clinic</h2>
+    <p id="vetAbout">Sick and hurt pets come to your clinic. See what's wrong, then use the right tools in the right order to make them all better.</p>
+    <ul class="progress" id="vetProgress" aria-label="Your saved Pet Vet Clinic progress">
+     <li class="flag">New clinic · pets are waiting</li>
+    </ul>
+    <span class="play" aria-hidden="true">Play now →</span>
+   </div>
+  </a>
+
+  <a class="card game race" href="/race/" id="playRace" aria-describedby="raceAbout">
+   <div class="race-art" aria-hidden="true"><span class="k1">🏎️</span><span class="k2">🐱</span><span class="k3">🍭</span><span class="k4">🏁</span><span class="k5">⚡</span></div>
+   <div class="game-body">
+    <span class="tag red">New · Racing</span>
+    <h2>Buddy Kart Racing</h2>
+    <p id="raceAbout">Race your buddies in go-karts around candy, beach, jungle, snow, space, and rainbow tracks. Grab boosts, dodge obstacles, and unlock faster karts.</p>
+    <ul class="progress" id="raceProgress" aria-label="Your saved Buddy Kart Racing progress">
+     <li class="flag">6 tracks · start your engine</li>
+    </ul>
+    <span class="play" aria-hidden="true">Play now →</span>
+   </div>
+  </a>
  </section>
 
  <footer>
@@ -307,6 +361,21 @@ function count(v){var n=Math.floor(Number(v));return isFinite(n)&&n>0?n:0}
  if(save.best&&typeof save.best==='object')for(var k in save.best){var b=count(save.best[k]);if(b>=1&&b<=3)stars+=b}
  if(!shows)return;
  showProgress('studioProgress','#playStudio .play',[['star','★ '+stars+' / 27 stars'],['flag','🎤 '+shows+' show'+(shows===1?'':'s')],['coin','🪙 '+coins.toLocaleString('en-US')+' coins']],'Keep styling →');
+})();
+(function(){
+ // Pet Vet Clinic progress
+ var save=readSave('superEmiliaVet');if(!save)return;
+ var treated=count(save.treated),day=Math.max(1,count(save.day)),coins=count(save.coins);
+ if(!treated)return;
+ showProgress('vetProgress','#playVet .play',[['flag','📅 Day '+day],['crown','💖 '+treated.toLocaleString('en-US')+' pet'+(treated===1?'':'s')+' helped'],['coin','🪙 '+coins.toLocaleString('en-US')+' coins']],'Keep helping →');
+})();
+(function(){
+ // Buddy Kart Racing progress
+ var save=readSave('superEmiliaRace');if(!save)return;
+ var races=count(save.races),coins=count(save.coins),trophies=0,ids=['candy','beach','jungle','snow','space','rainbow'];
+ if(save.best&&typeof save.best==='object')ids.forEach(function(id){var b=count(save.best[id]);if(b>=1&&b<=3)trophies++});
+ if(!races)return;
+ showProgress('raceProgress','#playRace .play',[['star','🏆 '+trophies+' / 6 trophies'],['flag','🏁 '+races+' race'+(races===1?'':'s')],['coin','🪙 '+coins.toLocaleString('en-US')+' coins']],'Keep racing →');
 })();
 </script>
 </body>

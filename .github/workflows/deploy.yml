@@ -29,7 +29,7 @@ jobs:
         run: |
           node --input-type=module <<'JS'
           import fs from 'node:fs';
-          for (const file of ['public/index.html', 'public/world/index.html', 'public/bakery/index.html', 'public/memory/index.html', 'public/garden/index.html', 'public/studio/index.html']) {
+          for (const file of ['public/index.html', 'public/world/index.html', 'public/bakery/index.html', 'public/memory/index.html', 'public/garden/index.html', 'public/studio/index.html', 'public/vet/index.html', 'public/race/index.html']) {
             const html = fs.readFileSync(file, 'utf8');
             const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
             if (!script) throw new Error('The script is missing from ' + file + '.');
@@ -47,6 +47,10 @@ jobs:
         run: node tests/garden.cjs
       - name: Check Dress-Up Studio
         run: node tests/studio.cjs
+      - name: Check Pet Vet Clinic
+        run: node tests/vet.cjs
+      - name: Check Buddy Kart Racing
+        run: node tests/race.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload the game

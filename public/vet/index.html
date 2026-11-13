@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#dff4f6">
+<meta name="author" content="Emilia">
+<meta name="description" content="Sick and hurt pets visit your clinic. Find out what's wrong and use the right tools to make them all better. A free pet vet game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/vet/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/vet/">
+<meta property="og:title" content="Pet Vet Clinic · A Super Emilia Game">
+<meta property="og:description" content="Sick and hurt pets visit your clinic. Find out what's wrong and use the right tools to make them all better. A free pet vet game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Pet Vet Clinic</title>
+<style>
+/* Layout: top bar, then the clinic: a waiting room strip, the exam table with today's patient and the things that need fixing, and the tool tray. Dialogs for the start and end of a day, the shop and the patient book. */
+:root{
+ color-scheme:light;
+ --bg:#e4f6f7; --bg-2:#f2fbf6; --paper:#ffffff; --line:#cfe8ea; --ink:#21404a; --soft:#5e7d86;
+ --teal:#2bb3a8; --teal-deep:#1a857c; --coral:#ff7a8a; --sun:#ffcf4d; --mint:#7fdcb5; --lilac:#b7a6ff;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 15% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .12s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--teal-deep);outline-offset:2px}
+.app{max-width:980px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--teal-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.coins{color:#a06b00;border-color:#f2d98a;background:#fff8dc}
+.tools-row{display:flex;gap:8px;flex-wrap:wrap}
+/* waiting room */
+.waiting{display:flex;align-items:center;gap:10px;background:#fff9;border:2px dashed var(--line);border-radius:18px;padding:8px 12px;min-height:64px}
+.waiting .lbl{font-size:12px;font-weight:900;color:var(--soft);letter-spacing:1px;text-transform:uppercase;line-height:1.2}
+.chairs{display:flex;gap:8px;flex:1;overflow:hidden}
+.chair{display:grid;place-items:center;width:52px;height:46px;border-radius:12px 12px 6px 6px;background:linear-gradient(180deg,#bfe7ff,#9fd3f2);box-shadow:0 4px 0 #7fb7d9;font-size:30px;line-height:1;position:relative}
+.chair.empty{opacity:.4;font-size:14px;color:#fff;font-weight:900}
+.chair .sick{position:absolute;top:-8px;right:-8px;font-size:15px}
+.progress{font-weight:900;font-size:14px;white-space:nowrap}
+.decor{display:flex;gap:6px;font-size:26px;line-height:1}
+/* exam */
+.clinic{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:12px;align-items:start}
+.exam{position:relative;border-radius:26px;background:radial-gradient(circle at 50% 35%,#fff 0,#fff0 55%),linear-gradient(180deg,#d8f1f4,#c4e8ea);border:3px solid #fff;box-shadow:0 6px 0 #b3dadd;padding:14px;display:grid;justify-items:center;gap:10px;min-height:400px}
+.say{background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px 14px;font-weight:800;font-size:15px;max-width:92%;text-align:center;position:relative}
+.say:after{content:"";position:absolute;left:50%;bottom:-9px;width:14px;height:14px;background:#fff;border-right:2px solid var(--line);border-bottom:2px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+.patient{position:relative;width:min(100%,280px);aspect-ratio:1.25;display:grid;place-items:center}
+.table{position:absolute;left:4%;right:4%;bottom:2%;height:26%;border-radius:18px 18px 10px 10px;background:linear-gradient(180deg,#fff,#e6f3f4);box-shadow:0 6px 0 #a9cfd3,inset 0 -4px 0 #d3e8ea}
+.table:after{content:"";position:absolute;left:12%;right:12%;top:30%;height:10px;border-radius:9px;background:#bfe3e6}
+.pet{position:relative;font-size:clamp(96px,22vw,140px);line-height:1;margin-bottom:12%;transition:transform .25s ease;z-index:1}
+.pet.wiggle{animation:wiggle .45s ease}
+.pet.happy{animation:jump .6s ease 2}
+.mark{position:absolute;z-index:2;font-size:30px;line-height:1;pointer-events:none;filter:drop-shadow(0 2px 0 #0002)}
+.fx{position:absolute;z-index:3;font-size:44px;pointer-events:none;animation:use .7s ease forwards;left:50%;top:40%}
+.heart{position:absolute;z-index:3;font-size:26px;pointer-events:none;animation:rise 1.1s ease-out forwards}
+.name{font-weight:900;font-size:18px;margin-top:-6px}
+.name small{display:block;text-align:center;font-size:12px;color:var(--soft);font-weight:700}
+.problems{display:grid;gap:8px;width:100%}
+.prob{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px 12px}
+.prob .pi{font-size:30px;line-height:1}
+.prob .pn{font-weight:900;font-size:15px}
+.prob .ps{font-size:12.5px;color:var(--soft);font-weight:700}
+.steps{display:flex;gap:4px;align-items:center}
+.step{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:#f1f7f8;border:2px dashed #c8dfe2}
+.step.done{background:#e3fbef;border:2px solid var(--mint)}
+.step.next{border:2px solid var(--teal);background:#effcfb}
+.prob.fixed{background:#effcf5;border-color:var(--mint)}
+.prob.fixed .pn:after{content:" ✓";color:var(--teal-deep)}
+/* tools */
+.tray{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:12px;display:grid;gap:10px}
+.tray h2{margin:0;font-size:17px}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tool{display:grid;justify-items:center;gap:2px;padding:10px 4px 8px;border-radius:16px;background:#fafdfd;box-shadow:0 4px 0 var(--line);min-height:78px}
+.tool .ti{font-size:32px;line-height:1.1}
+.tool .tn{font-size:11.5px;font-weight:800;line-height:1.1;text-align:center}
+.tool.glow{border-color:var(--sun);box-shadow:0 0 0 4px #ffcf4d88,0 4px 0 #e8b62f;animation:pulse 1s ease-in-out infinite}
+.tip{margin:0;font-size:13px;color:var(--soft);font-weight:700;line-height:1.4}
+.primary{background:var(--teal);border-color:var(--teal-deep);color:#fff;box-shadow:0 4px 0 var(--teal-deep);font-size:17px;padding:11px 20px}
+/* dialogs */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(520px,calc(100vw - 20px));max-height:calc(100dvh - 30px);box-shadow:0 30px 80px #21404a55}
+dialog::backdrop{background:#21404a66;backdrop-filter:blur(4px)}
+.dlg{padding:20px 18px 18px;display:grid;gap:12px}
+.dlg.center{justify-items:center;text-align:center}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.dlg .big{font-size:64px;line-height:1}
+.bigstars{font-size:40px;letter-spacing:6px;color:#dbe9eb}
+.bigstars b{color:var(--sun)}
+.newthing{display:flex;gap:10px;align-items:center;background:#fff8dc;border:2px solid #f2d98a;border-radius:16px;padding:10px 12px;text-align:left;width:100%}
+.newthing .ni{font-size:34px}
+.items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:min(58dvh,460px);overflow:auto;padding:2px}
+.item{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;padding:10px;border-radius:16px;border:2px solid var(--line);background:#fff}
+.item .ic{font-size:32px;grid-row:span 2}
+.item .nm{font-weight:900;font-size:15px}
+.item .ds{font-size:12px;color:var(--soft);font-weight:700;line-height:1.3}
+.item button{grid-column:1/-1;padding:6px 8px;font-size:13.5px}
+.item.owned{background:#effcf5;border-color:#bfe8d4}
+.book{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-height:min(60dvh,500px);overflow:auto}
+.entry{display:grid;justify-items:center;gap:1px;padding:10px 4px 8px;border-radius:14px;background:#fff;border:2px solid var(--line);text-align:center}
+.entry .ic{font-size:30px;line-height:1.1}
+.entry .nm{font-size:11.5px;font-weight:900}
+.entry .ct{font-size:11px;font-weight:700;color:var(--soft)}
+.entry.unknown{background:#f2f7f7;border-style:dashed;color:#9ab0b4}
+.entry.unknown .ic{opacity:.4}
+.entry.rare{border-color:var(--lilac);background:#f6f3ff}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+@keyframes jump{0%,100%{transform:translateY(0)}40%{transform:translateY(-24px) scale(1.05)}}
+@keyframes use{0%{opacity:0;transform:translate(40px,-30px) scale(.6) rotate(-20deg)}30%{opacity:1;transform:translate(0,0) scale(1.1) rotate(0)}70%{opacity:1;transform:translate(-8px,6px) scale(1) rotate(10deg)}100%{opacity:0;transform:translate(-8px,6px) scale(.9)}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,0) scale(.8)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-70px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@media (max-width:720px){.clinic{grid-template-columns:1fr}.exam{min-height:0}.tools{grid-template-columns:repeat(4,minmax(0,1fr))}.title strong{font-size:17px}.items{grid-template-columns:1fr}.book{grid-template-columns:repeat(3,minmax(0,1fr))}.decor{display:none}}
+@media (max-width:420px){.tools{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Pet Vet Clinic</strong></div>
+  <span class="chip" id="dayChip">Day 1</span>
+  <span class="chip coins" id="coins" aria-label="Coins">🪙 0</span>
+ </div>
+ <div class="tools-row">
+  <button type="button" id="shopBtn">🛒 Shop</button>
+  <button type="button" id="bookBtn">📖 Patient book</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+  <div class="decor" id="decor" aria-label="Clinic decorations" style="margin-left:auto"></div>
+ </div>
+ <section class="waiting" aria-label="Waiting room">
+  <span class="lbl">Waiting<br>room</span>
+  <div class="chairs" id="chairs"></div>
+  <span class="progress" id="progress">0 / 4 pets</span>
+ </section>
+ <div class="clinic">
+  <section class="exam" aria-label="Exam table">
+   <div class="say" id="say" role="status">Hello, doctor!</div>
+   <div class="patient" id="patient"><div class="table"></div><div class="pet" id="pet" aria-hidden="true">🐶</div></div>
+   <div class="name" id="petName">Biscuit<small>the puppy</small></div>
+   <div class="problems" id="problems"></div>
+  </section>
+  <section class="tray" aria-label="Your vet tools">
+   <h2>🧰 Vet tools</h2>
+   <div class="tools" id="tools"></div>
+   <p class="tip" id="tip">Look at what's wrong, then tap the tools in order. The dashed boxes show which tools each problem needs.</p>
+  </section>
+ </div>
+</div>
+
+<dialog id="dayDialog" aria-labelledby="dayTitle"><div class="dlg center">
+ <div class="big" id="dayBig" aria-hidden="true">🏥</div>
+ <h2 id="dayTitle">Day 1</h2>
+ <p id="dayText"></p>
+ <div class="bigstars" id="dayStars" aria-hidden="true" hidden></div>
+ <div class="newthing" id="dayNew" hidden></div>
+ <button type="button" class="primary" id="dayBtn">Open the clinic!</button>
+</div></dialog>
+<dialog id="shopDialog" aria-labelledby="shopTitle"><div class="dlg">
+ <header><h2 id="shopTitle">🛒 Clinic shop</h2><span class="chip coins" id="shopCoins">🪙 0</span><button type="button" id="shopClose" aria-label="Close shop">✕</button></header>
+ <div class="items" id="shopItems"></div>
+</div></dialog>
+<dialog id="bookDialog" aria-labelledby="bookTitle"><div class="dlg">
+ <header><h2 id="bookTitle">📖 Patient book</h2><button type="button" id="bookClose" aria-label="Close patient book">✕</button></header>
+ <p id="bookSub"></p>
+ <div class="book" id="book"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+const TOOLS={
+ thermometer:{icon:'🌡️',name:'Thermometer'},medicine:{icon:'💊',name:'Medicine'},spray:{icon:'🧴',name:'Clean spray'},bandage:{icon:'🩹',name:'Bandage'},
+ sponge:{icon:'🧽',name:'Sponge'},dryer:{icon:'🌬️',name:'Blow dryer'},comb:{icon:'🪮',name:'Comb'},toy:{icon:'🧸',name:'Cuddle toy'},
+ stethoscope:{icon:'🩺',name:'Stethoscope'},bottle:{icon:'🍼',name:'Warm milk'},flashlight:{icon:'🔦',name:'Flashlight'},drops:{icon:'💧',name:'Ear drops'},
+ magnifier:{icon:'🔍',name:'Magnifier'},shampoo:{icon:'🫧',name:'Flea shampoo'},tissue:{icon:'🧻',name:'Tissues'},toothbrush:{icon:'🪥',name:'Toothbrush'}
+};
+// Each problem needs its tools in order. New problems show up on later days.
+const AILMENTS=[
+ {id:'fever',icon:'🤒',name:'Fever',steps:['thermometer','medicine'],day:1,mark:'🥵',say:'I feel all hot!'},
+ {id:'scrape',icon:'🤕',name:'Scraped knee',steps:['spray','bandage'],day:1,mark:'🩸',say:'I fell down and hurt my knee.'},
+ {id:'muddy',icon:'🟤',name:'Muddy fur',steps:['sponge','dryer'],day:1,mark:'🟤',say:'I jumped in a mud puddle!'},
+ {id:'tangled',icon:'🌀',name:'Tangled fur',steps:['comb'],day:2,mark:'🌀',say:'My fur is all knotty.'},
+ {id:'lonely',icon:'😢',name:'Feeling lonely',steps:['toy'],day:2,mark:'💧',say:'I miss my friends…'},
+ {id:'tummy',icon:'😣',name:'Tummy ache',steps:['stethoscope','bottle'],day:3,mark:'💫',say:'My tummy hurts.'},
+ {id:'ear',icon:'👂',name:'Sore ear',steps:['flashlight','drops'],day:4,mark:'❗',say:'My ear feels funny.'},
+ {id:'fleas',icon:'🐜',name:'Itchy fleas',steps:['magnifier','shampoo'],day:5,mark:'✴️',say:'Itchy itchy itchy!'},
+ {id:'sniffles',icon:'🤧',name:'Sniffles',steps:['tissue','medicine'],day:6,mark:'💦',say:'Ah… ah… achoo!'},
+ {id:'tooth',icon:'🦷',name:'Wobbly tooth',steps:['flashlight','toothbrush'],day:7,mark:'😬',say:'My tooth is wiggly.'}
+];
+const PETS=[['🐶','Biscuit','puppy'],['🐱','Mittens','kitten'],['🐰','Clover','bunny'],['🐹','Peanut','hamster'],['🐼','Bamboo','panda'],['🐨','Kiwi','koala'],['🦊','Rusty','fox'],['🐸','Lily','frog'],['🐷','Truffle','piglet'],['🐮','Daisy','calf'],['🐔','Nugget','chick'],['🐧','Pebble','penguin'],['🐢','Shelly','turtle'],['🦔','Prickles','hedgehog'],['🐿️','Acorn','squirrel'],['🦜','Mango','parrot']].map(([icon,name,kind])=>({icon,name,kind}));
+const RARE_PETS=[['🦄','Sparkle','unicorn'],['🐉','Ember','dragon'],['🦖','Rex','dino']].map(([icon,name,kind])=>({icon,name,kind,rare:true}));
+const DECOR=[{id:'plant',icon:'🪴',name:'Plant',cost:10},{id:'clock',icon:'🕰️',name:'Clock',cost:20},{id:'painting',icon:'🖼️',name:'Painting',cost:25},{id:'fish',icon:'🐠',name:'Fish tank',cost:35},{id:'couch',icon:'🛋️',name:'Comfy couch',cost:45},{id:'balloons',icon:'🎈',name:'Balloons',cost:30},{id:'rainbow',icon:'🌈',name:'Rainbow',cost:70},{id:'trophy',icon:'🏆',name:'Best Vet trophy',cost:120}];
+const UPGRADES=[{id:'lollipops',icon:'🍭',name:'Lollipop jar',cost:40,desc:'Every pet you help leaves a +2 coin tip.'},{id:'stickers',icon:'⭐',name:'Gold stickers',cost:70,desc:'3-star patients pay +3 extra coins.'}];
+const SAVE_KEY='superEmiliaVet';
+
+// ---------- pure game logic (also used by the tests) ----------
+const ailment=id=>AILMENTS.find(a=>a.id===id);
+function goalFor(day){return Math.min(3+day,9)}
+function ailmentsOn(day){return AILMENTS.filter(a=>a.day<=day)}
+function toolsOn(day){return[...new Set(ailmentsOn(day).flatMap(a=>a.steps))]}
+// how many problems a patient has: one at first, up to three later
+function problemCount(day,rand){const r=rand();if(day<3)return 1;if(day<6)return r<.6?1:2;return r<.4?1:r<.85?2:3}
+function makePatient(day,rand=Math.random){
+ const rare=day>=3&&rand()<.08,pool=rare?RARE_PETS:PETS,pet=pool[Math.floor(rand()*pool.length)];
+ const list=ailmentsOn(day).slice(),n=Math.min(problemCount(day,rand),list.length),picked=[];
+ // the newest problem shows up more often on the day it is new
+ const fresh=list.filter(a=>a.day===day);if(fresh.length&&rand()<.5){picked.push(fresh[0]);list.splice(list.indexOf(fresh[0]),1)}
+ while(picked.length<n){const k=Math.floor(rand()*list.length);picked.push(list.splice(k,1)[0])}
+ return{pet,problems:picked.map(a=>({id:a.id,done:0})),mistakes:0}}
+// the tools that would help right now
+function neededTools(p){return p.problems.filter(x=>x.done<ailment(x.id).steps.length).map(x=>ailment(x.id).steps[x.done])}
+function isCured(p){return p.problems.every(x=>x.done>=ailment(x.id).steps.length)}
+// uses a tool on the patient: fixes the next step of the first problem that needs it
+function useTool(p,tool){const prob=p.problems.find(x=>x.done<ailment(x.id).steps.length&&ailment(x.id).steps[x.done]===tool);
+ if(!prob){p.mistakes++;return{ok:false}}prob.done++;const fixed=prob.done>=ailment(prob.id).steps.length;return{ok:true,fixed,problem:prob.id,cured:isCured(p)}}
+function starsFor(mistakes){return mistakes===0?3:mistakes<=2?2:1}
+function payFor(p,save){const stars=starsFor(p.mistakes);let c=4*p.problems.length+2*stars;if(p.pet.rare)c+=15;if(save.upgrades.includes('lollipops'))c+=2;if(stars===3&&save.upgrades.includes('stickers'))c+=3;return c}
+// a cured patient: pay, count them, add them to the patient book
+function finishPatient(save,p){const coins=payFor(p,save),stars=starsFor(p.mistakes);save.coins+=coins;save.treated++;save.today++;save.todayStars+=stars;const k=p.pet.name;save.helped[k]=(save.helped[k]||0)+1;return{coins,stars,dayDone:save.today>=goalFor(save.day)}}
+function nextDay(save){save.day++;save.today=0;save.todayStars=0}
+function buyThing(save,kind,id){const list=kind==='decor'?DECOR:UPGRADES,it=list.find(x=>x.id===id),owned=kind==='decor'?save.decor:save.upgrades;if(!it||owned.includes(id)||save.coins<it.cost)return false;save.coins-=it.cost;owned.push(id);return true}
+function defaultSave(){return{day:1,today:0,todayStars:0,coins:0,treated:0,helped:{},decor:[],upgrades:[],sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=(v,min)=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=min?n:null};
+ s.day=num(raw.day,1)??1;s.coins=num(raw.coins,0)??0;s.treated=num(raw.treated,0)??0;s.today=Math.min(num(raw.today,0)??0,goalFor(s.day)-1);s.todayStars=Math.min(num(raw.todayStars,0)??0,s.today*3);
+ if(raw.helped&&typeof raw.helped==='object')for(const p of PETS.concat(RARE_PETS)){const n=num(raw.helped[p.name],1);if(n)s.helped[p.name]=n}
+ if(Array.isArray(raw.decor))s.decor=[...new Set(raw.decor.filter(id=>DECOR.some(d=>d.id===id)))];
+ if(Array.isArray(raw.upgrades))s.upgrades=[...new Set(raw.upgrades.filter(id=>UPGRADES.some(u=>u.id===id)))];
+ s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+let S=loadSave(),P=null,queue=[],busy=false,audio=null;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.2,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={ok:()=>tone(760,.08,'triangle'),fixed:()=>[660,880].forEach((f,i)=>setTimeout(()=>tone(f,.1,'triangle'),i*80)),no:()=>tone(220,.14,'sawtooth',.03),cured:()=>[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.14),i*90)),buy:()=>tone(990,.12,'square',.03)};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function fillQueue(){while(queue.length<3&&S.today+queue.length+(P?1:0)<goalFor(S.day))queue.push(makePatient(S.day))}
+function nextPatient(){P=queue.shift()||makePatient(S.day);fillQueue();renderAll();const p=P.problems[0];$('#say').textContent=(P.pet.rare?'✨ A rare visitor! ':'')+ailment(p.id).say+(P.problems.length>1?' And there\'s more…':'');tone(520,.08,'triangle')}
+function renderAll(){renderTop();renderWaiting();renderPatient();renderTools();renderDecor()}
+function renderTop(){$('#coins').textContent='🪙 '+S.coins;$('#shopCoins').textContent='🪙 '+S.coins;$('#dayChip').textContent='Day '+S.day;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
+function renderWaiting(){const box=$('#chairs');box.innerHTML='';for(let i=0;i<3;i++){const q=queue[i],c=document.createElement('div');c.className='chair'+(q?'':' empty');if(q){c.textContent=q.pet.icon;const s=document.createElement('span');s.className='sick';s.textContent=ailment(q.problems[0].id).icon;c.append(s);c.setAttribute('aria-label',q.pet.name+' is waiting')}else c.textContent='·';box.append(c)}
+ $('#progress').textContent=S.today+' / '+goalFor(S.day)+' pets'}
+function renderPatient(){if(!P)return;const pet=$('#pet');pet.textContent=P.pet.icon;$('#petName').innerHTML='';$('#petName').append(P.pet.name);const sm=document.createElement('small');sm.textContent='the '+P.pet.kind+(P.pet.rare?' ✨':'');$('#petName').append(sm);
+ $('#patient').querySelectorAll('.mark').forEach(m=>m.remove());const spots=[[18,20],[74,18],[20,58],[78,56],[48,8]];
+ P.problems.forEach((x,i)=>{if(x.done>=ailment(x.id).steps.length)return;const m=document.createElement('span');m.className='mark';m.textContent=ailment(x.id).mark;m.style.left=spots[i][0]+'%';m.style.top=spots[i][1]+'%';$('#patient').append(m)});
+ const box=$('#problems');box.innerHTML='';
+ for(const x of P.problems){const a=ailment(x.id),fixed=x.done>=a.steps.length,d=document.createElement('div');d.className='prob'+(fixed?' fixed':'');
+  d.innerHTML='<span class="pi" aria-hidden="true"></span><span><span class="pn"></span><br><span class="ps"></span></span><span class="steps"></span>';d.querySelector('.pi').textContent=a.icon;d.querySelector('.pn').textContent=a.name;
+  d.querySelector('.ps').textContent=fixed?'All fixed!':a.steps.length>1?'Use '+a.steps.map(t=>TOOLS[t].name.toLowerCase()).join(', then ')+'.':'Use the '+TOOLS[a.steps[0]].name.toLowerCase()+'.';
+  const st=d.querySelector('.steps');a.steps.forEach((t,k)=>{const b=document.createElement('span');b.className='step'+(k<x.done?' done':k===x.done&&!fixed?' next':'');b.textContent=k<x.done?'✓':TOOLS[t].icon;b.setAttribute('aria-hidden','true');st.append(b)});
+  d.setAttribute('aria-label',a.name+(fixed?', fixed':', needs '+a.steps.slice(x.done).map(t=>TOOLS[t].name).join(' then ')));box.append(d)}}
+function renderTools(glow){const box=$('#tools');box.innerHTML='';for(const id of toolsOn(S.day)){const t=TOOLS[id],b=document.createElement('button');b.type='button';b.className='tool'+(glow&&glow.includes(id)?' glow':'');b.setAttribute('aria-label',t.name);b.innerHTML='<span class="ti" aria-hidden="true"></span><span class="tn"></span>';b.firstChild.textContent=t.icon;b.lastChild.textContent=t.name;b.onclick=()=>tapTool(id);box.append(b)}}
+function renderDecor(){const box=$('#decor');box.innerHTML='';for(const d of DECOR)if(S.decor.includes(d.id)){const s=document.createElement('span');s.textContent=d.icon;s.title=d.name;box.append(s)}}
+function fx(icon){const f=document.createElement('div');f.className='fx';f.textContent=icon;$('#patient').append(f);setTimeout(()=>f.remove(),700)}
+function hearts(){for(let k=0;k<6;k++)setTimeout(()=>{const h=document.createElement('div');h.className='heart';h.textContent=['💖','💚','💛','💙'][k%4];h.style.left=(25+Math.random()*50)+'%';h.style.top=(20+Math.random()*30)+'%';$('#patient').append(h);setTimeout(()=>h.remove(),1100)},k*120)}
+const OK_SAYS={thermometer:'Hmm, it is a bit high!',medicine:'Yum… I feel better!',spray:'Tingly but clean!',bandage:'Ooh, a bandage!',sponge:'Splish splash!',dryer:'Whoosh! So fluffy!',comb:'No more knots!',toy:'A new friend! 🧸',stethoscope:'Thump, thump…',bottle:'Warm and cozy!',flashlight:'Can you see inside?',drops:'Ahh, all better.',magnifier:'Found the fleas!',shampoo:'Bye bye, fleas!',tissue:'*honk*',toothbrush:'Sparkly clean!'};
+function tapTool(id){if(busy||!P)return;const r=useTool(P,id);fx(TOOLS[id].icon);
+ if(!r.ok){sfx.no();$('#pet').classList.remove('wiggle');void $('#pet').offsetWidth;$('#pet').classList.add('wiggle');const need=neededTools(P);$('#say').textContent='Hmm, that\'s not what I need.';$('#tip').textContent='Try the glowing tool! It\'s what this pet needs next.';renderTools(need);return}
+ $('#say').textContent=OK_SAYS[id]||'Thank you!';$('#tip').textContent='Look at what\'s wrong, then tap the tools in order. The dashed boxes show which tools each problem needs.';
+ if(r.fixed)sfx.fixed();else sfx.ok();renderPatient();renderTools();
+ if(r.cured){busy=true;const res=finishPatient(S,P);save();setTimeout(()=>{sfx.cured();$('#pet').classList.add('happy');hearts();$('#say').textContent='All better! Thank you, doctor! 💖  +'+res.coins+' 🪙 '+'⭐'.repeat(res.stars);renderTop();renderWaiting();$('#patient').querySelectorAll('.mark').forEach(m=>m.remove())},350);
+  setTimeout(()=>{$('#pet').classList.remove('happy');busy=false;if(res.dayDone)endDay();else nextPatient()},2100)}}
+function endDay(){const goal=goalFor(S.day),avg=S.todayStars/goal,stars=avg>=2.7?3:avg>=1.9?2:1,bonus=5+S.day*2;S.coins+=bonus;const done=S.day;nextDay(S);save();renderTop();
+ $('#dayBig').textContent='🌙';$('#dayTitle').textContent='Day '+done+' done!';$('#dayText').textContent='You helped '+goal+' pets today. The clinic earned a bonus of 🪙 '+bonus+'!';
+ $('#dayStars').hidden=false;$('#dayStars').innerHTML='<b>'+'★'.repeat(stars)+'</b>'+'★'.repeat(3-stars);
+ const fresh=AILMENTS.filter(a=>a.day===S.day);const nw=$('#dayNew');if(fresh.length){nw.hidden=false;nw.innerHTML='';const a=fresh[0];const i=document.createElement('span');i.className='ni';i.textContent=a.icon;const t=document.createElement('span');t.innerHTML='<b>New tomorrow:</b> ';t.append(a.name+'! Fix it with: '+a.steps.map(x=>TOOLS[x].icon+' '+TOOLS[x].name).join(' then ')+'.');nw.append(i,t)}else nw.hidden=true;
+ $('#dayBtn').textContent='Start day '+S.day+' →';$('#dayDialog').showModal()}
+function startDay(){P=null;queue=[];fillQueue();nextPatient()}
+$('#dayBtn').onclick=()=>{$('#dayDialog').close();startDay()};
+$('#dayDialog').addEventListener('cancel',e=>{e.preventDefault();$('#dayDialog').close();startDay()});
+// shop
+function renderShop(){renderTop();const box=$('#shopItems');box.innerHTML='';const add=(it,kind,desc)=>{const own=(kind==='decor'?S.decor:S.upgrades).includes(it.id),d=document.createElement('div');d.className='item'+(own?' owned':'');d.innerHTML='<span class="ic" aria-hidden="true"></span><span class="nm"></span><span class="ds"></span>';d.children[0].textContent=it.icon;d.children[1].textContent=it.name;d.children[2].textContent=desc;const b=document.createElement('button');b.type='button';
+ if(own){b.textContent='✓ Yours';b.disabled=true}else{b.textContent='🪙 '+it.cost;b.disabled=S.coins<it.cost;b.setAttribute('aria-label','Buy '+it.name+' for '+it.cost+' coins');b.onclick=()=>{if(buyThing(S,kind,it.id)){save();sfx.buy();notify(it.icon+' '+it.name+' is yours!');renderShop();renderDecor()}}}d.append(b);box.append(d)};
+ for(const u of UPGRADES)add(u,'upgrade',u.desc);for(const x of DECOR)add(x,'decor','Makes your clinic cozy.')}
+$('#shopBtn').onclick=()=>{renderShop();$('#shopDialog').showModal()};$('#shopClose').onclick=()=>$('#shopDialog').close();
+// patient book
+$('#bookBtn').onclick=()=>{const box=$('#book');box.innerHTML='';let known=0;for(const p of PETS.concat(RARE_PETS)){const n=S.helped[p.name]||0;if(n)known++;const d=document.createElement('div');d.className='entry'+(n?'':' unknown')+(p.rare?' rare':'');d.innerHTML='<span class="ic" aria-hidden="true"></span><span class="nm"></span><span class="ct"></span>';d.children[0].textContent=n?p.icon:'❔';d.children[1].textContent=n?p.name:p.rare?'Rare ???':'???';d.children[2].textContent=n?'Helped '+n+'×':p.rare?'Very rare visitor':'Not met yet';box.append(d)}
+ $('#bookSub').textContent=S.treated+' pets helped · '+known+' of '+(PETS.length+RARE_PETS.length)+' patients met';$('#bookDialog').showModal()};
+$('#bookClose').onclick=()=>$('#bookDialog').close();
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+document.querySelectorAll('#shopDialog,#bookDialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
+// start: a welcome for day 1, otherwise carry on
+renderTop();renderDecor();
+if(S.treated===0&&S.today===0){$('#dayTitle').textContent='Welcome, Doctor!';$('#dayText').textContent='Sick and hurt pets are coming to your clinic. See what\'s wrong, then tap the right tools in order to make them all better. Help '+goalFor(1)+' pets to finish the day!';$('#dayDialog').showModal()}
+else{$('#dayTitle').textContent='Day '+S.day;$('#dayText').textContent='Welcome back, Doctor! '+(S.today?S.today+' of '+goalFor(S.day)+' pets helped so far today.':'Pets are waiting!');$('#dayBtn').textContent='Open the clinic!';$('#dayDialog').showModal()}
+window.__vet={get S(){return S},get P(){return P},tapTool,neededTools,startDay,renderAll};
+}
+</script>
+</body>
+</html>

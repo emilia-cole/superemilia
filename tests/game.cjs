@@ -406,13 +406,13 @@ test('Five more secret lands unlock one after another, each locked level by leve
  run(`openCharacterStudio();studioTarget='dune';studioDraft={...looks.dune};renderStudioControls()`);assert(run("$('#characterOptions').innerHTML.includes('special colors')"));
  run(`openWorldMap();drawWorldMap()`);assert(run("$('#mapTotal').textContent.includes('/ 144 adventures')"));
 });
-test('The home page is a game menu that links to all five games and shows saved progress for each',()=>{
+test('The home page is a game menu that links to all seven games and shows saved progress for each',()=>{
  const menu=fs.readFileSync('public/index.html','utf8'),head=menu.split('</head>')[0];
  assert(head.includes('<link rel="canonical" href="https://superemilia.com/">')&&head.includes('<title>Super Emilia · Pick a Game</title>'));
- assert(menu.includes('<a class="card game" href="/world/"')&&menu.includes('<a class="card game bakery" href="/bakery/"'));assert(fs.existsSync('public/bakery/index.html'));assert(menu.includes('<a class="card game memory" href="/memory/"')&&fs.existsSync('public/memory/index.html'));for(const g of ['garden','studio'])assert(menu.includes('<a class="card game '+g+'" href="/'+g+'/"')&&fs.existsSync('public/'+g+'/index.html'),g);
+ assert(menu.includes('<a class="card game" href="/world/"')&&menu.includes('<a class="card game bakery" href="/bakery/"'));assert(fs.existsSync('public/bakery/index.html'));assert(menu.includes('<a class="card game memory" href="/memory/"')&&fs.existsSync('public/memory/index.html'));for(const g of ['garden','studio','vet','race'])assert(menu.includes('<a class="card game '+g+'" href="/'+g+'/"')&&fs.existsSync('public/'+g+'/index.html'),g);
  for(const [,src] of menu.matchAll(/(?:src|srcset|href)="(\/assets\/[^"]+)"/g))assert(fs.existsSync('public'+src),src);
  const meta=Object.fromEntries([...head.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map(m=>[m[1],m[2]]));assert.equal(meta['og:url'],'https://superemilia.com/');assert.equal(meta['og:description'],meta.description);
- const ld=JSON.parse(head.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert(ld['@graph'].some(n=>n['@type']==='VideoGame'&&n.url==='https://superemilia.com/world/'));assert.equal(ld['@graph'].filter(n=>n['@type']==='VideoGame').length,5);
+ const ld=JSON.parse(head.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert(ld['@graph'].some(n=>n['@type']==='VideoGame'&&n.url==='https://superemilia.com/world/'));assert.equal(ld['@graph'].filter(n=>n['@type']==='VideoGame').length,7);
  const code=menu.match(/<script>([\s\S]*?)<\/script>/)[1];
  const make=(saved,bakery=null,memory=null,more={})=>{const items=[],list={textContent:'x',appendChild:li=>items.push(li)},play={textContent:'Play now →'};const sb={JSON,Object,Number,Array,Math,isFinite,localStorage:{getItem:k=>k==='mysteryEggBakery'?bakery:k==='superEmiliaMemory'?memory:k in more?more[k]:saved},document:{getElementById:()=>list,createElement:()=>({}),querySelector:()=>play}};vm.createContext(sb);vm.runInContext(code,sb);return {items,list,play}};
  let r=make(null);assert.equal(r.items.length,0);assert.equal(r.play.textContent,'Play now →');
@@ -423,5 +423,7 @@ test('The home page is a game menu that links to all five games and shows saved 
  r=make(null,null,null,{superEmiliaGarden:JSON.stringify({coins:1500,harvests:9,buddies:[0,4,4,99]})});assert.equal(r.items.length,3);assert(r.items[0].textContent.includes('1,500 coins')&&r.items[1].textContent.includes('9 harvests')&&r.items[2].textContent.includes('2 / 12 buddies'));assert.equal(r.play.textContent,'Keep growing →');
  r=make(null,null,null,{superEmiliaStudio:JSON.stringify({coins:40,shows:5,best:{royal:3,beach:2,bad:9}})});assert.equal(r.items.length,3);assert(r.items[0].textContent.includes('5 / 27')&&r.items[1].textContent.includes('5 shows')&&r.items[2].textContent.includes('40 coins'));assert.equal(r.play.textContent,'Keep styling →');
  r=make(null,null,null,{superEmiliaGarden:'{bad',superEmiliaStudio:JSON.stringify({shows:0})});assert.equal(r.items.length,0);
+ r=make(null,null,null,{superEmiliaVet:JSON.stringify({day:4,treated:21,coins:75})});assert.equal(r.items.length,3);assert(r.items[0].textContent.includes('Day 4')&&r.items[1].textContent.includes('21 pets helped')&&r.items[2].textContent.includes('75 coins'));assert.equal(r.play.textContent,'Keep helping →');
+ r=make(null,null,null,{superEmiliaRace:JSON.stringify({races:7,coins:120,best:{candy:1,beach:3,jungle:4,moon:1}})});assert.equal(r.items.length,3);assert(r.items[0].textContent.includes('2 / 6 trophies')&&r.items[1].textContent.includes('7 races')&&r.items[2].textContent.includes('120 coins'));assert.equal(r.play.textContent,'Keep racing →');
 });
 console.log(checks+' checks passed.');

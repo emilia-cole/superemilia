@@ -6,7 +6,7 @@ Play at **https://superemilia.com/world/**. The site is hosted on GitHub Pages.
 
 ## The game menu
 
-**https://superemilia.com** opens a game menu with five games: Super Emilia World, Mystery Egg Bakery (`/bakery/`), Memory Match (`/memory/`), Buddy Garden (`/garden/`), and Dress-Up Studio (`/studio/`). Each card shows the player's saved progress (read from the same browser save the game uses) and changes its button to keep playing once there is progress. Inside the game, **← All games** in the footer returns to the menu. Because the menu and every game share the superemilia.com address, saved progress carries over automatically.
+**https://superemilia.com** opens a game menu with seven games: Super Emilia World, Mystery Egg Bakery (`/bakery/`), Memory Match (`/memory/`), Buddy Garden (`/garden/`), Dress-Up Studio (`/studio/`), Pet Vet Clinic (`/vet/`), and Buddy Kart Racing (`/race/`). Each card shows the player's saved progress (read from the same browser save the game uses) and changes its button to keep playing once there is progress. Inside the game, **← All games** in the footer returns to the menu. Because the menu and every game share the superemilia.com address, saved progress carries over automatically.
 
 On page load, the cover artwork appears for five seconds before fading into the ready screen. Phones use the square cover and wider screens use the landscape cover. **Skip intro** or Escape dismisses it early. Gameplay waits for the player to start.
 
@@ -21,6 +21,14 @@ On page load, the cover artwork appears for five seconds before fading into the 
 ## Dress-Up Studio
 
 **https://superemilia.com/studio/** is a dress-up and fashion show game. Pick a buddy model and choose a hat, top, bottoms, shoes, an extra, colors, and a pattern. Each show has a theme (Royal Ball, Beach Day, Snow Day, and six more); items the judges love for it are marked 💚. **Walk the runway** and three judges score the outfit on the theme, colors, and style, up to 30 points and 3 stars. Shows earn coins to buy more clothes, colors, patterns, and models. Progress is saved under `superEmiliaStudio`.
+
+## Pet Vet Clinic
+
+**https://superemilia.com/vet/** is a pet doctor game. Each day a few patients come in with problems like a fever, a scraped knee, or muddy fur. Every problem shows which tools it needs, in order (for a fever: thermometer, then medicine). A wrong tool makes the pet wiggle and lights up the right one. New problems and tools arrive on later days, pets can have up to three problems at once, and rare unicorns, dragons, and dinos sometimes visit. Coins buy clinic decorations, a lollipop jar, and gold stickers. The patient book lists every pet you have helped. Progress is saved under `superEmiliaVet`.
+
+## Buddy Kart Racing
+
+**https://superemilia.com/race/** is a go-kart racing game. The kart drives itself; hold ◀ ▶ (or the arrow keys, or press either side of the track) to steer around 3 laps against three buddy racers. Yellow pads give a boost, 🎁 boxes give a boost, rocket, or shield (tap the item button or press space to use it), and obstacles spin you out. Leaving the road slows you down. Finishing in the top 3 earns a trophy and unlocks the next of six tracks: Candy Lane, Beach Boardwalk, Jungle Run, Snowy Peaks (slippery), Space Speedway, and Rainbow Road. Coins buy faster karts and new drivers in the garage. Progress is saved under `superEmiliaRace`.
 
 ## Controls
 
@@ -165,11 +173,11 @@ The page includes Open Graph and large Twitter card metadata with original wide 
 
 ## Make changes
 
-The menu is `public/index.html`; the games are `public/world/index.html`, `public/bakery/index.html`, `public/memory/index.html`, `public/garden/index.html`, and `public/studio/index.html`. Neither has dependencies or a build step. Run `python3 -m http.server --directory public` and open http://localhost:8000 to try both; asset links start with `/assets/`, so opening the files directly from disk shows the game without its cover art.
+The menu is `public/index.html`; the games are `public/world/index.html`, `public/bakery/index.html`, `public/memory/index.html`, `public/garden/index.html`, `public/studio/index.html`, `public/vet/index.html`, and `public/race/index.html`. Neither has dependencies or a build step. Run `python3 -m http.server --directory public` and open http://localhost:8000 to try both; asset links start with `/assets/`, so opening the files directly from disk shows the game without its cover art.
 
 To add another game, put it in its own folder under `public/` (for example `public/new-game/index.html`) and add a card linking to it in `public/index.html`.
 
-Push changes to `main` to publish automatically. The **Deploy game to GitHub Pages** workflow checks every page's script, runs `node tests/game.cjs`, `node tests/bakery.cjs`, `node tests/memory.cjs`, `node tests/garden.cjs`, and `node tests/studio.cjs`, uploads only the `public` folder, and deploys to the `github-pages` environment.
+Push changes to `main` to publish automatically. The **Deploy game to GitHub Pages** workflow checks every page's script, runs `node tests/game.cjs`, `node tests/bakery.cjs`, `node tests/memory.cjs`, `node tests/garden.cjs`, `node tests/studio.cjs`, `node tests/vet.cjs`, and `node tests/race.cjs`, uploads only the `public` folder, and deploys to the `github-pages` environment.
 
 ## Hosting and domain
 

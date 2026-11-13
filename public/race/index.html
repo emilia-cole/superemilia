@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d9ecff">
+<meta name="author" content="Emilia">
+<meta name="description" content="Race your buddies in go-karts around candy, beach, jungle, snow, space, and rainbow tracks. Grab boosts, dodge obstacles, and unlock new karts. A free racing game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/race/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/race/">
+<meta property="og:title" content="Buddy Kart Racing · A Super Emilia Game">
+<meta property="og:description" content="Race your buddies in go-karts around candy, beach, jungle, snow, space, and rainbow tracks. Grab boosts, dodge obstacles, and unlock new karts. A free racing game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Buddy Kart Racing</title>
+<style>
+/* Layout: three screens. Tracks (pick a track), Garage (karts and drivers), and Race (a tall canvas with the race, a HUD on top and big steering buttons below). Results open in a dialog. */
+:root{
+ color-scheme:light;
+ --bg:#d9ecff; --bg-2:#fff1e0; --paper:#fff; --line:#cfe0f2; --ink:#1f3350; --soft:#5c7090;
+ --red:#ff5a5f; --red-deep:#d23d43; --blue:#4f8cff; --gold:#ffc83d; --green:#4cc38a;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .12s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.app{max-width:920px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.coins{color:#a06b00;border-color:#f2d98a;background:#fff8dc}
+h1{margin:2px 0 0;font-size:clamp(24px,5vw,34px);letter-spacing:-.6px}
+.lede{margin:2px 0 0;color:var(--soft);font-weight:600}
+.mykart{display:flex;align-items:center;gap:12px;background:var(--paper);border:2px solid var(--line);border-radius:20px;padding:10px 14px}
+.mykart canvas{width:64px;height:84px}
+.mykart .mk{margin-right:auto;line-height:1.3}
+.mykart .mk b{font-size:17px}
+.mykart .mk small{display:block;color:var(--soft);font-weight:700}
+.tracks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.track{position:relative;display:grid;gap:4px;padding:0 0 12px;border-radius:20px;overflow:hidden;text-align:center;background:var(--paper);box-shadow:0 5px 0 var(--line)}
+.track .art{height:96px;display:grid;place-items:center;font-size:44px;position:relative}
+.track .art:after{content:"";position:absolute;left:38%;right:38%;top:0;bottom:0;background:var(--road,#777);opacity:.85;z-index:0}
+.track .art span{position:relative;z-index:1;filter:drop-shadow(0 3px 0 #0003)}
+.track .tn{font-weight:900;font-size:16px}
+.track .tb{font-size:13px;font-weight:800;color:var(--soft)}
+.track.locked .art{filter:grayscale(1) opacity(.5)}
+.track.next{border-color:var(--red);box-shadow:0 5px 0 var(--red-deep)}
+/* garage */
+.shelf h2{margin:8px 0 8px;font-size:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.gi{display:grid;justify-items:center;gap:4px;padding:10px 8px;border-radius:18px;background:#fff;text-align:center}
+.gi canvas{width:56px;height:74px}
+.gi .ic{font-size:40px;line-height:1.1}
+.gi .nm{font-weight:900;font-size:14px}
+.gi .st{font-size:11.5px;color:var(--soft);font-weight:800;line-height:1.35}
+.gi .tag{font-size:12px;font-weight:900;border-radius:999px;padding:2px 9px;background:#eef4fb}
+.gi.on{border-color:var(--red);box-shadow:0 0 0 2px var(--red) inset}
+.gi.on .tag{background:var(--red);color:#fff}
+.gi .tag.price{background:#fff8dc;color:#8a5a00}
+/* race */
+#raceScreen{align-items:center}
+.hud{display:flex;gap:8px;align-items:center;width:100%;max-width:520px;flex-wrap:wrap}
+.hud .chip{font-size:16px}
+.hud .pos{font-size:22px;padding:4px 14px;background:var(--ink);color:#fff;border-color:var(--ink)}
+.stage{position:relative;width:100%;max-width:520px}
+#game{display:block;width:100%;height:auto;max-height:calc(100dvh - 210px);aspect-ratio:2/3;margin:0 auto;border-radius:22px;border:4px solid #fff;box-shadow:0 8px 0 #b8cde4;background:#7ccf6a;touch-action:none}
+.steer{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:520px}
+.steer button{font-size:34px;padding:12px 0;border-radius:20px;background:#fff;box-shadow:0 5px 0 var(--line);touch-action:none}
+.steer button.held{background:#eaf2ff;border-color:var(--blue);transform:scale(.97)}
+.keys{font-size:12.5px;color:var(--soft);font-weight:700;text-align:center;margin:0}
+.primary{background:var(--red);border-color:var(--red-deep);color:#fff;box-shadow:0 4px 0 var(--red-deep);font-size:17px;padding:11px 20px}
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(440px,calc(100vw - 24px));box-shadow:0 30px 80px #1f335055}
+dialog::backdrop{background:#1f335066;backdrop-filter:blur(4px)}
+.dlg{padding:20px 18px 18px;display:grid;gap:10px;justify-items:center;text-align:center}
+.dlg h2{margin:0;font-size:26px}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.podium{display:flex;align-items:flex-end;gap:6px;height:140px;margin-top:34px}
+.podium div{width:74px;border-radius:12px 12px 0 0;display:grid;justify-items:center;align-content:start;gap:2px;padding-top:6px;font-weight:900;color:#fff;font-size:15px}
+.podium span{font-size:32px;margin-top:-40px;filter:drop-shadow(0 3px 0 #0002)}
+.podium .p1{height:100%;background:linear-gradient(180deg,#ffd45c,#f0b21e)}.podium .p2{height:72%;background:linear-gradient(180deg,#cfd8e6,#a9b6c9)}.podium .p3{height:52%;background:linear-gradient(180deg,#f2b37c,#d98a4a)}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@media (max-width:640px){.tracks{grid-template-columns:repeat(2,minmax(0,1fr))}.title strong{font-size:17px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Buddy Kart Racing</strong></div>
+  <span class="chip" id="trophies" aria-label="Trophies">🏆 0</span>
+  <span class="chip coins" id="coins" aria-label="Coins">🪙 0</span>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+
+ <section id="menuScreen" style="display:grid;gap:12px">
+  <div><h1>Pick a track!</h1><p class="lede">Finish 1st, 2nd or 3rd to unlock the next track. Win races to earn coins for new karts.</p></div>
+  <div class="mykart"><canvas id="myKart" width="128" height="168" aria-hidden="true"></canvas><div class="mk"><b id="myKartName">Buddy Buggy</b><small id="myKartStats"></small></div><button type="button" id="garageBtn">🔧 Garage</button></div>
+  <div class="tracks" id="tracks"></div>
+ </section>
+
+ <section id="garageScreen" hidden style="display:grid;gap:8px">
+  <div class="topbar"><button type="button" id="garageBack">← Tracks</button><h1 style="margin:0 auto 0 4px;font-size:26px">🔧 Garage</h1></div>
+  <div class="shelf"><h2>Karts</h2><div class="grid" id="kartGrid"></div></div>
+  <div class="shelf"><h2>Drivers</h2><div class="grid" id="driverGrid"></div></div>
+ </section>
+
+ <section id="raceScreen" hidden style="display:flex;flex-direction:column;gap:10px">
+  <div class="hud"><button type="button" id="quitBtn" aria-label="Leave the race">✕</button><span class="chip pos" id="hudPos">1st</span><span class="chip" id="hudLap">Lap 1 / 3</span><span class="chip" id="hudItem" hidden></span><span style="margin-left:auto" class="chip" id="hudTrack">🍭</span></div>
+  <div class="stage"><canvas id="game" width="480" height="720" aria-label="The race track"></canvas></div>
+  <div class="steer"><button type="button" id="leftBtn" aria-label="Steer left">◀</button><button type="button" id="rightBtn" aria-label="Steer right">▶</button></div>
+  <p class="keys">Hold ◀ ▶ to steer (or use the arrow keys). Your kart drives by itself. Stay on the road!</p>
+ </section>
+</div>
+
+<dialog id="resultDialog" aria-labelledby="resultTitle"><div class="dlg">
+ <div class="podium" id="podium" aria-hidden="true"></div>
+ <h2 id="resultTitle">You finished 1st!</h2>
+ <p id="resultText"></p>
+ <div class="row"><button type="button" id="againBtn">↻ Race again</button><button type="button" id="tracksBtn">Tracks</button><button type="button" class="primary" id="nextBtn">Next track →</button></div>
+</div></dialog>
+<dialog id="buyDialog" aria-labelledby="buyTitle"><div class="dlg">
+ <div id="buyArt" style="font-size:56px;line-height:1" aria-hidden="true"></div><h2 id="buyTitle">Buy this?</h2><p id="buyText"></p>
+ <div class="row"><button type="button" id="buyNo">Not now</button><button type="button" class="primary" id="buyYes">Buy it!</button></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+// Tracks get twistier and the other racers get faster. ice makes steering slippery.
+const TRACKS=[
+ {id:'candy',name:'Candy Lane',icon:'🍭',grass:'#ffd3e8',grass2:'#ffc2df',road:'#b98ab0',edge:['#fff','#ff6fae'],obstacle:'🍬',deco:['🍭','🧁','🍩','🍬'],curve:70,level:0},
+ {id:'beach',name:'Beach Boardwalk',icon:'🏖️',grass:'#ffe6a8',grass2:'#ffdb8a',road:'#c9a072',edge:['#fff','#4fb3ff'],obstacle:'🦀',deco:['🌴','🐚','⛱️','🦩'],curve:90,level:1},
+ {id:'jungle',name:'Jungle Run',icon:'🌴',grass:'#5fbf5a',grass2:'#52b04d',road:'#8a6a4a',edge:['#fff','#ffcf4d'],obstacle:'🪵',deco:['🌴','🌿','🦜','🍌'],curve:110,level:2},
+ {id:'snow',name:'Snowy Peaks',icon:'⛄',grass:'#f2f8ff',grass2:'#e6f1fb',road:'#9fb7cf',edge:['#fff','#4f8cff'],obstacle:'⛄',deco:['🌲','❄️','⛄','🌲'],curve:105,level:3,ice:true},
+ {id:'space',name:'Space Speedway',icon:'🚀',grass:'#2a2352',grass2:'#251e4a',road:'#4b4380',edge:['#fff','#b48cff'],obstacle:'☄️',deco:['⭐','🪐','🌙','✨'],curve:125,level:4},
+ {id:'rainbow',name:'Rainbow Road',icon:'🌈',grass:'#bfe4ff',grass2:'#b2dcff',road:'#8f7cd9',edge:['#ff5a5f','#ffc83d'],obstacle:'🌀',deco:['☁️','⭐','🌈','☁️'],curve:140,level:5,rainbow:true}
+];
+const KARTS=[
+ {id:'buggy',name:'Buddy Buggy',color:'#ff5a5f',speed:400,handling:1,price:0},
+ {id:'bubble',name:'Bubble Car',color:'#4fb3ff',speed:405,handling:1.18,price:40},
+ {id:'candy',name:'Candy Cruiser',color:'#ff8cc6',speed:420,handling:1.08,price:70},
+ {id:'leaf',name:'Leaf Racer',color:'#4cc38a',speed:430,handling:1.15,price:110},
+ {id:'rocket',name:'Rocket Racer',color:'#8b5cf6',speed:450,handling:1.05,price:160},
+ {id:'gold',name:'Gold Zoomer',color:'#f2bd2c',speed:470,handling:1.25,price:250}
+];
+const DRIVERS=[['cat','🐱','Kitty',0],['dog','🐶','Pup',0],['bunny','🐰','Bunny',0],['frog','🐸','Hopper',20],['fox','🦊','Rusty',25],['panda','🐼','Bamboo',30],['penguin','🐧','Pebble',30],['alien','👽','Zip',45],['unicorn','🦄','Sparkle',60],['dragon','🐉','Ember',80]].map(([id,icon,name,price])=>({id,icon,name,price}));
+const RIVALS=[['🐸','#4cc38a'],['🦊','#ff9a3c'],['🐼','#2f2d38'],['🐧','#4f8cff'],['🐰','#ff8cc6'],['🐶','#c98e5c'],['🐱','#ffc83d'],['👽','#7fe0c4']];
+const LAPS=3,LAP=4000,ROAD=120,PRIZE=[40,25,15,8];
+const SAVE_KEY='superEmiliaRace';
+
+// ---------- pure game logic (also used by the tests) ----------
+// the middle of the road at distance z (it wiggles left and right)
+function centerAt(track,z){const a=track.curve;return a*Math.sin(z/430+track.level)+a*.55*Math.sin(z/170+track.level*2)}
+function trackOpen(i,best){return i===0||(best[TRACKS[i-1].id]||9)<=3}
+function placeName(n){return n+(['th','st','nd','rd'][n]||'th')}
+// a seeded random so each track always has the same layout
+function seeded(seed){let s=seed>>>0||1;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+function layout(trackIdx){const r=seeded(trackIdx*977+13),items=[];for(let z=500;z<LAP-250;z+=150+r()*110){const t=r(),type=t<.32?'boost':t<.5?'box':'obstacle';items.push({z:Math.round(z),x:Math.round((r()*2-1)*ROAD*.72),type})}return items}
+function makeRace(trackIdx,kart,driver,rand=Math.random){
+ const track=TRACKS[trackIdx],pick=RIVALS.filter(([icon])=>icon!==driver.icon).sort(()=>rand()-.5).slice(0,3);
+ const rivals=pick.map(([icon,color],k)=>({icon,color,z:-40-k*55,x:[-60,60,0][k],lane:[-60,60,0][k],v:0,base:400*(.78+.03*track.level+k*.025),boost:0,spin:0,done:null,goal:0}));
+ return{track,trackIdx,kart,driver,t:0,countdown:3,items:layout(trackIdx),taken:{},player:{z:0,x:0,vx:0,v:0,boost:0,spin:0,shield:0,item:null},rivals,finished:false,place:null}}
+function playerOffset(r){return r.player.x-centerAt(r.track,r.player.z)}
+function position(r){return 1+r.rivals.filter(v=>v.done!==null||v.z>r.player.z).length}
+function lapOf(z){return Math.min(LAPS,Math.floor(Math.max(0,z)/LAP)+1)}
+// items crossed between two distances: [{item,index,lap}]
+function crossed(r,z0,z1){const out=[];for(let lap=Math.floor(Math.max(0,z0)/LAP);lap<=Math.floor(z1/LAP)&&lap<LAPS;lap++)r.items.forEach((it,i)=>{const z=lap*LAP+it.z;if(z>z0&&z<=z1)out.push({it,i,lap,z})});return out}
+// moves the race forward by dt seconds. input: {left,right}. Returns events for sounds and messages.
+function stepRace(r,dt,input={}){const ev=[];if(r.finished)return ev;
+ if(r.countdown>0){const before=Math.ceil(r.countdown);r.countdown-=dt;if(Math.ceil(r.countdown)<before)ev.push(r.countdown<=0?'go':'tick');if(r.countdown>0)return ev}
+ r.t+=dt;const T=r.track,P=r.player,K=r.kart;
+ // steering: snow is slippery, so the kart slides a bit
+ const want=((input.right?1:0)-(input.left?1:0))*230*K.handling,grip=T.ice?3.2:11;P.vx+=(want-P.vx)*Math.min(1,dt*grip);P.x+=P.vx*dt;
+ const c=centerAt(T,P.z);let off=P.x-c;if(Math.abs(off)>ROAD+70){off=Math.sign(off)*(ROAD+70);P.x=c+off;P.vx*=.3}
+ const offRoad=Math.abs(off)>ROAD;let max=K.speed*(offRoad?.65:1)*(P.boost>0?1.5:1);if(P.spin>0)max*=.45;
+ P.v+=(max-P.v)*Math.min(1,dt*(P.v<max?1.1:3));const z0=P.z;P.z+=P.v*dt;
+ P.boost=Math.max(0,P.boost-dt);P.spin=Math.max(0,P.spin-dt);P.shield=Math.max(0,P.shield-dt);
+ for(const h of crossed(r,z0,P.z)){const key=h.lap+':'+h.i;if(r.taken[key]||Math.abs(P.x-(centerAt(T,h.z)+h.it.x))>(h.it.type==='obstacle'?24:32))continue;
+  if(h.it.type==='boost'){P.boost=Math.max(P.boost,1.3);ev.push('boost')}
+  else if(h.it.type==='box'){r.taken[key]=true;const roll=Math.floor((r.t*7+h.i)%3);P.item=['boost','shield','rocket'][roll];ev.push('item')}
+  else{r.taken[key]=true;if(P.shield>0){P.shield=0;ev.push('blocked')}else{P.spin=.6;P.boost=0;ev.push('spin')}}}
+ if(Math.floor(z0/LAP)<Math.floor(P.z/LAP)&&P.z<LAPS*LAP)ev.push('lap');
+ // the other racers follow the road, use boost pads, sometimes bump into obstacles, and keep the race close
+ for(const v of r.rivals){if(v.done!==null){v.z+=v.v*dt*.5;continue}
+  const gap=v.z-P.z;let band=gap>350?.9:gap<-450?1.12:gap<-200?1.05:1;let tv=v.base*band*(v.boost>0?1.45:1);if(v.spin>0)tv*=.3;
+  v.v+=(tv-v.v)*Math.min(1,dt*1.1);const vz0=v.z;v.z+=v.v*dt;v.boost=Math.max(0,v.boost-dt);v.spin=Math.max(0,v.spin-dt);
+  if((v.goal-=dt)<=0){v.goal=1.5+((v.z*13)%2);v.target=((v.z*7)%(ROAD*1.3))-ROAD*.65}v.lane+=((v.target??v.lane)-v.lane)*Math.min(1,dt*.8);
+  for(const h of crossed(r,vz0,v.z)){if(Math.abs(v.lane-h.it.x)>28)continue;if(h.it.type==='boost')v.boost=1.2;else if(h.it.type==='obstacle'&&((h.i+h.lap)%2===0))v.spin=.6}
+  v.x=centerAt(T,v.z)+v.lane;
+  if(Math.abs(v.z-P.z)<46&&Math.abs(v.x-P.x)<40){const push=Math.sign(P.x-v.x)||1;P.vx+=push*160;v.lane-=push*14}
+  if(v.z>=LAPS*LAP)v.done=r.t}
+ if(P.z>=LAPS*LAP){r.finished=true;r.place=1+r.rivals.filter(v=>v.done!==null).length;ev.push('finish')}
+ return ev}
+// use the item from a mystery box
+function useItem(r){const P=r.player,it=P.item;if(!it||r.countdown>0||r.finished)return null;P.item=null;if(it==='boost')P.boost=Math.max(P.boost,1.6);else if(it==='rocket')P.boost=Math.max(P.boost,2.6);else P.shield=8;return it}
+function prizeFor(place){return PRIZE[place-1]??5}
+function recordRace(save,trackId,place){const old=save.best[trackId]||9,better=place<old,coins=prizeFor(place)+(better&&place<=3?10:0);save.coins+=coins;save.races++;if(better)save.best[trackId]=place;const i=TRACKS.findIndex(t=>t.id===trackId);return{coins,better,unlocked:better&&old>3&&place<=3&&i+1<TRACKS.length?TRACKS[i+1]:null}}
+function trophyCount(best){return TRACKS.filter(t=>(best[t.id]||9)<=3).length}
+function owns(save,kind,id){const list=kind==='kart'?KARTS:DRIVERS,it=list.find(x=>x.id===id);return!!it&&(it.price===0||save.owned.includes(kind+':'+id))}
+function buy(save,kind,id){const list=kind==='kart'?KARTS:DRIVERS,it=list.find(x=>x.id===id);if(!it||owns(save,kind,id)||save.coins<it.price)return false;save.coins-=it.price;save.owned.push(kind+':'+id);return true}
+function defaultSave(){return{coins:0,best:{},owned:[],kart:'buggy',driver:'cat',races:0,sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const n=Math.floor(Number(raw.coins));if(Number.isFinite(n)&&n>=0)s.coins=n;const rc=Math.floor(Number(raw.races));if(Number.isFinite(rc)&&rc>=0)s.races=rc;
+ if(raw.best&&typeof raw.best==='object')for(const t of TRACKS){const b=Math.floor(Number(raw.best[t.id]));if(b>=1&&b<=4)s.best[t.id]=b}
+ if(Array.isArray(raw.owned))s.owned=[...new Set(raw.owned.filter(k=>typeof k==='string'&&((k.startsWith('kart:')&&KARTS.some(x=>'kart:'+x.id===k))||(k.startsWith('driver:')&&DRIVERS.some(x=>'driver:'+x.id===k)))))];
+ if(owns(s,'kart',raw.kart))s.kart=raw.kart;if(owns(s,'driver',raw.driver))s.driver=raw.driver;s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- drawing ----------
+function drawKart(g,x,y,color,icon,tilt=0,scale=1,glow=null){g.save();g.translate(x,y);g.rotate(tilt);g.scale(scale,scale);
+ if(glow){g.fillStyle=glow;g.beginPath();g.ellipse(0,4,38,46,0,0,Math.PI*2);g.fill()}
+ g.fillStyle='#0003';g.beginPath();g.ellipse(0,26,26,10,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#2b2b33';for(const [wx,wy] of [[-22,-16],[22,-16],[-22,16],[22,16]]){g.beginPath();g.roundRect(wx-6,wy-9,12,18,4);g.fill()}
+ g.fillStyle=color;g.strokeStyle='#0004';g.lineWidth=2;g.beginPath();g.roundRect(-18,-30,36,60,14);g.fill();g.stroke();
+ g.fillStyle='#ffffff88';g.beginPath();g.roundRect(-12,-27,24,8,4);g.fill();
+ g.fillStyle=color;g.beginPath();g.roundRect(-22,22,44,8,3);g.fill();g.stroke();
+ g.font='30px serif';g.textAlign='center';g.textBaseline='middle';g.fillText(icon,0,2);g.restore()}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+let S=loadSave(),R=null,raf=0,last=0,input={left:false,right:false},audio=null,flash=null,pending=null;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.3,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={tick:()=>tone(440,.15,'square',.04),go:()=>tone(880,.3,'square',.05),boost:()=>tone(520,.25,'sawtooth',.03),item:()=>[700,900,1100].forEach((f,i)=>setTimeout(()=>tone(f,.06,'triangle'),i*50)),spin:()=>tone(180,.3,'sawtooth',.04),blocked:()=>tone(1200,.12,'triangle'),lap:()=>[660,990].forEach((f,i)=>setTimeout(()=>tone(f,.1,'triangle'),i*90)),finish:()=>[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.16),i*100))};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),1800)}
+const kart=()=>KARTS.find(k=>k.id===S.kart),driver=()=>DRIVERS.find(d=>d.id===S.driver);
+function show(id){for(const s of ['menuScreen','garageScreen','raceScreen'])$('#'+s).hidden=s!==id}
+function renderTop(){$('#coins').textContent='🪙 '+S.coins;$('#trophies').textContent='🏆 '+trophyCount(S.best);$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
+function kartPic(canvas,k,d){const g=canvas.getContext('2d');g.clearRect(0,0,canvas.width,canvas.height);drawKart(g,canvas.width/2,canvas.height/2,k.color,d.icon,0,canvas.width/64)}
+function stars(n){return'●'.repeat(n)+'○'.repeat(5-n)}
+function statText(k){const sp=Math.round((k.speed-390)/16)+1,ha=Math.round((k.handling-.95)/.07)+1;return'Speed '+stars(Math.min(5,sp))+' · Steering '+stars(Math.min(5,ha))}
+function renderMenu(){renderTop();kartPic($('#myKart'),kart(),driver());$('#myKartName').textContent=driver().name+' in the '+kart().name;$('#myKartStats').textContent=statText(kart());
+ const box=$('#tracks');box.innerHTML='';const next=TRACKS.findIndex((t,i)=>trackOpen(i,S.best)&&!(S.best[t.id]<=3));
+ TRACKS.forEach((t,i)=>{const open=trackOpen(i,S.best),b=document.createElement('button');b.type='button';b.className='track'+(open?'':' locked')+(i===next?' next':'');b.disabled=!open;const best=S.best[t.id];
+  b.innerHTML='<div class="art" style="background:linear-gradient(90deg,'+t.grass+','+t.grass2+');--road:'+t.road+'"><span>'+(open?t.icon:'🔒')+'</span></div><div class="tn"></div><div class="tb"></div>';b.querySelector('.tn').textContent=t.name;
+  b.querySelector('.tb').textContent=!open?'Finish top 3 on '+TRACKS[i-1].name:best?(best===1?'🥇':best===2?'🥈':best===3?'🥉':'🏁')+' Best: '+placeName(best):'Not raced yet';
+  b.setAttribute('aria-label',t.name+(open?best?', best finish '+placeName(best):', not raced yet':', locked'));b.onclick=()=>startRace(i);box.append(b)})}
+function renderGarage(){renderTop();const kg=$('#kartGrid'),dg=$('#driverGrid');kg.innerHTML='';dg.innerHTML='';
+ for(const k of KARTS){const own=owns(S,'kart',k.id),on=S.kart===k.id,b=document.createElement('button');b.type='button';b.className='gi'+(on?' on':'');b.innerHTML='<canvas width="112" height="148" aria-hidden="true"></canvas><span class="nm"></span><span class="st"></span><span class="tag"></span>';b.querySelector('.nm').textContent=k.name;b.querySelector('.st').textContent=statText(k).replace(' · ','\n');b.querySelector('.st').style.whiteSpace='pre-line';
+  const tag=b.querySelector('.tag');tag.textContent=on?'Driving':own?'Pick':'🪙 '+k.price;if(!own)tag.classList.add('price');kartPic(b.querySelector('canvas'),k,driver());b.setAttribute('aria-label',k.name+(on?', driving now':own?'':', costs '+k.price+' coins'));b.onclick=()=>pickThing('kart',k);kg.append(b)}
+ for(const d of DRIVERS){const own=owns(S,'driver',d.id),on=S.driver===d.id,b=document.createElement('button');b.type='button';b.className='gi'+(on?' on':'');b.innerHTML='<span class="ic" aria-hidden="true"></span><span class="nm"></span><span class="tag"></span>';b.querySelector('.ic').textContent=d.icon;b.querySelector('.nm').textContent=d.name;const tag=b.querySelector('.tag');tag.textContent=on?'Driving':own?'Pick':'🪙 '+d.price;if(!own)tag.classList.add('price');b.setAttribute('aria-label',d.name+(on?', driving now':own?'':', costs '+d.price+' coins'));b.onclick=()=>pickThing('driver',d);dg.append(b)}}
+function pickThing(kind,it){if(owns(S,kind,it.id)){S[kind]=it.id;save();tone(820,.06,'triangle');renderGarage();return}pending={kind,it};
+ $('#buyArt').textContent=kind==='driver'?it.icon:'🏎️';$('#buyTitle').textContent='Buy '+it.name+'?';$('#buyText').textContent=S.coins>=it.price?'It costs 🪙 '+it.price+'. You have 🪙 '+S.coins+'.':'It costs 🪙 '+it.price+', but you have 🪙 '+S.coins+'. Win races to earn more!';$('#buyYes').hidden=S.coins<it.price;$('#buyDialog').showModal()}
+$('#buyNo').onclick=()=>$('#buyDialog').close();
+$('#buyYes').onclick=()=>{if(pending&&buy(S,pending.kind,pending.it.id)){S[pending.kind]=pending.it.id;save();tone(990,.12,'square',.03);notify(pending.it.name+' is yours! 🎉');renderGarage()}$('#buyDialog').close()};
+$('#garageBtn').onclick=()=>{show('garageScreen');renderGarage()};$('#garageBack').onclick=()=>{show('menuScreen');renderMenu()};
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+
+// race drawing
+const cv=$('#game'),g=cv.getContext('2d'),W=cv.width,H=cv.height,PY=H*.78,ZS=1.35;
+function draw(){const T=R.track,P=R.player,cam=centerAt(T,P.z)*.65+P.x*.35;
+ // ground and road, drawn in strips from the bottom up
+ for(let y=H;y>-6;y-=6){const z=P.z+(PY-y)*ZS,c=W/2+centerAt(T,z)-cam,band=Math.floor(z/60)&1;
+  g.fillStyle=band?T.grass:T.grass2;g.fillRect(0,y-6,W,6);
+  if(T.rainbow){const hues=['#ff5a5f','#ff9a3c','#ffd447','#4cc38a','#4f8cff','#8b5cf6'];for(let k=0;k<6;k++){g.fillStyle=hues[k];g.fillRect(c-ROAD+k*ROAD/3,y-6,ROAD/3+1,6)}g.fillStyle='#ffffff30';g.fillRect(c-ROAD,y-6,ROAD*2,6)}
+  else{g.fillStyle=T.road;g.fillRect(c-ROAD,y-6,ROAD*2,6)}
+  g.fillStyle=T.edge[Math.floor(z/40)&1];g.fillRect(c-ROAD-10,y-6,10,6);g.fillRect(c+ROAD,y-6,10,6);
+  if(!T.rainbow&&(Math.floor(z/50)&1)){g.fillStyle='#ffffff99';g.fillRect(c-3,y-6,6,6)}
+  // finish line
+  const fz=((z%LAP)+LAP)%LAP;if(fz<14&&z>LAP*.5){for(let k=0;k<12;k++){g.fillStyle=(k+Math.floor(z/7))&1?'#fff':'#222';g.fillRect(c-ROAD+k*ROAD/6,y-6,ROAD/6,6)}}}
+ // roadside decorations
+ g.textAlign='center';g.textBaseline='middle';g.font='30px serif';
+ const z0=P.z-(H-PY)*ZS-80,z1=P.z+PY*ZS+60;for(let z=Math.ceil(z0/90)*90;z<z1;z+=90){const k=Math.abs(Math.floor(z/90)),side=k%2?1:-1,dist=ROAD+40+((k*37)%70),y=PY-(z-P.z)/ZS,x=W/2+centerAt(T,z)-cam+side*dist;g.fillText(T.deco[k%T.deco.length],x,y)}
+ // items on the road
+ for(let lap=Math.max(0,Math.floor(z0/LAP));lap<=Math.floor(z1/LAP)&&lap<LAPS;lap++)R.items.forEach((it,i)=>{const z=lap*LAP+it.z;if(z<z0||z>z1)return;const y=PY-(z-P.z)/ZS,x=W/2+centerAt(T,z)+it.x-cam;
+  if(it.type==='boost'){g.fillStyle='#ffd447';g.beginPath();g.roundRect(x-22,y-14,44,28,8);g.fill();g.fillStyle='#ff9a3c';g.font='bold 20px sans-serif';g.fillText('»',x,y+1);g.font='30px serif'}
+  else if(R.taken[lap+':'+i])return;else if(it.type==='box'){g.fillStyle='#ffffffcc';g.beginPath();g.roundRect(x-18,y-18,36,36,8);g.fill();g.fillText('🎁',x,y+1)}else g.fillText(T.obstacle,x,y)});
+ // racers, farthest first
+ const all=R.rivals.map(v=>({z:v.z,x:v.x,color:v.color,icon:v.icon,spin:v.spin})).concat([{z:P.z,x:P.x,color:R.kart.color,icon:R.driver.icon,spin:P.spin,me:true}]).sort((a,b)=>b.z-a.z);
+ for(const k of all){const y=PY-(k.z-P.z)/ZS;if(y<-60||y>H+60)continue;const x=W/2+k.x-cam,tilt=k.spin>0?k.spin*12:k.me?P.vx/900:0;drawKart(g,x,y,k.color,k.icon,tilt,1,k.me?(P.shield>0?'#7fd3ff66':P.boost>0?'#ffd44766':null):null);
+  if(k.me&&P.boost>0){g.font='22px serif';g.fillText('🔥',x-10,y+42);g.fillText('🔥',x+10,y+42);g.font='30px serif'}}
+ // a little arrow for racers just behind you
+ for(const v of R.rivals){const d=P.z-v.z;if(d>(H-PY)*ZS&&d<700){g.fillStyle='#0006';g.font='bold 18px sans-serif';g.fillText('▲ '+v.icon,W/2+v.x-cam,H-14);g.font='30px serif'}}
+ // the countdown, lap and spin messages
+ if(R.countdown>0){g.fillStyle='#0005';g.fillRect(0,0,W,H);g.fillStyle='#fff';g.font='bold 120px sans-serif';g.fillText(String(Math.ceil(R.countdown)),W/2,H*.4)}
+ else if(R.t<.8){g.fillStyle='#fff';g.strokeStyle='#1f3350';g.lineWidth=8;g.font='bold 96px sans-serif';g.strokeText('GO!',W/2,H*.4);g.fillText('GO!',W/2,H*.4)}
+ if(flash&&flash.until>R.t){g.fillStyle='#fff';g.strokeStyle='#1f3350';g.lineWidth=6;g.font='bold 44px sans-serif';g.strokeText(flash.text,W/2,H*.22);g.fillText(flash.text,W/2,H*.22)}
+ // a mini progress bar down the side
+ const total=LAPS*LAP;g.fillStyle='#0003';g.beginPath();g.roundRect(W-18,40,8,H-80,4);g.fill();for(const v of R.rivals){g.fillStyle=v.color;g.beginPath();g.arc(W-14,H-40-(H-80)*Math.min(1,v.z/total),6,0,7);g.fill()}g.fillStyle='#fff';g.beginPath();g.arc(W-14,H-40-(H-80)*Math.min(1,P.z/total),8,0,7);g.fill();g.fillStyle=R.kart.color;g.beginPath();g.arc(W-14,H-40-(H-80)*Math.min(1,P.z/total),5,0,7);g.fill()}
+function hud(){$('#hudPos').textContent=placeName(R.finished?R.place:position(R));$('#hudLap').textContent='Lap '+lapOf(R.player.z)+' / '+LAPS;const it=R.player.item;$('#hudItem').hidden=!it;if(it)$('#hudItem').textContent=({boost:'⚡ Boost',shield:'🛡️ Shield',rocket:'🚀 Rocket'})[it]+' — tap!'}
+const MSG={boost:'Boost!',spin:'Whoa!',blocked:'Blocked! 🛡️',lap:'',item:''};
+function frame(now){const dt=Math.min(.05,(now-last)/1000||0);last=now;const ev=stepRace(R,dt,input);
+ for(const e of ev){sfx[e]&&sfx[e]();if(e==='lap'){flash={text:lapOf(R.player.z)===LAPS?'Final lap!':'Lap '+lapOf(R.player.z)+'!',until:R.t+1.2}}else if(e==='item'){flash={text:'Got '+({boost:'⚡',shield:'🛡️',rocket:'🚀'})[R.player.item]+'!',until:R.t+1}}else if(MSG[e]){flash={text:MSG[e],until:R.t+.8}}}
+ draw();hud();if(R.finished){setTimeout(results,900);return}raf=requestAnimationFrame(frame)}
+function startRace(i){cancelAnimationFrame(raf);R=makeRace(i,kart(),driver());input={left:false,right:false};flash=null;show('raceScreen');$('#hudTrack').textContent=R.track.icon+' '+R.track.name;last=performance.now();sfx.tick();raf=requestAnimationFrame(frame)}
+function results(){const place=R.place,t=R.track,r=recordRace(S,t.id,place);save();renderTop();
+ // put the player in their place on the podium
+ const others=R.rivals.slice().sort((a,b)=>(a.done??1e9+(-a.z))-(b.done??1e9+(-b.z))).map(v=>v.icon);others.splice(place-1,0,R.driver.icon);
+ $('#podium').innerHTML='<div class="p2"><span>'+others[1]+'</span>2nd</div><div class="p1"><span>'+others[0]+'</span>1st</div><div class="p3"><span>'+others[2]+'</span>3rd</div>';
+ $('#resultTitle').textContent=place===1?'🏆 You won!':place<=3?'You finished '+placeName(place)+'!':'You finished '+placeName(place)+'.';
+ $('#resultText').textContent='+'+r.coins+' coins'+(r.better&&place<=3?' (including a new-trophy bonus!)':'')+'.'+(r.unlocked?' '+r.unlocked.icon+' '+r.unlocked.name+' is unlocked!':place>3?' Finish in the top 3 to unlock the next track. Try grabbing the yellow boost pads!':'');
+ const ni=R.trackIdx+1;$('#nextBtn').hidden=!(ni<TRACKS.length&&trackOpen(ni,S.best));$('#resultDialog').showModal()}
+$('#againBtn').onclick=()=>{$('#resultDialog').close();startRace(R.trackIdx)};
+$('#nextBtn').onclick=()=>{$('#resultDialog').close();startRace(R.trackIdx+1)};
+$('#tracksBtn').onclick=()=>{$('#resultDialog').close();show('menuScreen');renderMenu()};
+$('#resultDialog').addEventListener('cancel',e=>{e.preventDefault();$('#tracksBtn').click()});
+$('#quitBtn').onclick=()=>{cancelAnimationFrame(raf);R=null;show('menuScreen');renderMenu()};
+// steering: hold the buttons, the arrow keys, or press on either half of the track
+function hold(btn,side){const on=e=>{e.preventDefault();input[side]=true;btn.classList.add('held')},off=()=>{input[side]=false;btn.classList.remove('held')};btn.addEventListener('pointerdown',on);for(const ev of ['pointerup','pointerleave','pointercancel'])btn.addEventListener(ev,off)}
+hold($('#leftBtn'),'left');hold($('#rightBtn'),'right');
+cv.addEventListener('pointerdown',e=>{if(!R)return;if(R.player.item&&e.clientY<cv.getBoundingClientRect().top+cv.clientHeight*.4){fire();return}const side=e.clientX<cv.getBoundingClientRect().left+cv.clientWidth/2?'left':'right';input[side]=true;cv.setPointerCapture(e.pointerId);cv.dataset.side=side});
+for(const ev of ['pointerup','pointercancel'])cv.addEventListener(ev,()=>{if(cv.dataset.side)input[cv.dataset.side]=false;cv.dataset.side=''});
+function fire(){if(!R)return;const it=useItem(R);if(it){sfx.boost();flash={text:({boost:'⚡ Zoom!',shield:'🛡️ Shield on!',rocket:'🚀 Rocket!'})[it],until:R.t+1}}}
+$('#hudItem').onclick=fire;
+addEventListener('keydown',e=>{if(!R||$('#raceScreen').hidden)return;if(e.key==='ArrowLeft'||e.key==='a'){input.left=true;e.preventDefault()}if(e.key==='ArrowRight'||e.key==='d'){input.right=true;e.preventDefault()}if(e.key===' '||e.key==='ArrowUp'){fire();e.preventDefault()}});
+addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key==='a')input.left=false;if(e.key==='ArrowRight'||e.key==='d')input.right=false});
+addEventListener('blur',()=>{input.left=input.right=false});
+renderMenu();
+window.__race={get S(){return S},get R(){return R},startRace,renderMenu,input};
+}
+</script>
+</body>
+</html>
