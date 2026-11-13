@@ -46,4 +46,9 @@ test('Saves keep the fish book and ignore broken or unknown data',()=>{
  const cheat=load({superEmiliaFish:JSON.stringify({spot:'lagoon',rod:'magic'})});assert(cheat("loadSave().spot==='pond'&&loadSave().rod==='stick'"),'you cannot use what you have not bought');
  const bad=load({superEmiliaFish:'{oops'});assert(bad('loadSave().coins===0'));
 });
+test('Sharks can bite at Lily Pond and at the ocean',()=>{
+ const run=load();assert(run("FISH.some(f=>f.icon==='🦈'&&f.spot==='pond')&&FISH.some(f=>f.icon==='🦈'&&f.spot==='ocean')"));
+ let n=0;for(let k=0;k<1500;k++)if(run("pickCatch('pond',false).id")==='babyshark')n++;assert(n>60,'a baby shark bites now and then: '+n);
+ assert(run("(()=>{const r=startReel(FISH.find(f=>f.id==='babyshark'),RODS[0]);for(let t=0;t<10&&!r.done;t+=1/7){reelTick(r,1/7);reelTap(r)}return r.won})()"),'7 taps a second lands a baby shark with the starter rod');
+});
 console.log(checks+' fish checks passed.');

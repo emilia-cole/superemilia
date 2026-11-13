@@ -355,7 +355,7 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
     <h2>Fishing Friends</h2>
     <p id="fishAbout">Cast your line at a pond, river, lake, ocean, and more. Reel in silly fish and treasure, fill your fish book, and build an aquarium.</p>
     <ul class="progress" id="fishProgress" aria-label="Your saved Fishing Friends progress">
-     <li class="flag">31 fish to find · grab your rod</li>
+     <li class="flag">32 fish to find · grab your rod</li>
     </ul>
     <span class="play" aria-hidden="true">Play now →</span>
    </div>
@@ -455,10 +455,10 @@ function count(v){var n=Math.floor(Number(v));return isFinite(n)&&n>0?n:0}
 (function(){
  // Fishing Friends progress
  var save=readSave('superEmiliaFish');if(!save)return;
- var caught=count(save.caught),coins=count(save.coins),kinds=0,book=save.book&&typeof save.book==='object'?save.book:{},ids=['minnow','goldfish','frog','turtle','koi','trout','salmon','crawdad','otterfish','rainbow','bluegill','catfish','snapper','pike','nessie','clown','crab','puffer','octopus','shark','whale','icefish','shrimp','squid','seal','bluewhale','jelly','starfish','dolphin','mermaidfish','seadragon'];
+ var caught=count(save.caught),coins=count(save.coins),kinds=0,book=save.book&&typeof save.book==='object'?save.book:{},ids=['minnow','goldfish','frog','babyshark','turtle','koi','trout','salmon','crawdad','otterfish','rainbow','bluegill','catfish','snapper','pike','nessie','clown','crab','puffer','octopus','shark','whale','icefish','shrimp','squid','seal','bluewhale','jelly','starfish','dolphin','mermaidfish','seadragon'];
  ids.forEach(function(id){if(book[id]&&count(book[id].count)>0)kinds++});
  if(!caught)return;
- showProgress('fishProgress','#playFish .play',[['star','🐟 '+kinds+' / 31 fish'],['flag','🎣 '+caught+' catch'+(caught===1?'':'es')],['coin','🪙 '+coins.toLocaleString('en-US')+' coins']],'Keep fishing →');
+ showProgress('fishProgress','#playFish .play',[['star','🐟 '+kinds+' / 32 fish'],['flag','🎣 '+caught+' catch'+(caught===1?'':'es')],['coin','🪙 '+coins.toLocaleString('en-US')+' coins']],'Keep fishing →');
 })();
 </script>
 <script>
@@ -478,8 +478,8 @@ var PRIZE_GAMES=[
   prizes:[['🎤','First Show','Walk the runway',function(t){return[t.shows,1]}],['⭐','Star Stylist','Get 3 stars in a show',function(t){return[t.three,1]}],['👠','Fashion Week','Walk the runway 10 times',function(t){return[t.shows,10]}],['💎','Style Icon','Get 3 stars in all 9 shows',function(t){return[t.three,9]}]]},
  {id:'vet',name:'Pet Vet Clinic',icon:'🩺',href:'/vet/',key:'superEmiliaVet',stats:function(s){var h=s.helped&&typeof s.helped==='object'?s.helped:{};return{treated:num(s.treated),day:num(s.day),rare:['Sparkle','Ember','Rex'].filter(function(n){return num(h[n])>0}).length}},
   prizes:[['🩹','First Patient','Help your first pet',function(t){return[t.treated,1]}],['💖','Caring Vet','Help 25 pets',function(t){return[t.treated,25]}],['🦄','Rare Visitor','Help a unicorn, dragon or dino',function(t){return[t.rare,1]}],['🏥','Busy Clinic','Reach day 7',function(t){return[t.day,7]}],['🏅','Super Vet','Help 100 pets',function(t){return[t.treated,100]}]]},
- {id:'fish',name:'Fishing Friends',icon:'🎣',href:'/fish/',key:'superEmiliaFish',stats:function(s){var b=s.book&&typeof s.book==='object'?s.book:{},kinds=0,legend=0,treasure=0,fish=['minnow','goldfish','frog','turtle','koi','trout','salmon','crawdad','otterfish','rainbow','bluegill','catfish','snapper','pike','nessie','clown','crab','puffer','octopus','shark','whale','icefish','shrimp','squid','seal','bluewhale','jelly','starfish','dolphin','mermaidfish','seadragon'],legends=['koi','rainbow','nessie','whale','bluewhale','seadragon'];fish.forEach(function(id){if(b[id]&&num(b[id].count)>0){kinds++;if(legends.indexOf(id)>=0)legend++}});['chest','gem'].forEach(function(id){if(b[id]&&num(b[id].count)>0)treasure++});return{caught:num(s.caught),kinds:kinds,legend:legend,treasure:treasure}},
-  prizes:[['🐟','First Catch','Catch your first fish',function(t){return[t.caught,1]}],['💰','Treasure Hunter','Fish up a treasure chest or gem',function(t){return[t.treasure,1]}],['📖','Fish Collector','Find 15 kinds of fish',function(t){return[t.kinds,15]}],['🐳','Legend Catcher','Catch a legendary fish',function(t){return[t.legend,1]}],['🏆','Master Angler','Find all 31 kinds of fish',function(t){return[t.kinds,31]}]]},
+ {id:'fish',name:'Fishing Friends',icon:'🎣',href:'/fish/',key:'superEmiliaFish',stats:function(s){var b=s.book&&typeof s.book==='object'?s.book:{},kinds=0,legend=0,treasure=0,fish=['minnow','goldfish','frog','babyshark','turtle','koi','trout','salmon','crawdad','otterfish','rainbow','bluegill','catfish','snapper','pike','nessie','clown','crab','puffer','octopus','shark','whale','icefish','shrimp','squid','seal','bluewhale','jelly','starfish','dolphin','mermaidfish','seadragon'],legends=['koi','rainbow','nessie','whale','bluewhale','seadragon'];fish.forEach(function(id){if(b[id]&&num(b[id].count)>0){kinds++;if(legends.indexOf(id)>=0)legend++}});['chest','gem'].forEach(function(id){if(b[id]&&num(b[id].count)>0)treasure++});var shark=['babyshark','shark'].filter(function(id){return b[id]&&num(b[id].count)>0}).length;return{caught:num(s.caught),kinds:kinds,legend:legend,treasure:treasure,shark:shark}},
+  prizes:[['🐟','First Catch','Catch your first fish',function(t){return[t.caught,1]}],['💰','Treasure Hunter','Fish up a treasure chest or gem',function(t){return[t.treasure,1]}],['📖','Fish Collector','Find 15 kinds of fish',function(t){return[t.kinds,15]}],['🦈','Shark Catcher','Catch a shark',function(t){return[t.shark,1]}],['🐳','Legend Catcher','Catch a legendary fish',function(t){return[t.legend,1]}],['🏆','Master Angler','Find all 32 kinds of fish',function(t){return[t.kinds,32]}]]},
  {id:'race',name:'Buddy Kart Racing',icon:'🏎️',href:'/race/',key:'superEmiliaRace',stats:function(s){var b=s.best&&typeof s.best==='object'?s.best:{},ids=['candy','beach','jungle','snow','space','rainbow'],top=0,wins=0;ids.forEach(function(id){var v=num(b[id]);if(v>=1&&v<=3)top++;if(v===1)wins++});return{races:num(s.races),top:top,wins:wins,rainbow:num(b.rainbow)>=1&&num(b.rainbow)<=3?1:0}},
   prizes:[['🏁','First Race','Finish a race',function(t){return[t.races,1]}],['🥇','Winner','Win 1st place on any track',function(t){return[t.wins,1]}],['🏆','Trophy Hunter','Get trophies on 3 tracks',function(t){return[t.top,3]}],['🌈','Rainbow Racer','Finish top 3 on Rainbow Road',function(t){return[t.rainbow,1]}],['👑','Racing Legend','Win 1st place on all 6 tracks',function(t){return[t.wins,6]}]]}
 ];

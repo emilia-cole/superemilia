@@ -8,7 +8,7 @@ Play at **https://superemilia.com/world/**. The site is hosted on GitHub Pages.
 
 **https://superemilia.com** opens a game menu with eight games: Super Emilia World, Mystery Egg Bakery (`/bakery/`), Memory Match (`/memory/`), Buddy Garden (`/garden/`), Dress-Up Studio (`/studio/`), Pet Vet Clinic (`/vet/`), Buddy Kart Racing (`/race/`), and Fishing Friends (`/fish/`). Each card shows the player's saved progress (read from the same browser save the game uses) and changes its button to keep playing once there is progress. Inside the game, **← All games** in the footer returns to the menu. Because the menu and every game share the superemilia.com address, saved progress carries over automatically.
 
-The menu also has a **🏆 Prize Room**: every game has 4 or 5 prizes (38 in all, counting the grand prize), worked out from each game's own save. Examples are finishing your first level, hatching an egg, finding a garden buddy, helping a rare pet, and winning 1st place in a race. Winning a prize in all 8 games gives the 🌟 **Super Emilia Superstar** grand prize. Prizes won since the last visit are marked NEW. The prize rules live in the second `<script>` in `public/index.html`.
+The menu also has a **🏆 Prize Room**: every game has 4 or 5 prizes (39 in all, counting the grand prize), worked out from each game's own save. Examples are finishing your first level, hatching an egg, finding a garden buddy, helping a rare pet, and winning 1st place in a race. Winning a prize in all 8 games gives the 🌟 **Super Emilia Superstar** grand prize. Prizes won since the last visit are marked NEW. The prize rules live in the second `<script>` in `public/index.html`.
 
 On page load, the cover artwork appears for five seconds before fading into the ready screen. Phones use the square cover and wider screens use the landscape cover. **Skip intro** or Escape dismisses it early. Gameplay waits for the player to start.
 
@@ -34,7 +34,7 @@ On page load, the cover artwork appears for five seconds before fading into the 
 
 ## Fishing Friends
 
-**https://superemilia.com/fish/** is a fishing game. Tap **Cast**, wait for the bobber to dip and the ❗ to show, tap **Reel!**, then keep tapping to fill the green bar before the fish pulls away (the space bar works too). Six spots (Lily Pond, Rushing River, Misty Lake, Sunny Ocean, Icy Sea, and Magic Lagoon) each have common, uncommon, rare, and legendary fish, 31 in all, plus hidden treasure. Coins unlock new spots and buy stronger rods, golden bait (more rare fish), and aquarium decorations. Every new kind of fish swims in your aquarium, and the fish book records how many you caught and the biggest. Progress is saved under `superEmiliaFish`.
+**https://superemilia.com/fish/** is a fishing game. Tap **Cast**, wait for the bobber to dip and the ❗ to show, tap **Reel!**, then keep tapping to fill the green bar before the fish pulls away (the space bar works too). Six spots (Lily Pond, Rushing River, Misty Lake, Sunny Ocean, Icy Sea, and Magic Lagoon) each have common, uncommon, rare, and legendary fish, 32 in all (including a Baby Shark at Lily Pond and a Shark in the ocean), plus hidden treasure. Coins unlock new spots and buy stronger rods, golden bait (more rare fish), and aquarium decorations. Every new kind of fish swims in your aquarium, and the fish book records how many you caught and the biggest. Progress is saved under `superEmiliaFish`.
 
 ## Controls
 
