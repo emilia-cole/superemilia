@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#e9e4ff">
+<meta name="author" content="Emilia">
+<meta name="description" content="Flip cards to find matching buddies, treats, pets, and lands. Twelve levels that unlock one at a time, from 6 cards to 36. A free memory game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/memory/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/memory/">
+<meta property="og:title" content="Memory Match · A Super Emilia Game">
+<meta property="og:description" content="Flip cards to find matching buddies, treats, pets, and lands. Twelve levels that unlock one at a time, from 6 cards to 36. A free memory game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Memory Match</title>
+<style>
+/* Layout: a top bar, then either the level picker (a grid of 12 level tiles) or the play screen (stats row + card board sized to fit the screen). */
+:root{
+ color-scheme:light;
+ --sky:#e9e4ff; --sky-2:#dff3ff; --paper:#ffffff; --line:#d9d0f2; --ink:#33285a; --soft:#6e6493;
+ --grape:#8b6fe0; --grape-deep:#6a4fc4; --mint:#7fd8b9; --gold:#ffcc4d; --pink:#ff8fb8;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(900px 500px at 10% 0,#fff 0,transparent 60%),linear-gradient(160deg,var(--sky),var(--sky-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 14px;font-weight:800;transition:transform .12s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--grape-deep);outline-offset:2px}
+.app{max-width:980px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:14px;padding-block:12px 18px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--grape-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.stars{color:#b07d00}
+h1{margin:4px 0 0;font-size:clamp(26px,5vw,36px);letter-spacing:-.6px;text-wrap:balance}
+.lede{margin:4px 0 0;color:var(--soft);font-weight:600}
+.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.level{position:relative;display:grid;justify-items:center;gap:4px;padding:16px 8px 12px;border-radius:20px;background:var(--paper);box-shadow:0 5px 0 var(--line);min-height:128px}
+.level .num{font-size:28px;font-weight:900;line-height:1}
+.level .size{font-size:12px;color:var(--soft);font-weight:700}
+.level .deck{font-size:22px;line-height:1}
+.level .lstars{font-size:16px;letter-spacing:2px;color:#d9d0f2}
+.level .lstars b{color:var(--gold)}
+.level.locked{background:#f2eefc;box-shadow:0 5px 0 #e3dcf7;color:#a99ed0}
+.level.locked .deck{filter:grayscale(1);opacity:.5}
+.level.next{border-color:var(--grape);box-shadow:0 5px 0 var(--grape-deep)}
+.playhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.playhead .grow{margin-right:auto;font-weight:900;font-size:18px}
+.playhead .grow small{display:block;font-size:12px;color:var(--soft);font-weight:700}
+.peek{background:#fff7d6;border-color:#f0d878}
+.board{display:grid;gap:var(--gap,10px);margin:0 auto;width:min(100%,var(--bw,900px))}
+.card{position:relative;aspect-ratio:3/4;perspective:700px;border:none;background:none;padding:0;border-radius:16px;box-shadow:none}
+.card .inner{position:absolute;inset:0;transition:transform .35s ease;transform-style:preserve-3d}
+.card.up .inner,.card.matched .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:inherit;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:grid;place-items:center}
+.back{background:linear-gradient(145deg,#a58cf0,#7c5fd8);border:3px solid #fff;box-shadow:0 4px 0 #5a40b0}
+.back:before{content:"✦";color:#fff;font-size:clamp(18px,4vw,30px);opacity:.9}
+.back:after{content:"";position:absolute;inset:7px;border:2px dashed #ffffff66;border-radius:11px}
+.front{background:var(--paper);border:3px solid var(--line);transform:rotateY(180deg);font-size:var(--emoji,40px);line-height:1;box-shadow:0 4px 0 var(--line)}
+.card.matched .front{border-color:var(--mint);box-shadow:0 4px 0 #4fb894;animation:pop .45s ease}
+.card.matched{cursor:default}
+.combo{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);font-size:clamp(26px,6vw,44px);font-weight:900;color:var(--grape-deep);text-shadow:0 3px 0 #fff;pointer-events:none;animation:float 1s ease-out forwards;z-index:30}
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(440px,calc(100vw - 24px));box-shadow:0 30px 80px #33285a55}
+dialog::backdrop{background:#33285a66;backdrop-filter:blur(4px)}
+.dlg{padding:22px 20px 20px;display:grid;gap:12px;text-align:center;justify-items:center}
+.dlg h2{margin:0;font-size:26px;letter-spacing:-.5px}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.bigstars{font-size:46px;letter-spacing:6px;color:#e5def8}
+.bigstars b{color:var(--gold);display:inline-block;animation:pop .5s ease both}
+.bigstars b:nth-child(2){animation-delay:.15s}.bigstars b:nth-child(3){animation-delay:.3s}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.primary{background:var(--grape);border-color:var(--grape-deep);color:#fff;font-size:17px;padding:12px 22px;box-shadow:0 4px 0 var(--grape-deep)}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:20;max-width:92vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes float{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-90%)}}
+@media (max-width:640px){.levels{grid-template-columns:repeat(3,minmax(0,1fr))}.level{min-height:112px;padding:12px 6px 10px}.level .num{font-size:24px}.title strong{font-size:17px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Memory Match</strong></div>
+  <span class="chip stars" id="totalStars" aria-label="Stars earned">★ 0 / 36</span>
+ </div>
+
+ <section id="picker" aria-label="Choose a level">
+  <h1>Find the matching pairs!</h1>
+  <p class="lede">Flip two cards at a time. Finish a level to unlock the next one, and use fewer turns to earn more stars.</p>
+  <div class="levels" id="levels" style="margin-top:14px"></div>
+ </section>
+
+ <section id="play" hidden aria-label="Memory board">
+  <div class="playhead">
+   <button type="button" id="backBtn">← Levels</button>
+   <div class="grow" id="levelTitle">Level 1<small>Buddies</small></div>
+   <span class="chip" id="moves">0 turns</span>
+   <span class="chip" id="pairs">0 / 3 pairs</span>
+   <button type="button" class="peek" id="peekBtn">👀 Peek</button>
+  </div>
+  <div class="board" id="board" style="margin-top:12px"></div>
+ </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<dialog id="winDialog"><div class="dlg"><div class="bigstars" id="winStars" aria-hidden="true"></div><h2 id="winTitle">You did it!</h2><p id="winText"></p><div class="row"><button type="button" id="againBtn">↻ Play again</button><button type="button" class="primary" id="nextBtn">Next level →</button></div></div></dialog>
+
+<script>
+'use strict';
+// ---------- game data ----------
+const DECKS={
+ buddies:{name:'Buddies',icon:'🐥',cards:['🐥','🐱','🦋','👽','🐷','🦔','🐙','🐶','☁️','🐠','🦇','🦭','🐫','🦎','🐈‍⬛','🐰','🦊','🐸']},
+ treats:{name:'Treats',icon:'🧁',cards:['🧁','🍪','🍩','🍰','🥧','🍓','🍒','🍬','🍭','🎂','🍫','🍦','🥨','🍯','🧇','🥞','🍮','🍉']},
+ pets:{name:'Pets',icon:'🦄',cards:['🦄','🐉','🐼','🐨','🐹','🐢','🦕','🐝','🐬','🦩','🐿️','🦦','🐻','🐯','🦉','🐧','🐮','🐵']},
+ lands:{name:'Lands',icon:'🌈',cards:['🌙','🍭','🌲','🫧','🏡','🌈','🐠','💎','🏔️','🏜️','🌋','🏰','🪐','⛄','🌻','🍄','🎈','⭐']}
+};
+const LEVELS=[[2,3,'buddies'],[3,4,'treats'],[3,4,'pets'],[4,4,'lands'],[4,4,'buddies'],[4,5,'treats'],[4,5,'pets'],[4,6,'lands'],[4,6,'buddies'],[5,6,'treats'],[5,6,'pets'],[6,6,'lands']].map(([rows,cols,deck],i)=>({n:i+1,rows,cols,deck,pairs:rows*cols/2}));
+const SAVE_KEY='superEmiliaMemory';
+
+// ---------- pure game logic (also used by the tests) ----------
+function shuffle(list,rand=Math.random){const a=list.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function makeDeck(level,rand=Math.random){const L=LEVELS[level],chosen=shuffle(DECKS[L.deck].cards,rand).slice(0,L.pairs);return shuffle(chosen.concat(chosen),rand)}
+function starsFor(moves,pairs){return moves<=Math.ceil(pairs*1.5)?3:moves<=Math.ceil(pairs*2.2)?2:1}
+function levelOpen(i,stars){return i===0||(stars[i-1]||0)>0}
+function totalStars(stars){return stars.reduce((a,b)=>a+(b||0),0)}
+function normalizeSave(raw){const s={stars:LEVELS.map(()=>0),best:LEVELS.map(()=>0)};if(!raw||typeof raw!=='object')return s;for(let i=0;i<LEVELS.length;i++){const st=Math.floor(Number(raw.stars?.[i]));if(st>=1&&st<=3)s.stars[i]=st;const b=Math.floor(Number(raw.best?.[i]));if(b>0&&s.stars[i])s.best[i]=b}
+ // a level only counts if the one before it was finished
+ for(let i=1;i<LEVELS.length;i++)if(!s.stars[i-1]){s.stars[i]=0;s.best[i]=0}
+ return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return normalizeSave(null)}}
+// applies a finished level to the save; returns what changed
+function recordWin(save,level,moves){const L=LEVELS[level],stars=starsFor(moves,L.pairs),firstTime=!save.stars[level],better=stars>save.stars[level],unlockedNext=firstTime&&level+1<LEVELS.length;save.stars[level]=Math.max(save.stars[level],stars);save.best[level]=save.best[level]?Math.min(save.best[level],moves):moves;return {stars,firstTime,better,unlockedNext}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+let S=loadSave(),current=0,deck=[],up=[],matched=new Set(),moves=0,busy=false,peeked=false,streak=0,audio=null;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.15,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+len);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+len)}catch(e){}}
+function chime(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.15),i*90))}
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function starText(n){return '★'.repeat(n)+'☆'.repeat(3-n)}
+
+function renderPicker(){
+ $('#totalStars').textContent='★ '+totalStars(S.stars)+' / '+LEVELS.length*3;
+ const box=$('#levels');box.innerHTML='';const next=S.stars.findIndex(s=>!s);
+ LEVELS.forEach((L,i)=>{const open=levelOpen(i,S.stars),b=document.createElement('button');b.type='button';b.className='level'+(open?'':' locked')+(i===next?' next':'');b.disabled=!open;
+  b.setAttribute('aria-label','Level '+L.n+', '+L.pairs*2+' cards, '+DECKS[L.deck].name+(open?(S.stars[i]?', '+S.stars[i]+' stars':', not finished yet'):', locked'));
+  b.innerHTML='<span class="deck">'+(open?DECKS[L.deck].icon:'🔒')+'</span><span class="num">'+L.n+'</span><span class="size">'+L.pairs*2+' cards</span><span class="lstars">'+(S.stars[i]?'<b>'+'★'.repeat(S.stars[i])+'</b>'+'★'.repeat(3-S.stars[i]):'★★★')+'</span>';
+  b.onclick=()=>startLevel(i);box.append(b)});
+}
+function sizeBoard(){
+ const L=LEVELS[current],board=$('#board'),w=Math.min($('#play').clientWidth||document.querySelector('.app').clientWidth-28,952),h=window.innerHeight-170;
+ const gap=L.cols>=6||w<500?7:10,cw=Math.min((w-gap*(L.cols-1))/L.cols,((h-gap*(L.rows-1))/L.rows)*0.75);const cardW=Math.max(44,Math.floor(cw));
+ board.style.setProperty('--gap',gap+'px');board.style.gridTemplateColumns='repeat('+L.cols+','+cardW+'px)';board.style.setProperty('--bw',(cardW*L.cols+gap*(L.cols-1))+'px');board.style.setProperty('--emoji',Math.floor(cardW*.55)+'px');board.style.justifyContent='center';
+}
+function renderBoard(){
+ const board=$('#board');board.innerHTML='';
+ deck.forEach((sym,i)=>{const b=document.createElement('button');b.type='button';b.className='card'+(up.includes(i)?' up':'')+(matched.has(i)?' matched':'');b.dataset.i=i;b.setAttribute('aria-label',matched.has(i)?'Matched '+sym:up.includes(i)?sym:'Card '+(i+1)+', face down');b.innerHTML='<span class="inner"><span class="face back"></span><span class="face front">'+sym+'</span></span>';b.onclick=()=>flip(i);board.append(b)});
+ sizeBoard();renderStats();
+}
+function renderStats(){const L=LEVELS[current];$('#moves').textContent=moves+(moves===1?' turn':' turns');$('#pairs').textContent=matched.size/2+' / '+L.pairs+' pairs';$('#peekBtn').disabled=peeked||busy}
+function setCard(i){const b=document.querySelector('.card[data-i="'+i+'"]');if(!b)return;b.classList.toggle('up',up.includes(i));b.classList.toggle('matched',matched.has(i));b.setAttribute('aria-label',matched.has(i)?'Matched '+deck[i]:up.includes(i)?deck[i]:'Card '+(i+1)+', face down')}
+function startLevel(i){if(!levelOpen(i,S.stars))return;current=i;deck=makeDeck(i);up=[];matched=new Set();moves=0;busy=false;peeked=false;streak=0;const L=LEVELS[i];$('#levelTitle').innerHTML='Level '+L.n+'<small>'+DECKS[L.deck].icon+' '+DECKS[L.deck].name+' · '+L.pairs*2+' cards</small>';$('#picker').hidden=true;$('#play').hidden=false;renderBoard();tone(520,.08)}
+function flip(i){
+ if(busy||matched.has(i)||up.includes(i))return;
+ up.push(i);setCard(i);tone(600+up.length*90,.06,'triangle');
+ if(up.length<2)return;
+ moves++;const [a,b]=up;
+ if(deck[a]===deck[b]){matched.add(a);matched.add(b);up=[];streak++;setCard(a);setCard(b);tone(980,.12);if(streak>=2)showCombo(streak);renderStats();if(matched.size===deck.length)setTimeout(win,500);return}
+ streak=0;busy=true;renderStats();setTimeout(()=>{up=[];setCard(a);setCard(b);busy=false;renderStats()},850);
+}
+function showCombo(n){const el=document.createElement('div');el.className='combo';el.textContent='Combo ×'+n+'!';document.body.append(el);setTimeout(()=>el.remove(),1000)}
+$('#peekBtn').onclick=()=>{if(peeked||busy)return;peeked=true;busy=true;const showing=deck.map((_,i)=>i).filter(i=>!matched.has(i)&&!up.includes(i));for(const i of showing){const b=document.querySelector('.card[data-i="'+i+'"]');if(b)b.classList.add('up')}renderStats();setTimeout(()=>{for(const i of showing)setCard(i);busy=false;renderStats()},1500)};
+function win(){
+ const L=LEVELS[current],r=recordWin(S,current,moves);save();chime();
+ $('#winStars').innerHTML='<b>'+'★'.repeat(r.stars)+'</b>'+'★'.repeat(3-r.stars);
+ $('#winTitle').textContent=r.stars===3?'Perfect memory!':r.stars===2?'Great matching!':'You found them all!';
+ $('#winText').textContent='You matched all '+L.pairs+' pairs in '+moves+' turns.'+(r.stars<3?' Try it in '+Math.ceil(L.pairs*(r.stars===2?1.5:2.2))+' turns or fewer for '+(r.stars+1)+' stars.':'')+(r.unlockedNext?' Level '+(L.n+1)+' is unlocked!':'')+(current===LEVELS.length-1&&r.firstTime?' You finished every level!':'');
+ $('#nextBtn').hidden=current===LEVELS.length-1;$('#winDialog').showModal();
+}
+$('#againBtn').onclick=()=>{$('#winDialog').close();startLevel(current)};
+$('#nextBtn').onclick=()=>{$('#winDialog').close();startLevel(current+1)};
+$('#winDialog').addEventListener('cancel',e=>{e.preventDefault();$('#winDialog').close();showPicker()});
+function showPicker(){$('#play').hidden=true;$('#picker').hidden=false;renderPicker()}
+$('#backBtn').onclick=showPicker;
+window.addEventListener('resize',()=>{if(!$('#play').hidden)sizeBoard()});
+renderPicker();
+window.__memory={get S(){return S},get deck(){return deck},get moves(){return moves},flip,startLevel};
+}
+</script>
+</body>
+</html>

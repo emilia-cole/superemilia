@@ -8,14 +8,14 @@
 <meta name="apple-mobile-web-app-title" content="Super Emilia">
 <meta name="author" content="Emilia">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="description" content="Free browser games designed by Emilia. Play Super Emilia World, a buddy platform adventure, or hatch surprise pets in Mystery Egg Bakery.">
+<meta name="description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, and Memory Match.">
 <link rel="canonical" href="https://superemilia.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Super Emilia">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://superemilia.com/">
 <meta property="og:title" content="Super Emilia · Pick a Game">
-<meta property="og:description" content="Free browser games designed by Emilia. Play Super Emilia World, a buddy platform adventure, or hatch surprise pets in Mystery Egg Bakery.">
+<meta property="og:description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, and Memory Match.">
 <meta property="og:image" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta property="og:image:secure_url" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta property="og:image:type" content="image/png">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Super Emilia World: Emilia and her chick, kitten, and butterfly buddies exploring pastel floating lands.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Super Emilia · Pick a Game">
-<meta name="twitter:description" content="Free browser games designed by Emilia. Play Super Emilia World, a buddy platform adventure, or hatch surprise pets in Mystery Egg Bakery.">
+<meta name="twitter:description" content="Free browser games designed by Emilia: the Super Emilia World platform adventure, Mystery Egg Bakery, and Memory Match.">
 <meta name="twitter:image" content="https://superemilia.com/assets/super-emilia-world-og-v1.png">
 <meta name="twitter:image:alt" content="Emilia and her buddies in the colorful lands of Super Emilia World.">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
@@ -38,7 +38,7 @@
       "@id": "https://superemilia.com/#website",
       "url": "https://superemilia.com/",
       "name": "Super Emilia Games",
-      "description": "Free browser games designed by Emilia: Super Emilia World and Mystery Egg Bakery.",
+      "description": "Free browser games designed by Emilia: Super Emilia World, Mystery Egg Bakery, and Memory Match.",
       "inLanguage": "en-US"
     },
     {
@@ -47,7 +47,7 @@
       "url": "https://superemilia.com/",
       "name": "Super Emilia · Pick a Game",
       "isPartOf": { "@id": "https://superemilia.com/#website" },
-      "hasPart": [{ "@id": "https://superemilia.com/world/#game" }, { "@id": "https://superemilia.com/bakery/#game" }],
+      "hasPart": [{ "@id": "https://superemilia.com/world/#game" }, { "@id": "https://superemilia.com/bakery/#game" }, { "@id": "https://superemilia.com/memory/#game" }],
       "inLanguage": "en-US"
     },
     {
@@ -68,6 +68,15 @@
       "author": { "@type": "Person", "name": "Emilia" },
       "gamePlatform": "Web browser",
       "isAccessibleForFree": true
+    },
+    {
+      "@type": "VideoGame",
+      "@id": "https://superemilia.com/memory/#game",
+      "name": "Memory Match",
+      "url": "https://superemilia.com/memory/",
+      "author": { "@type": "Person", "name": "Emilia" },
+      "gamePlatform": "Web browser",
+      "isAccessibleForFree": true
     }
   ]
 }
@@ -83,13 +92,13 @@
 *{box-sizing:border-box}
 html,body{min-height:100%}
 body{margin:0;background:radial-gradient(1100px 600px at 15% -10%,#2f2550 0,transparent 60%),radial-gradient(900px 500px at 100% 0,#21344a 0,transparent 55%),var(--bg);color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased}
-main{max-width:1060px;margin:0 auto;padding-block:clamp(20px,5vw,44px) 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:clamp(22px,4vw,34px)}
+main{max-width:1160px;margin:0 auto;padding-block:clamp(20px,5vw,44px) 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:clamp(22px,4vw,34px)}
 header{display:flex;align-items:center;gap:14px}
 .brand{width:52px;height:52px;flex:none;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,#3a3054,#2a2340);border:1px solid #5b4d72;font-size:30px;color:var(--gold);box-shadow:0 6px 0 #120f1f}
 .eyebrow{margin:0;text-transform:uppercase;letter-spacing:2.4px;font-size:11px;font-weight:800;color:var(--mint)}
 h1{margin:2px 0 0;font-size:clamp(28px,5vw,40px);letter-spacing:-.8px;line-height:1.05;text-wrap:balance}
 .lede{margin:6px 0 0;color:var(--muted);font-size:15px;max-width:52ch}
-.shelf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:stretch}
+.shelf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
 .card{position:relative;border-radius:26px;overflow:hidden;min-width:0}
 .game{display:grid;grid-template-rows:auto 1fr;background:var(--panel);border:1px solid #574a6e;box-shadow:0 10px 0 #110e1d,0 24px 60px #0007;text-decoration:none;color:inherit;transition:transform .18s ease,box-shadow .18s ease}
 .game:hover{transform:translateY(-3px);box-shadow:0 13px 0 #110e1d,0 30px 70px #0008}
@@ -105,14 +114,14 @@ h1{margin:2px 0 0;font-size:clamp(28px,5vw,40px);letter-spacing:-.8px;line-heigh
 .progress .star{color:var(--gold)}.progress .coin{color:#ffe39a}.progress .flag{color:var(--mint)}.progress .crown{color:var(--pink)}
 .play{justify-self:start;display:inline-flex;align-items:center;gap:10px;margin-top:6px;background:var(--mint);color:#233d32;font-weight:800;font-size:16px;border-radius:14px;padding:13px 22px;box-shadow:0 5px 0 #6fa98d}
 .game:hover .play{background:#c8f5de}
-.bakery-art{position:relative;aspect-ratio:1717/916;background:radial-gradient(circle at 30% 30%,#fff6ea 0 18%,transparent 19%),linear-gradient(160deg,#ffd6e3,#ffe9c9 60%,#d9f2e6);overflow:hidden}.bakery-art:before{content:'';position:absolute;inset:0 0 auto;height:22%;background:repeating-linear-gradient(90deg,#ef7fa4 0 26px,#fff 26px 52px)}.bakery-art span{position:absolute;line-height:1;filter:drop-shadow(0 6px 0 #0000001a)}.bakery-art .b1{font-size:clamp(54px,9vw,88px);left:14%;top:34%}.bakery-art .b2{font-size:clamp(60px,10vw,98px);left:42%;top:28%;animation:wiggle 2.4s ease-in-out infinite}.bakery-art .b3{font-size:clamp(44px,7vw,70px);right:12%;top:44%}.bakery-art .b4{font-size:clamp(26px,4vw,40px);left:60%;top:26%}.tag.pink{background:#ffd0de;color:#7a2448}@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}.soon{display:grid;align-content:center;justify-items:center;text-align:center;gap:12px;padding:30px 22px;background:repeating-linear-gradient(135deg,#1f1b30 0 14px,#221e35 14px 28px);border:2px dashed #5b4d72;color:var(--muted)}
+.bakery-art{position:relative;aspect-ratio:1717/916;background:radial-gradient(circle at 30% 30%,#fff6ea 0 18%,transparent 19%),linear-gradient(160deg,#ffd6e3,#ffe9c9 60%,#d9f2e6);overflow:hidden}.bakery-art:before{content:'';position:absolute;inset:0 0 auto;height:22%;background:repeating-linear-gradient(90deg,#ef7fa4 0 26px,#fff 26px 52px)}.bakery-art span{position:absolute;line-height:1;filter:drop-shadow(0 6px 0 #0000001a)}.bakery-art .b1{font-size:clamp(54px,9vw,88px);left:14%;top:34%}.bakery-art .b2{font-size:clamp(60px,10vw,98px);left:42%;top:28%;animation:wiggle 2.4s ease-in-out infinite}.bakery-art .b3{font-size:clamp(44px,7vw,70px);right:12%;top:44%}.bakery-art .b4{font-size:clamp(26px,4vw,40px);left:60%;top:26%}.tag.pink{background:#ffd0de;color:#7a2448}.tag.grape{background:#e3d9ff;color:#4b3596}.memory-art{aspect-ratio:1717/916;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 18px;background:linear-gradient(160deg,#e9e4ff,#dff3ff)}.memory-art span{display:grid;place-items:center;background:#fff;border:3px solid #d9d0f2;border-radius:10px;font-size:clamp(20px,3vw,30px);box-shadow:0 3px 0 #d9d0f2}.memory-art span.back{background:linear-gradient(145deg,#a58cf0,#7c5fd8);border-color:#fff;box-shadow:0 3px 0 #5a40b0}.memory-art span.back:before{content:'✦';color:#fff;font-size:clamp(14px,2vw,20px)}.memory-art span:nth-child(1),.memory-art span:nth-child(6){border-color:#7fd8b9;box-shadow:0 3px 0 #4fb894}@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}.soon{display:grid;align-content:center;justify-items:center;text-align:center;gap:12px;padding:30px 22px;background:repeating-linear-gradient(135deg,#1f1b30 0 14px,#221e35 14px 28px);border:2px dashed #5b4d72;color:var(--muted)}
 .soon .spark{font-size:44px;line-height:1;animation:twinkle 2.6s ease-in-out infinite}
 .soon h2{margin:0;color:var(--ink);font-size:21px;letter-spacing:-.3px}
 .soon p{margin:0;font-size:14px;line-height:1.5;max-width:30ch}
 .soon .pill{font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--lav);border:1px solid #5b4d72;border-radius:999px;padding:5px 11px}
 footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:#968da8;border-top:1px solid #2e2840;padding-top:16px}
 @keyframes twinkle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.12) rotate(8deg)}}
-@media (max-width:760px){.bakery-art{aspect-ratio:16/9}.shelf{grid-template-columns:1fr}.cover{aspect-ratio:1/1;width:100%}.soon{padding:24px 18px}}
+@media (max-width:1000px) and (min-width:761px){.shelf{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:760px){.bakery-art{aspect-ratio:16/9}.memory-art{aspect-ratio:16/9}.shelf{grid-template-columns:1fr}.cover{aspect-ratio:1/1;width:100%}.soon{padding:24px 18px}}
 @media (prefers-reduced-motion:reduce){.game,.soon .spark,.bakery-art .b2{transition:none;animation:none}.game:hover{transform:none}}
 </style>
 </head>
@@ -156,6 +165,19 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
     <span class="play" aria-hidden="true">Play now →</span>
    </div>
   </a>
+
+  <a class="card game memory" href="/memory/" id="playMemory" aria-describedby="memoryAbout">
+   <div class="memory-art" aria-hidden="true"><span>🐥</span><span class="back"></span><span>🧁</span><span class="back"></span><span class="back"></span><span>🐥</span><span class="back"></span><span>🦄</span></div>
+   <div class="game-body">
+    <span class="tag grape">New · Puzzle</span>
+    <h2>Memory Match</h2>
+    <p id="memoryAbout">Flip cards to find matching buddies, treats, pets, and lands. Twelve levels unlock one at a time, from 6 cards all the way to 36.</p>
+    <ul class="progress" id="memoryProgress" aria-label="Your saved Memory Match progress">
+     <li class="flag">12 levels · start playing to earn stars</li>
+    </ul>
+    <span class="play" aria-hidden="true">Play now →</span>
+   </div>
+  </a>
  </section>
 
  <footer>
@@ -194,6 +216,19 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
  var list=document.getElementById('bakeryProgress');if(!list)return;list.textContent='';
  items.forEach(function(it){var li=document.createElement('li');li.className=it[0];li.textContent=it[1];list.appendChild(li)});
  var play=document.querySelector('#playBakery .play');if(play)play.textContent='Keep baking →';
+})();
+(function(){
+ // Show Memory Match progress from its own save.
+ var save=null;
+ try{save=JSON.parse(localStorage.getItem('superEmiliaMemory')||'null')}catch(e){save=null}
+ if(!save||typeof save!=='object'||!Array.isArray(save.stars))return;
+ var stars=0,done=0;
+ for(var i=0;i<12;i++){var st=Math.floor(Number(save.stars[i]));if(!(st>=1&&st<=3))break;stars+=st;done++}
+ if(!done)return;
+ var items=[['star','★ '+stars+' / 36 stars'],['flag','⚑ '+done+' / 12 levels']];
+ var list=document.getElementById('memoryProgress');if(!list)return;list.textContent='';
+ items.forEach(function(it){var li=document.createElement('li');li.className=it[0];li.textContent=it[1];list.appendChild(li)});
+ var play=document.querySelector('#playMemory .play');if(play)play.textContent='Keep matching →';
 })();
 </script>
 </body>

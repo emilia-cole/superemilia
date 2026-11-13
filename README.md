@@ -6,9 +6,13 @@ Play at **https://superemilia.com/world/**. The site is hosted on GitHub Pages.
 
 ## The game menu
 
-**https://superemilia.com** opens a game menu. Super Emilia World is the first game on it, with a "coming soon" spot for the next one. The game's card shows the player's saved stars, coins, levels, and bosses (read from the same browser save the game uses) and changes its button to **Keep playing** once there is progress. Inside the game, **← All games** in the footer returns to the menu. Because the menu and every game share the superemilia.com address, saved progress carries over automatically.
+**https://superemilia.com** opens a game menu with three games: Super Emilia World, Mystery Egg Bakery (`/bakery/`), and Memory Match (`/memory/`). Each card shows the player's saved progress (read from the same browser save the game uses) and changes its button to keep playing once there is progress. Inside the game, **← All games** in the footer returns to the menu. Because the menu and every game share the superemilia.com address, saved progress carries over automatically.
 
 On page load, the cover artwork appears for five seconds before fading into the ready screen. Phones use the square cover and wider screens use the landscape cover. **Skip intro** or Escape dismisses it early. Gameplay waits for the player to start.
+
+## Memory Match
+
+**https://superemilia.com/memory/** is a card-flipping memory game. Twelve levels unlock one at a time, growing from 6 cards to 36, with decks of buddies, treats, pets, and lands. Finishing a level in fewer turns earns up to 3 stars (36 in all). Each level allows one **Peek** that shows every card for a moment. Progress is saved in the browser under `superEmiliaMemory`.
 
 ## Controls
 
@@ -153,11 +157,11 @@ The page includes Open Graph and large Twitter card metadata with original wide 
 
 ## Make changes
 
-The menu is `public/index.html` and the complete game is `public/world/index.html`. Neither has dependencies or a build step. Run `python3 -m http.server --directory public` and open http://localhost:8000 to try both; asset links start with `/assets/`, so opening the files directly from disk shows the game without its cover art.
+The menu is `public/index.html`; the games are `public/world/index.html`, `public/bakery/index.html`, and `public/memory/index.html`. Neither has dependencies or a build step. Run `python3 -m http.server --directory public` and open http://localhost:8000 to try both; asset links start with `/assets/`, so opening the files directly from disk shows the game without its cover art.
 
-To add another game, put it in its own folder under `public/` (for example `public/new-game/index.html`) and replace the "coming soon" card in `public/index.html` with a card linking to it.
+To add another game, put it in its own folder under `public/` (for example `public/new-game/index.html`) and add a card linking to it in `public/index.html`.
 
-Push changes to `main` to publish automatically. The **Deploy game to GitHub Pages** workflow checks the script, runs `node tests/game.cjs`, uploads only the `public` folder, and deploys to the `github-pages` environment.
+Push changes to `main` to publish automatically. The **Deploy game to GitHub Pages** workflow checks every page's script, runs `node tests/game.cjs`, `node tests/bakery.cjs`, and `node tests/memory.cjs`, uploads only the `public` folder, and deploys to the `github-pages` environment.
 
 ## Hosting and domain
 

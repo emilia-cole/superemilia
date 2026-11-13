@@ -29,7 +29,7 @@ jobs:
         run: |
           node --input-type=module <<'JS'
           import fs from 'node:fs';
-          for (const file of ['public/index.html', 'public/world/index.html', 'public/bakery/index.html']) {
+          for (const file of ['public/index.html', 'public/world/index.html', 'public/bakery/index.html', 'public/memory/index.html']) {
             const html = fs.readFileSync(file, 'utf8');
             const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
             if (!script) throw new Error('The script is missing from ' + file + '.');
@@ -41,6 +41,8 @@ jobs:
         run: node tests/game.cjs
       - name: Check the Mystery Egg Bakery
         run: node tests/bakery.cjs
+      - name: Check Memory Match
+        run: node tests/memory.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload the game
