@@ -77,10 +77,27 @@ dialog::backdrop{background:#33285a66;backdrop-filter:blur(4px)}
 .primary{background:var(--grape);border-color:var(--grape-deep);color:#fff;font-size:17px;padding:12px 22px;box-shadow:0 4px 0 var(--grape-deep)}
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:20;max-width:92vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Prize shelf: one prize per level, gold when the level has 3 stars, plus two grand prizes. */
+.shelf-head{display:flex;align-items:baseline;gap:8px;margin:22px 0 10px;flex-wrap:wrap}
+.shelf-head h2{margin:0;font-size:22px;letter-spacing:-.4px}
+.shelf-head span{color:var(--soft);font-weight:700;font-size:14px}
+.prizes{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.prize{display:grid;justify-items:center;gap:3px;padding:10px 4px 8px;border-radius:16px;background:var(--paper);border:2px solid var(--line);text-align:center}
+.prize .pe{font-size:30px;line-height:1.1}
+.prize .pn{font-size:11px;font-weight:800;line-height:1.15}
+.prize.locked{background:#f2eefc;border-style:dashed;color:#a99ed0}
+.prize.locked .pe{font-size:22px;opacity:.6;padding:3px 0}
+.prize.gold{border-color:var(--gold);background:linear-gradient(160deg,#fffbea,#fff1bf);box-shadow:0 3px 0 #e8b62f}
+.prize.gold .pe{filter:drop-shadow(0 0 6px #ffcc4daa)}
+.prize.grand{border-color:var(--grape);box-shadow:0 3px 0 var(--grape-deep)}
+.winprize{display:grid;justify-items:center;gap:2px;padding:12px 18px;border-radius:18px;background:linear-gradient(160deg,#fffbea,#fff1bf);border:2px solid var(--gold);width:100%}
+.winprize .big{font-size:54px;line-height:1.1;animation:pop .6s ease both .35s}
+.winprize strong{font-size:18px}
+.winprize small{color:var(--soft);font-weight:700;font-size:13px}
 [hidden]{display:none!important}
 @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes float{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-90%)}}
-@media (max-width:640px){.levels{grid-template-columns:repeat(3,minmax(0,1fr))}.level{min-height:112px;padding:12px 6px 10px}.level .num{font-size:24px}.title strong{font-size:17px}}
+@media (max-width:640px){.prizes{grid-template-columns:repeat(4,minmax(0,1fr))}.levels{grid-template-columns:repeat(3,minmax(0,1fr))}.level{min-height:112px;padding:12px 6px 10px}.level .num{font-size:24px}.title strong{font-size:17px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -96,6 +113,8 @@ dialog::backdrop{background:#33285a66;backdrop-filter:blur(4px)}
   <h1>Find the matching pairs!</h1>
   <p class="lede">Flip two cards at a time. Finish a level to unlock the next one, and use fewer turns to earn more stars.</p>
   <div class="levels" id="levels" style="margin-top:14px"></div>
+  <div class="shelf-head"><h2>🎁 Prize shelf</h2><span id="prizeCount">Win a level to get its prize</span></div>
+  <div class="prizes" id="prizes"></div>
  </section>
 
  <section id="play" hidden aria-label="Memory board">
@@ -110,7 +129,7 @@ dialog::backdrop{background:#33285a66;backdrop-filter:blur(4px)}
  </section>
 </div>
 <div class="toast" id="toast" role="status"></div>
-<dialog id="winDialog"><div class="dlg"><div class="bigstars" id="winStars" aria-hidden="true"></div><h2 id="winTitle">You did it!</h2><p id="winText"></p><div class="row"><button type="button" id="againBtn">↻ Play again</button><button type="button" class="primary" id="nextBtn">Next level →</button></div></div></dialog>
+<dialog id="winDialog"><div class="dlg"><div class="bigstars" id="winStars" aria-hidden="true"></div><h2 id="winTitle">You did it!</h2><p id="winText"></p><div class="winprize" id="winPrize" hidden></div><div class="row"><button type="button" id="againBtn">↻ Play again</button><button type="button" class="primary" id="nextBtn">Next level →</button></div></div></dialog>
 
 <script>
 'use strict';
@@ -123,6 +142,9 @@ const DECKS={
 };
 const LEVELS=[[2,3,'buddies'],[3,4,'treats'],[3,4,'pets'],[4,4,'lands'],[4,4,'buddies'],[4,5,'treats'],[4,5,'pets'],[4,6,'lands'],[4,6,'buddies'],[5,6,'treats'],[5,6,'pets'],[6,6,'lands']].map(([rows,cols,deck],i)=>({n:i+1,rows,cols,deck,pairs:rows*cols/2}));
 const SAVE_KEY='superEmiliaMemory';
+// One prize for winning each level; it turns gold with 3 stars. Two grand prizes for finishing everything.
+const PRIZES=[['🎀','Ribbon'],['🧸','Teddy bear'],['🪀','Yo-yo'],['🪁','Kite'],['🎨','Paint set'],['🎺','Trumpet'],['🛼','Roller skates'],['🔮','Crystal ball'],['🎠','Carousel'],['🎡','Ferris wheel'],['🚀','Rocket'],['🛸','Spaceship']].map(([icon,name])=>({icon,name}));
+const GRAND={trophy:{icon:'🏆',name:'Memory Champion trophy',hint:'Win all 12 levels'},crown:{icon:'👑',name:'Golden crown',hint:'Get all 36 stars'}};
 
 // ---------- pure game logic (also used by the tests) ----------
 function shuffle(list,rand=Math.random){const a=list.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -134,6 +156,15 @@ function normalizeSave(raw){const s={stars:LEVELS.map(()=>0),best:LEVELS.map(()=
  // a level only counts if the one before it was finished
  for(let i=1;i<LEVELS.length;i++)if(!s.stars[i-1]){s.stars[i]=0;s.best[i]=0}
  return s}
+// which prizes a set of stars has earned
+function prizesFor(stars){const won=[],gold=[];stars.forEach((st,i)=>{if(st>0)won.push(i);if(st===3)gold.push(i)});return{won,gold,trophy:won.length===LEVELS.length,crown:gold.length===LEVELS.length}}
+// the prizes that are new after a win (compare the stars before and after)
+function newPrizes(before,after){const a=prizesFor(before),b=prizesFor(after),out=[];
+ for(const i of b.won)if(!a.won.includes(i))out.push({kind:'prize',level:i,gold:b.gold.includes(i),...PRIZES[i]});
+ for(const i of b.gold)if(a.won.includes(i)&&!a.gold.includes(i))out.push({kind:'gold',level:i,gold:true,...PRIZES[i]});
+ if(b.trophy&&!a.trophy)out.push({kind:'trophy',...GRAND.trophy});
+ if(b.crown&&!a.crown)out.push({kind:'crown',...GRAND.crown});
+ return out}
 function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return normalizeSave(null)}}
 // applies a finished level to the save; returns what changed
 function recordWin(save,level,moves){const L=LEVELS[level],stars=starsFor(moves,L.pairs),firstTime=!save.stars[level],better=stars>save.stars[level],unlockedNext=firstTime&&level+1<LEVELS.length;save.stars[level]=Math.max(save.stars[level],stars);save.best[level]=save.best[level]?Math.min(save.best[level],moves):moves;return {stars,firstTime,better,unlockedNext}}
@@ -155,6 +186,17 @@ function renderPicker(){
   b.setAttribute('aria-label','Level '+L.n+', '+L.pairs*2+' cards, '+DECKS[L.deck].name+(open?(S.stars[i]?', '+S.stars[i]+' stars':', not finished yet'):', locked'));
   b.innerHTML='<span class="deck">'+(open?DECKS[L.deck].icon:'🔒')+'</span><span class="num">'+L.n+'</span><span class="size">'+L.pairs*2+' cards</span><span class="lstars">'+(S.stars[i]?'<b>'+'★'.repeat(S.stars[i])+'</b>'+'★'.repeat(3-S.stars[i]):'★★★')+'</span>';
   b.onclick=()=>startLevel(i);box.append(b)});
+ renderPrizes();
+}
+function renderPrizes(){
+ const box=$('#prizes'),P=prizesFor(S.stars);box.innerHTML='';
+ const add=(cls,icon,name,label)=>{const d=document.createElement('div');d.className='prize '+cls;d.setAttribute('role','img');d.setAttribute('aria-label',label);d.innerHTML='<span class="pe" aria-hidden="true"></span><span class="pn"></span>';d.firstChild.textContent=icon;d.lastChild.textContent=name;box.append(d)};
+ PRIZES.forEach((p,i)=>{const won=P.won.includes(i),gold=P.gold.includes(i);
+  if(won)add(gold?'gold':'',p.icon,(gold?'Gold ':'')+p.name,(gold?'Gold ':'')+p.name+', from level '+(i+1));
+  else add('locked','🎁','Level '+(i+1),'Mystery prize, win level '+(i+1)+' to get it')});
+ for(const [key,g] of Object.entries(GRAND)){const has=P[key];add(has?'gold grand':'locked grand',has?g.icon:'❔',has?g.name:g.hint,has?g.name:'Grand prize: '+g.hint)}
+ const n=P.won.length+(P.trophy?1:0)+(P.crown?1:0);
+ $('#prizeCount').textContent=n?n+' of '+(PRIZES.length+2)+' prizes'+(P.gold.length?' · '+P.gold.length+' gold':''):'Win a level to get its prize';
 }
 function sizeBoard(){
  const L=LEVELS[current],board=$('#board'),w=Math.min($('#play').clientWidth||document.querySelector('.app').clientWidth-28,952),h=window.innerHeight-170;
@@ -179,8 +221,21 @@ function flip(i){
 }
 function showCombo(n){const el=document.createElement('div');el.className='combo';el.textContent='Combo ×'+n+'!';document.body.append(el);setTimeout(()=>el.remove(),1000)}
 $('#peekBtn').onclick=()=>{if(peeked||busy)return;peeked=true;busy=true;const showing=deck.map((_,i)=>i).filter(i=>!matched.has(i)&&!up.includes(i));for(const i of showing){const b=document.querySelector('.card[data-i="'+i+'"]');if(b)b.classList.add('up')}renderStats();setTimeout(()=>{for(const i of showing)setCard(i);busy=false;renderStats()},1500)};
+function showPrize(gifts,level){
+ const box=$('#winPrize');box.innerHTML='';
+ const line=(icon,title,note)=>{const d=document.createElement('div');d.style.display='grid';d.style.justifyItems='center';d.innerHTML='<span class="big" aria-hidden="true"></span><strong></strong><small></small>';d.children[0].textContent=icon;d.children[1].textContent=title;d.children[2].textContent=note;box.append(d)};
+ if(!gifts.length){const p=PRIZES[level],gold=S.stars[level]===3;line(p.icon,'You already have the '+(gold?'gold ':'')+p.name,gold?'It\'s on your prize shelf.':'Get 3 stars to turn it gold!');box.hidden=false;return}
+ for(const g of gifts){
+  if(g.kind==='prize')line(g.icon,'You won a prize: '+(g.gold?'gold ':'')+g.name+'!',g.gold?'3 stars made it gold right away!':'Get 3 stars on this level to turn it gold.');
+  else if(g.kind==='gold')line(g.icon,'Your '+g.name+' turned gold!','3 stars! It shines on your prize shelf.');
+  else if(g.kind==='trophy')line(g.icon,'GRAND PRIZE: '+g.name+'!','You won all 12 levels!');
+  else line(g.icon,'GRAND PRIZE: '+g.name+'!','Every single star. Amazing memory!');
+ }
+ box.hidden=false;
+}
 function win(){
- const L=LEVELS[current],r=recordWin(S,current,moves);save();chime();
+ const L=LEVELS[current],before=S.stars.slice(),r=recordWin(S,current,moves),gifts=newPrizes(before,S.stars);save();chime();if(gifts.length)setTimeout(()=>[784,988,1175,1568].forEach((f,i)=>setTimeout(()=>tone(f,.18,'triangle'),i*110)),500);
+ showPrize(gifts,current);
  $('#winStars').innerHTML='<b>'+'★'.repeat(r.stars)+'</b>'+'★'.repeat(3-r.stars);
  $('#winTitle').textContent=r.stars===3?'Perfect memory!':r.stars===2?'Great matching!':'You found them all!';
  $('#winText').textContent='You matched all '+L.pairs+' pairs in '+moves+' turns.'+(r.stars<3?' Try it in '+Math.ceil(L.pairs*(r.stars===2?1.5:2.2))+' turns or fewer for '+(r.stars+1)+' stars.':'')+(r.unlockedNext?' Level '+(L.n+1)+' is unlocked!':'')+(current===LEVELS.length-1&&r.firstTime?' You finished every level!':'');
@@ -193,7 +248,7 @@ function showPicker(){$('#play').hidden=true;$('#picker').hidden=false;renderPic
 $('#backBtn').onclick=showPicker;
 window.addEventListener('resize',()=>{if(!$('#play').hidden)sizeBoard()});
 renderPicker();
-window.__memory={get S(){return S},get deck(){return deck},get moves(){return moves},flip,startLevel};
+window.__memory={showPrize,get S(){return S},get deck(){return deck},get moves(){return moves},flip,startLevel};
 }
 </script>
 </body>

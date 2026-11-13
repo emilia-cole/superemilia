@@ -35,4 +35,17 @@ test('Saves keep stars and ignore broken or skipped-ahead data',()=>{
  const bad=load({superEmiliaMemory:JSON.stringify({stars:[9,'x',-1],best:'no'})});assert(bad('(()=>{const s=loadSave();return totalStars(s.stars)===0&&s.best.every(b=>b===0)})()'));
  const broken=load({superEmiliaMemory:'{oops'});assert(broken('totalStars(loadSave().stars)===0'));
 });
+test('Winning a level gives its prize, 3 stars turns it gold, and finishing everything gives grand prizes',()=>{
+ const run=load();
+ assert.equal(run('PRIZES.length'),12);assert.equal(run('new Set(PRIZES.map(p=>p.icon)).size'),12);
+ run('var s=normalizeSave(null)');
+ let before=run('JSON.stringify(s.stars)');run('recordWin(s,0,9)');let got=run(`newPrizes(${before},s.stars)`);
+ assert.equal(got.length,1);assert.equal(got[0].kind,'prize');assert.equal(got[0].name,'Ribbon');assert.equal(got[0].gold,false);
+ before=run('JSON.stringify(s.stars)');run('recordWin(s,0,9)');assert.equal(run(`newPrizes(${before},s.stars).length`),0,'no prize twice');
+ before=run('JSON.stringify(s.stars)');run('recordWin(s,0,3)');got=run(`newPrizes(${before},s.stars)`);assert.equal(got.length,1);assert.equal(got[0].kind,'gold');
+ before=run('JSON.stringify(s.stars)');run('recordWin(s,1,6)');got=run(`newPrizes(${before},s.stars)`);assert(got.length===1&&got[0].kind==='prize'&&got[0].gold);
+ run('for(let i=2;i<11;i++)recordWin(s,i,999)');before=run('JSON.stringify(s.stars)');run('recordWin(s,11,999)');got=run(`newPrizes(${before},s.stars).map(g=>g.kind)`);assert.deepEqual([...got],['prize','trophy']);
+ run('for(let i=2;i<11;i++)recordWin(s,i,1)');before=run('JSON.stringify(s.stars)');run('recordWin(s,11,1)');got=run(`newPrizes(${before},s.stars).map(g=>g.kind)`);assert.deepEqual([...got],['gold','crown']);
+ assert(run('(()=>{const p=prizesFor(s.stars);return p.won.length===12&&p.gold.length===12&&p.trophy&&p.crown})()'));
+});
 console.log(checks+' memory checks passed.');

@@ -12,7 +12,7 @@ On page load, the cover artwork appears for five seconds before fading into the 
 
 ## Memory Match
 
-**https://superemilia.com/memory/** is a card-flipping memory game. Twelve levels unlock one at a time, growing from 6 cards to 36, with decks of buddies, treats, pets, and lands. Finishing a level in fewer turns earns up to 3 stars (36 in all). Each level allows one **Peek** that shows every card for a moment. Progress is saved in the browser under `superEmiliaMemory`.
+**https://superemilia.com/memory/** is a card-flipping memory game. Twelve levels unlock one at a time, growing from 6 cards to 36, with decks of buddies, treats, pets, and lands. Finishing a level in fewer turns earns up to 3 stars (36 in all). Each level allows one **Peek** that shows every card for a moment. Winning a level for the first time gives that level's prize (a ribbon, teddy bear, rocket, and more) on the **Prize shelf**; getting 3 stars turns the prize gold. Winning all 12 levels gives the **Memory Champion trophy**, and all 36 stars gives the **Golden crown**. Progress is saved in the browser under `superEmiliaMemory`.
 
 ## Controls
 
