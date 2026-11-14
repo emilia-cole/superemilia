@@ -12,6 +12,7 @@ test('Every fishing spot has common, uncommon, rare and legendary fish',()=>{
  assert(run('FISH.every(f=>f.size[0]>0&&f.size[1]>f.size[0])'));assert(run('SPOTS.every((s,i)=>i===0||s.price>SPOTS[i-1].price)'));
 });
 test('Bites come from the spot you fish at, and golden bait brings rarer fish',()=>{
+ { const run0=load();let leg=0;for(let k=0;k<5000;k++)if(run0("pickCatch('pond',false).rarity")==='legendary')leg++;assert(leg>220&&leg<450,'about 1 in 16 bites is legendary: '+leg+' of 5000') }
  const run=load();const count=(spot,gold)=>{const c={};for(let k=0;k<4000;k++){const f=run(`pickCatch('${spot}',${gold})`);c[f.rarity]=(c[f.rarity]||0)+1;if(f.rarity!=='treasure')assert.equal(f.spot,spot)}return c};
  const plain=count('ocean',false),gold=count('ocean',true);
  assert(plain.common>plain.rare*3,'common fish are common');assert(plain.treasure>100&&plain.treasure<600,'treasure sometimes');
