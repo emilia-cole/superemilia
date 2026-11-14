@@ -301,8 +301,13 @@ function makeChecklist(day,rand=Math.random){const chores=['sweep','window','tow
 function doJob(list,id){const next=list.find(j=>!j.done);if(!next)return{ok:false,reason:'finished'};if(next.id!==id)return{ok:false,reason:list.some(j=>!j.done&&j.id===id)?'later':'fine',next:next.id};next.done=true;return{ok:true,job:next.id,done:list.every(j=>j.done)}}
 // drag checks (pure, used by the room and the tests). Everything is in percent of the room picture.
 function inZone(x,y,z){return Math.abs(x-z.x)<=z.w/2&&Math.abs(y-z.y)<=z.h/2}
-const ZONES={table:{x:72,y:58,w:22,h:16},pillow:{x:15,y:52,w:16,h:12},vase:{x:76,y:48,w:10,h:14},hook:{x:44,y:22,w:12,h:18},door:{x:95,y:40,w:12,h:52},seats:[{x:57,y:66},{x:87,y:66}]};
-const DUST=[[24,92],[52,72],[62,93],[38,80],[80,90]];
+// a drop counts when the pointer or the middle of the thing is inside the dashed box, with 3% extra room all around
+function dropHit(q,p,z){const g={x:z.x,y:z.y,w:z.w+6,h:z.h+6};return inZone(q.x,q.y,g)||(!!p&&inZone(p.x,p.y,g))}
+const SEAT_BOX={w:10,h:15};
+function seatFor(q,p,taken){let best=-1,d=1e9;ZONES.seats.forEach((z,s)=>{if(taken[s])return;const box={x:z.x,y:z.y,w:SEAT_BOX.w,h:SEAT_BOX.h};if(!dropHit(q,p,box))return;const dd=Math.hypot(q.x-z.x,q.y-z.y);if(dd<d){d=dd;best=s}});return best}
+// The room is laid out so nothing sits on top of anything else.
+const ZONES={table:{x:68,y:56,w:22,h:16},pillow:{x:14,y:52,w:16,h:12},vase:{x:74,y:47,w:10,h:14},hook:{x:36,y:21,w:12,h:18},door:{x:94,y:38,w:12,h:52},seats:[{x:62,y:69},{x:74,y:69}]};
+const DUST=[[10,92],[46,90],[56,81],[68,81],[78,80]];
 function sweptDust(dust,bx,by){return dust.filter(([x,y])=>Math.hypot(x-bx,(y-by)*1.6)>6)}
 // the name to type at check-in: the guest's name, or the last word for long VIP names
 function nameToType(g){return g.name.split(' ').pop()}
@@ -395,7 +400,7 @@ function grabbable(el,id,{move,drop,free=true}={}){const st=jobState(id);if(st==
  el.classList.add('grab');const home={x:parseFloat(el.style.left),y:parseFloat(el.style.top)};let off=null;
  el.addEventListener('pointerdown',e=>{e.preventDefault();el.setPointerCapture(e.pointerId);const p=pct(e);off={x:p.x-parseFloat(el.style.left),y:p.y-parseFloat(el.style.top)};el.classList.add('drag');el.classList.remove('back');tone(600,.04,'triangle',.03)});
  el.addEventListener('pointermove',e=>{if(!off)return;const p=pct(e),q={x:Math.max(0,Math.min(100,p.x-off.x)),y:Math.max(0,Math.min(100,p.y-off.y))};if(free){el.style.left=q.x+'%';el.style.top=q.y+'%'}if(move)move(q,p)});
- const end=e=>{if(!off)return;off=null;el.classList.remove('drag');const q={x:parseFloat(el.style.left),y:parseFloat(el.style.top)};if(drop&&drop(q)){return}if(free){el.classList.add('back');el.style.left=home.x+'%';el.style.top=home.y+'%'}};
+ const end=e=>{if(!off)return;off=null;el.classList.remove('drag');const q={x:parseFloat(el.style.left),y:parseFloat(el.style.top)},p=e.type==='pointercancel'?null:pct(e);if(drop&&drop(q,p)){return}if(free){el.classList.add('back');el.style.left=home.x+'%';el.style.top=home.y+'%';if(id!=='sweep')$('#cleanSay').textContent='Almost! Drop it inside the yellow dashed box.'}};
  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end)}
 function finish(id){const r=rooms[cleanRoom],res=doJob(r.jobs,id);if(!res.ok)return;sfx.ok();
  const left=r.jobs.filter(j=>!j.done);$('#cleanSay').textContent=res.done?'All done! The room is sparkly clean ✨':'Great job! Next: '+JOBS[left[0].id].icon+' '+JOBS[left[0].id].text+'.';setTimeout(buildRoom,350);
@@ -406,34 +411,34 @@ function buildRoom(){const box=$('#inside'),r=rooms[cleanRoom];box.innerHTML='';
  if(winDone){part('curtain',6.5,22,4,30);part('curtain',25.5,22,4,30)}
  else{const L=part('curtain',11,22,11,30),R=part('curtain',21,22,11,30);for(const [c,dir] of [[L,-1],[R,1]])grabbable(c,'window',{free:false,move:q=>{const dx=Math.max(0,Math.min(7,(q.x-(dir<0?11:21))*dir));L.style.left=(11-dx)+'%';R.style.left=(21+dx)+'%';L.style.width=(11-dx*.9)+'%';R.style.width=(11-dx*.9)+'%'},drop:q=>{const dx=(q.x-(dir<0?11:21))*dir;if(dx>=5){sparkle(16,22,'☀️');finish('window');return true}L.style.left='11%';R.style.left='21%';L.style.width=R.style.width='11%';return false}})}
  // lamp with a pull cord
- const lampOn=['none','done'].includes(jobState('lamp'));part('lampshade',84,9,null,null,'💡').style.filter=lampOn?'drop-shadow(0 0 2cqw #ffd84d)':'grayscale(.7) opacity(.7)';box.classList.toggle('dark',!lampOn);
- const cord=part('cord',87.5,14,null,12);cord.style.transform='translate(-50%,0)';const knob=part('knob',87.5,27);
- if(!lampOn)grabbable(knob,'lamp',{free:false,move:q=>{const y=Math.max(27,Math.min(38,q.y));knob.style.top=y+'%';cord.style.height=(y-14)+'%'},drop:q=>{knob.style.top='27%';cord.style.height='12%';if(q.y>=34){sparkle(84,9,'💡');finish('lamp');return true}return false}});
+ const lampOn=['none','done'].includes(jobState('lamp'));part('lampshade',62,9,null,null,'💡').style.filter=lampOn?'drop-shadow(0 0 2cqw #ffd84d)':'grayscale(.7) opacity(.7)';box.classList.toggle('dark',!lampOn);
+ const cord=part('cord',65.5,14,null,12);cord.style.transform='translate(-50%,0)';const knob=part('knob',65.5,27);
+ if(!lampOn)grabbable(knob,'lamp',{free:false,move:q=>{const y=Math.max(27,Math.min(38,q.y));knob.style.top=y+'%';cord.style.height=(y-14)+'%'},drop:q=>{knob.style.top='27%';cord.style.height='12%';if(q.y>=34){sparkle(62,9,'💡');finish('lamp');return true}return false}});
  // door, towel hook and towel
- part('door',95,40,8,52);part('',44,15,null,null,'🪝').style.fontSize='4.5cqw';
+ part('door',94,38,8,48);part('',36,14,null,null,'🪝').style.fontSize='4.5cqw';
  const towelDone=['none','done'].includes(jobState('towels'));
- if(towelDone)part('towel',44,25,7,14);else{part('',30,89,null,null,'🧺');const tw=part('towel',30,83,7,9);grabbable(tw,'towels',{drop:q=>{if(inZone(q.x,q.y,ZONES.hook)){sparkle(44,22);finish('towels');return true}return false}});if(jobState('towels')==='now')zone(ZONES.hook)}
+ if(towelDone)part('towel',36,25,7,14);else{part('',30,93,null,null,'🧺');const tw=part('towel',30,88,7,8);grabbable(tw,'towels',{drop:(q,p)=>{if(dropHit(q,p,ZONES.hook)){sparkle(36,22);finish('towels');return true}return false}});if(jobState('towels')==='now')zone(ZONES.hook)}
  // bed with pillow and sheet
- part('headboard',23,44,38,10);part('mattress',23,66,36,34);part('pillow',15,52,15,10,jobState('mint')==='done'||jobState('mint')==='none'?'🍬':'');
- const bedDone=jobState('bed')==='done';const sheet=part('sheet'+(bedDone?'':' messy'),23,bedDone?58:76,36,bedDone?25:7,bedDone?'':'🧦');
- if(!bedDone)grabbable(sheet,'bed',{free:false,move:q=>{const top=Math.max(57,Math.min(76,q.y));sheet.style.top=top+'%';sheet.style.height=(83-top)+'%';sheet.classList.remove('messy')},drop:q=>{if(parseFloat(sheet.style.top)<=61){sheet.style.top='58%';sheet.style.height='25%';sparkle(23,62);finish('bed');return true}sheet.style.top='76%';sheet.style.height='7%';sheet.classList.add('messy');return false}});
+ part('headboard',22,44,38,10);part('mattress',22,66,36,34);part('pillow',14,52,15,10,jobState('mint')==='done'||jobState('mint')==='none'?'🍬':'');
+ const bedDone=jobState('bed')==='done';const sheet=part('sheet'+(bedDone?'':' messy'),22,bedDone?58:76,36,bedDone?25:7,bedDone?'':'🧦');
+ if(!bedDone)grabbable(sheet,'bed',{free:false,move:q=>{const top=Math.max(57,Math.min(76,q.y));sheet.style.top=top+'%';sheet.style.height=(83-top)+'%';sheet.classList.remove('messy')},drop:q=>{if(parseFloat(sheet.style.top)<=61){sheet.style.top='58%';sheet.style.height='25%';sparkle(22,62);finish('bed');return true}sheet.style.top='76%';sheet.style.height='7%';sheet.classList.add('messy');return false}});
  if(jobState('bed')==='now'){const h=document.createElement('span');h.className='handle';h.textContent='⬆ pull';sheet.append(h)}
  // nightstand with the mint
- part('stand',46,63,7,10);if(['now','later'].includes(jobState('mint'))){const m=part('',46,56,null,null,'🍬');m.style.fontSize='4.5cqw';grabbable(m,'mint',{drop:q=>{if(inZone(q.x,q.y,ZONES.pillow)){sparkle(15,52);finish('mint');return true}return false}});if(jobState('mint')==='now')zone(ZONES.pillow)}
+ part('stand',45,62,6,10);if(['now','later'].includes(jobState('mint'))){const m=part('',45,55,null,null,'🍬');m.style.fontSize='4.5cqw';grabbable(m,'mint',{drop:(q,p)=>{if(dropHit(q,p,ZONES.pillow)){sparkle(14,52);finish('mint');return true}return false}});if(jobState('mint')==='now')zone(ZONES.pillow)}
  // trash can and bag
- part('',54,70,null,null,'🗑️').style.fontSize='5cqw';if(['now','later'].includes(jobState('trash'))){const bag=part('bag',54,62,null,null,'🍌');grabbable(bag,'trash',{drop:q=>{if(inZone(q.x,q.y,ZONES.door)){sparkle(95,40,'👋');finish('trash');return true}return false}});if(jobState('trash')==='now')zone(ZONES.door)}
+ part('',85,77,null,null,'🗑️').style.fontSize='5cqw';if(['now','later'].includes(jobState('trash'))){const bag=part('bag',85,69,null,null,'🍌');grabbable(bag,'trash',{drop:(q,p)=>{if(dropHit(q,p,ZONES.door)){sparkle(94,40,'👋');finish('trash');return true}return false}});if(jobState('trash')==='now')zone(ZONES.door)}
  // table, vase, snacks, chairs
- part('tabletop',72,58,20,10);part('',76,47,null,null,['none','done'].includes(jobState('flowers'))?'💐':'🏺').style.fontSize='6cqw';
- const snacksDone=jobState('snacks')==='done';if(snacksDone){part('',66,55,null,null,'🍪').style.fontSize='4.5cqw';part('',70,55,null,null,'🧃').style.fontSize='4.5cqw'}
- else{part('stand',62,90,12,4);for(const [ch,x] of [['🍪',59],['🧃',65]]){if(placed[ch]){part('',ch==='🍪'?66:70,55,null,null,ch).style.fontSize='4.5cqw';continue}const sn=part('',x,86,null,null,ch);sn.style.fontSize='4.5cqw';grabbable(sn,'snacks',{drop:q=>{if(inZone(q.x,q.y,ZONES.table)){placed[ch]=true;sn.remove();part('',ch==='🍪'?66:70,55,null,null,ch).style.fontSize='4.5cqw';sparkle(q.x,q.y);tone(880,.06,'triangle');if(placed['🍪']&&placed['🧃'])finish('snacks');return true}return false}})}if(jobState('snacks')==='now')zone(ZONES.table)}
- if(['now','later'].includes(jobState('flowers'))){const fl=part('',88,86,null,null,'💐');fl.style.fontSize='5.5cqw';grabbable(fl,'flowers',{drop:q=>{if(inZone(q.x,q.y,ZONES.vase)){sparkle(76,47,'🌸');finish('flowers');return true}return false}});if(jobState('flowers')==='now')zone(ZONES.vase)}
+ part('tabletop',68,57,18,10);part('',74,47,null,null,['none','done'].includes(jobState('flowers'))?'💐':'🏺').style.fontSize='6cqw';
+ const snacksDone=jobState('snacks')==='done';if(snacksDone){part('',61,54,null,null,'🍪').style.fontSize='4.5cqw';part('',66,54,null,null,'🧃').style.fontSize='4.5cqw'}
+ else{part('stand',60,93,12,4);for(const [ch,x] of [['🍪',57],['🧃',63]]){if(placed[ch]){part('',ch==='🍪'?61:66,54,null,null,ch).style.fontSize='4.5cqw';continue}const sn=part('',x,88,null,null,ch);sn.style.fontSize='4.5cqw';grabbable(sn,'snacks',{drop:(q,p)=>{if(dropHit(q,p,ZONES.table)){placed[ch]=true;sn.remove();part('',ch==='🍪'?61:66,54,null,null,ch).style.fontSize='4.5cqw';sparkle(q.x,q.y);tone(880,.06,'triangle');if(placed['🍪']&&placed['🧃'])finish('snacks');return true}return false}})}if(jobState('snacks')==='now')zone(ZONES.table)}
+ if(['now','later'].includes(jobState('flowers'))){const fl=part('',74,89,null,null,'💐');fl.style.fontSize='5.5cqw';grabbable(fl,'flowers',{drop:(q,p)=>{if(dropHit(q,p,ZONES.vase)){sparkle(74,47,'🌸');finish('flowers');return true}return false}});if(jobState('flowers')==='now')zone(ZONES.vase)}
  const chairsDone=['none','done'].includes(jobState('chairs'));
  if(chairsDone)ZONES.seats.forEach(z=>part('',z.x,z.y,null,null,'🪑').style.fontSize='6cqw');
- else{ZONES.seats.forEach((z,k)=>{if(chairsIn[k])part('',z.x,z.y,null,null,'🪑').style.fontSize='6cqw'});[[40,88],[78,94]].forEach(([x,y],k)=>{if(chairsIn[k])return;const c=part('',x,y,null,null,'🪑');c.style.fontSize='6cqw';c.style.rotate=k?'14deg':'-12deg';
-  grabbable(c,'chairs',{drop:q=>{const slot=ZONES.seats.findIndex((z,s)=>!chairsIn[s]&&Math.hypot(q.x-z.x,q.y-z.y)<11);if(slot<0)return false;chairsIn[slot]=true;c.style.left=ZONES.seats[slot].x+'%';c.style.top=ZONES.seats[slot].y+'%';c.style.rotate='0deg';c.classList.remove('grab');sparkle(ZONES.seats[slot].x,ZONES.seats[slot].y);tone(880,.06,'triangle');if(chairsIn[0]&&chairsIn[1])finish('chairs');return true}})});
-  if(jobState('chairs')==='now')ZONES.seats.forEach((z,k)=>{if(!chairsIn[k])zone({x:z.x,y:z.y,w:9,h:14})})}
+ else{ZONES.seats.forEach((z,k)=>{if(chairsIn[k])part('',z.x,z.y,null,null,'🪑').style.fontSize='6cqw'});[[50,76],[84,91]].forEach(([x,y],k)=>{if(chairsIn[k])return;const c=part('',x,y,null,null,'🪑');c.style.fontSize='6cqw';c.style.rotate=k?'14deg':'-12deg';
+  grabbable(c,'chairs',{drop:(q,p)=>{const slot=seatFor(q,p,chairsIn);if(slot<0)return false;chairsIn[slot]=true;c.style.left=ZONES.seats[slot].x+'%';c.style.top=ZONES.seats[slot].y+'%';c.style.rotate='0deg';c.classList.remove('grab');sparkle(ZONES.seats[slot].x,ZONES.seats[slot].y);tone(880,.06,'triangle');if(chairsIn[0]&&chairsIn[1])finish('chairs');return true}})});
+  if(jobState('chairs')==='now')ZONES.seats.forEach((z,k)=>{if(!chairsIn[k])zone({x:z.x,y:z.y,w:SEAT_BOX.w,h:SEAT_BOX.h})})}
  // dust and the broom
- if(['now','later'].includes(jobState('sweep'))){const piles=dust.map(([x,y])=>{const d=part('',x,y,null,null,'💨');d.style.fontSize='4.5cqw';d.style.opacity='.75';return d});const br=part('',91,74,null,null,'🧹');br.style.fontSize='7cqw';
+ if(['now','later'].includes(jobState('sweep'))){const piles=dust.map(([x,y])=>{const d=part('',x,y,null,null,'💨');d.style.fontSize='4.5cqw';d.style.opacity='.75';return d});const br=part('',94,88,null,null,'🧹');br.style.fontSize='7cqw';
   grabbable(br,'sweep',{move:q=>{const before=dust.length;dust=sweptDust(dust,q.x,q.y+3);if(dust.length<before){tone(500+Math.random()*200,.04,'triangle',.03);piles.forEach((d,k)=>{const [x,y]=[parseFloat(d.style.left),parseFloat(d.style.top)];if(!dust.some(p=>p[0]===x&&p[1]===y)&&d.isConnected){d.remove();sparkle(x,y)}});if(!dust.length)finish('sweep')}},drop:()=>!dust.length})}
  // the checklist
  const ol=$('#checklist');ol.innerHTML='';r.jobs.forEach((j,k)=>{const li=document.createElement('li');li.className=j.done?'done':j===next?'now':'';li.innerHTML='<span class="ord"></span><span></span>';li.firstChild.textContent=(j.done?'✓ ':j===next?'👉 ':'')+ORD(k,r.jobs.length);li.lastChild.textContent=JOBS[j.id].icon+' '+JOBS[j.id].text;ol.append(li)});

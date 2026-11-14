@@ -58,7 +58,10 @@ test('Check-in asks you to type the guest name for the key card',()=>{
 test('Dragging things: drop spots and sweeping the dust',()=>{
  const run=load();
  assert(run('inZone(72,58,ZONES.table)&&!inZone(20,90,ZONES.table)&&inZone(15,52,ZONES.pillow)&&inZone(95,40,ZONES.door)'));
- assert.equal(run('sweptDust(DUST,24,92).length'),run('DUST.length')-1,'the broom sweeps the pile it touches');
+ assert.equal(run('sweptDust(DUST,DUST[0][0],DUST[0][1]).length'),run('DUST.length')-1,'the broom sweeps the pile it touches');
+ assert(run('dropHit({x:5,y:5},{x:68,y:56},ZONES.table)'),'dropping counts when the pointer is in the box');assert(run('dropHit({x:68,y:56},{x:5,y:5},ZONES.table)'),'or when the thing is in the box');
+ assert(run('dropHit({x:68+ZONES.table.w/2+2,y:56},null,ZONES.table)'),'a little outside the edge still counts');assert(!run('dropHit({x:10,y:10},{x:12,y:12},ZONES.table)'));
+ assert.equal(run('seatFor({x:62,y:69},null,[false,false])'),0);assert.equal(run('seatFor({x:1,y:1},{x:74,y:70},[false,false])'),1);assert.equal(run('seatFor({x:62,y:69},null,[true,false])'),-1,'a taken seat is not offered again');
  assert.equal(run('sweptDust(DUST,5,10).length'),run('DUST.length'),'sweeping the air does nothing');
  assert.equal(run('DUST.reduce((d,[x,y])=>sweptDust(d,x,y),DUST).length'),0,'every pile can be swept');
 });
