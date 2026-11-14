@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#e8f6ff">
+<meta name="author" content="Emilia">
+<meta name="description" content="Wash, dry, brush, and style pets at your own pet salon, then take their picture for the photo wall. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/salon/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/salon/">
+<meta property="og:title" content="Pet Salon · A Super Emilia Game">
+<meta property="og:description" content="Wash, dry, brush, and style pets at your own pet salon, then take their picture for the photo wall. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Pet Salon</title>
+<style>
+/* Layout: top bar, the step bar (wash, dry, brush, style, photo), then the salon (one drawn scene with the pet in the middle and its tools on the side). Everything is done by dragging. Dialogs for the photo, the photo wall and the shop. */
+:root{
+ color-scheme:light;
+ --bg:#e8f6ff; --bg-2:#fde8f3; --paper:#fff; --line:#d6e6f2; --ink:#283a4d; --soft:#64788c;
+ --aqua:#3fb6d9; --aqua-deep:#2489a8; --pink:#ff8fc7; --gold:#ffc83d; --mint:#5fd3a5;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--aqua-deep);outline-offset:2px}
+.app{max-width:1000px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--aqua-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.coins{color:#a06b00;border-color:#f2d98a;background:#fff8dc}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.step{display:grid;justify-items:center;gap:1px;padding:7px 2px;border-radius:14px;background:#ffffffaa;border:2px solid var(--line);font-size:12px;font-weight:900;color:var(--soft)}
+.step span{font-size:22px;line-height:1.1}
+.step.now{background:#fff;border-color:var(--aqua);color:var(--ink);box-shadow:0 0 0 3px #3fb6d944}
+.step.done{background:#effcf5;border-color:var(--mint);color:#1f7a55}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+/* the salon scene */
+.salon{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #c7dceb;background:linear-gradient(180deg,#dff3ff 0 62%,#f5e9dc 62%);container-type:inline-size;touch-action:none}
+.salon:before{content:"";position:absolute;inset:0 0 38% 0;background:repeating-linear-gradient(90deg,#ffffff55 0 4cqw,transparent 4cqw 8cqw);pointer-events:none}
+.p{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;-webkit-user-select:none;user-select:none}
+.tub{width:44cqw;height:14cqw;border-radius:2cqw 2cqw 12cqw 12cqw;background:linear-gradient(180deg,#fff,#d8eef8);box-shadow:0 1.2cqw 0 #a9cfe0;border:.6cqw solid #fff}
+.table{width:44cqw;height:5cqw;border-radius:1.4cqw;background:linear-gradient(180deg,#ffd6ea,#ffb3d6);box-shadow:0 1.2cqw 0 #e08ab4}
+.pet{font-size:26cqw;transition:filter .4s}
+.pet.rainbow{animation:rain 2s linear infinite}
+.spot{font-size:5cqw;pointer-events:none}
+.mud{width:6cqw;height:5cqw;border-radius:50% 46% 54% 48%;background:radial-gradient(circle at 40% 40%,#9a6a3c,#6b4423);opacity:.9;pointer-events:none}
+.tool{font-size:8cqw;cursor:grab;touch-action:none;filter:drop-shadow(0 0 1cqw #ffc83d);z-index:8;animation:wob 1.2s ease-in-out infinite}
+.tool.drag{cursor:grabbing;animation:none;z-index:30;transform:translate(-50%,-50%) scale(1.15)}
+.tool.back{transition:left .3s ease,top .3s ease}
+.tool.off{filter:grayscale(1) opacity(.4);animation:none;cursor:not-allowed}
+.label{position:absolute;transform:translate(-50%,-50%);font-size:2cqw;font-weight:900;color:var(--soft);white-space:nowrap;pointer-events:none}
+.wish{position:absolute;left:3%;top:5%;max-width:36cqw;background:#fff;border-radius:2.4cqw;padding:1.4cqw 2cqw;font-size:2.4cqw;font-weight:800;box-shadow:0 .6cqw 0 #0001;line-height:1.3;z-index:5}
+.wish b{color:var(--aqua-deep)}
+.acc{font-size:7cqw;cursor:grab;touch-action:none;z-index:12}
+.acc.drag{cursor:grabbing;z-index:30;transform:translate(-50%,-50%) scale(1.2)}
+.shelf{position:absolute;right:2%;top:6%;bottom:6%;width:22%;background:#ffffffcc;border-radius:2cqw;box-shadow:0 .6cqw 0 #0001}
+.swatch{width:5.4cqw;height:5.4cqw;border-radius:50%;border:.6cqw solid #fff;box-shadow:0 0 0 .3cqw #c7dceb;cursor:pointer;pointer-events:auto}
+.swatch.on{box-shadow:0 0 0 .6cqw var(--aqua-deep)}
+.photo{pointer-events:auto;font-size:2.8cqw;font-weight:900;background:var(--pink);color:#fff;border:none;border-radius:2cqw;padding:1.4cqw 2.6cqw;box-shadow:0 .6cqw 0 #d65a9f;cursor:pointer;font-family:inherit}
+.fx{position:absolute;transform:translate(-50%,-50%);font-size:4cqw;pointer-events:none;animation:rise 1s ease-out forwards;z-index:25}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;animation:flash .5s ease-out;z-index:40}
+/* photos */
+.polaroid{background:#fff;padding:10px 10px 30px;border-radius:6px;box-shadow:0 6px 16px #0002;display:grid;gap:4px;justify-items:center;transform:rotate(var(--tilt,0deg))}
+.polaroid .pic{position:relative;width:100%;aspect-ratio:1;border-radius:4px;background:linear-gradient(180deg,#dff3ff,#ffe3f1);overflow:hidden;container-type:inline-size}
+.polaroid .pic .pp{position:absolute;transform:translate(-50%,-50%);line-height:1}
+.polaroid .cap{font-weight:900;font-size:13px}
+.wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-height:min(62dvh,520px);overflow:auto;padding:6px}
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(560px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #283a4d55}
+dialog::backdrop{background:#283a4d66;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg.center{justify-items:center;text-align:center}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.primary{background:var(--aqua);border-color:var(--aqua-deep);color:#fff;box-shadow:0 4px 0 var(--aqua-deep);font-size:17px;padding:11px 20px}
+.items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:min(58dvh,480px);overflow:auto;padding:2px}
+.items h3{grid-column:1/-1;margin:4px 0 0;font-size:15px}
+.item{display:grid;justify-items:center;gap:3px;padding:10px 4px;border-radius:16px;border:2px solid var(--line);background:#fff;text-align:center}
+.item .ic{font-size:30px;line-height:1.1}
+.item .nm{font-size:12.5px;font-weight:900}
+.item button{padding:5px 10px;font-size:13px}
+.item.own{background:#effcf5;border-color:#bfe8d4}
+.dot{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line)}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes wob{0%,100%{rotate:0deg}50%{rotate:5deg}}
+@keyframes rain{to{filter:hue-rotate(360deg) saturate(1.8)}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-200%) scale(1.1)}}
+@keyframes flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+@media (max-width:640px){.title strong{font-size:17px}.step{font-size:10px}.step span{font-size:18px}.wall{grid-template-columns:repeat(2,minmax(0,1fr))}.items{grid-template-columns:repeat(2,minmax(0,1fr))}.salon{aspect-ratio:4/3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Pet Salon</strong></div>
+  <span class="chip" id="served" aria-label="Pets styled">✂️ 0</span>
+  <span class="chip coins" id="coins" aria-label="Coins">🪙 0</span>
+ </div>
+ <div class="tools">
+  <button type="button" id="wallBtn">🖼️ Photo wall</button>
+  <button type="button" id="shopBtn">🛒 Shop</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <div class="steps" id="steps" aria-label="Salon steps"></div>
+ <p class="tip" id="tip" role="status"></p>
+ <section class="salon" id="salon" aria-label="The salon. Drag the tools over the pet."></section>
+</div>
+
+<dialog id="photoDialog" aria-labelledby="photoTitle"><div class="dlg center">
+ <h2 id="photoTitle">📸 Say cheese!</h2>
+ <div class="polaroid" id="photoBig" style="width:min(260px,70vw)"></div>
+ <p id="photoText"></p>
+ <button type="button" class="primary" id="photoOk">Next pet! 🐾</button>
+</div></dialog>
+<dialog id="wallDialog" aria-labelledby="wallTitle"><div class="dlg">
+ <header><h2 id="wallTitle">🖼️ Photo wall</h2><button type="button" id="wallClose" aria-label="Close the photo wall">✕</button></header>
+ <p id="wallSub"></p><div class="wall" id="wall"></div>
+</div></dialog>
+<dialog id="shopDialog" aria-labelledby="shopTitle"><div class="dlg">
+ <header><h2 id="shopTitle">🛒 Salon shop</h2><span class="chip coins" id="shopCoins">🪙 0</span><button type="button" id="shopClose" aria-label="Close the shop">✕</button></header>
+ <div class="items" id="shopItems"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+// Pets start visiting after you have styled this many pets.
+const PETS=[{id:'dog',icon:'🐶',name:'Biscuit',after:0},{id:'cat',icon:'🐱',name:'Mittens',after:0},{id:'bunny',icon:'🐰',name:'Clover',after:0},{id:'hamster',icon:'🐹',name:'Peanut',after:3},{id:'panda',icon:'🐼',name:'Bamboo',after:6},{id:'fox',icon:'🦊',name:'Rusty',after:9},{id:'pig',icon:'🐷',name:'Truffle',after:12},{id:'unicorn',icon:'🦄',name:'Sparkle',after:16},{id:'dragon',icon:'🐲',name:'Ember',after:20}];
+// Fur colors (a CSS filter on the pet) and accessories. price 0 means you start with it.
+const COLORS=[{id:'natural',name:'Natural',dot:'#e9d3b8',filter:'none',price:0},{id:'pink',name:'Pink',dot:'#ff8fc7',filter:'hue-rotate(300deg) saturate(1.6)',price:0},{id:'blue',name:'Blue',dot:'#5aa9ff',filter:'hue-rotate(180deg) saturate(1.5)',price:0},{id:'purple',name:'Purple',dot:'#a66bff',filter:'hue-rotate(240deg) saturate(1.7)',price:15},{id:'green',name:'Green',dot:'#4cc38a',filter:'hue-rotate(90deg) saturate(1.5)',price:15},{id:'gold',name:'Gold',dot:'#f2bd2c',filter:'sepia(1) saturate(4) hue-rotate(5deg) brightness(1.05)',price:30},{id:'rainbow',name:'Rainbow',dot:'conic-gradient(#ff5a5f,#ffd447,#4cc38a,#5aa9ff,#a66bff,#ff5a5f)',filter:'rainbow',price:50}];
+const ACCS=[{id:'bow',icon:'🎀',name:'Bow',price:0},{id:'flower',icon:'🌸',name:'Flower',price:0},{id:'glasses',icon:'🕶️',name:'Sunglasses',price:10},{id:'scarf',icon:'🧣',name:'Scarf',price:12},{id:'star',icon:'⭐',name:'Star clip',price:15},{id:'butterfly',icon:'🦋',name:'Butterfly',price:18},{id:'tophat',icon:'🎩',name:'Top hat',price:20},{id:'rainbowclip',icon:'🌈',name:'Rainbow clip',price:22},{id:'crown',icon:'👑',name:'Crown',price:25},{id:'gem',icon:'💎',name:'Gem',price:30}];
+const STEPS=[{id:'wash',icon:'🛁',name:'Wash'},{id:'dry',icon:'💨',name:'Dry'},{id:'brush',icon:'🪮',name:'Brush'},{id:'style',icon:'🎨',name:'Style'},{id:'photo',icon:'📸',name:'Photo'}];
+const PET_AT={x:42,y:50},PET_BOX={w:28,h:40};
+const SAVE_KEY='superEmiliaSalon';
+
+// ---------- pure game logic (also used by the tests) ----------
+const own=(save,kind,id)=>{const it=(kind==='color'?COLORS:ACCS).find(x=>x.id===id);return!!it&&(it.price===0||save.owned.includes(kind+':'+id))};
+function petsOpen(served){return PETS.filter(p=>served>=p.after)}
+// spots of mud, water or tangles scattered over the pet (in % of the scene)
+function makeSpots(n,rand=Math.random){const out=[];for(let i=0;i<n;i++)out.push([PET_AT.x+(rand()*2-1)*PET_BOX.w*.4,PET_AT.y+(rand()*2-1)*PET_BOX.h*.38]);return out}
+// a tool cleans every spot it passes close to
+function clearSpots(spots,x,y,reach=6){return spots.filter(([sx,sy])=>Math.hypot(sx-x,(sy-y)*0.625)>reach)}
+// a new customer and what they wish for: a fur color and an accessory you own
+function makeCustomer(save,rand=Math.random){const pets=petsOpen(save.served),pet=pets[Math.floor(rand()*pets.length)];
+ const colors=COLORS.filter(c=>c.id!=='natural'&&own(save,'color',c.id)),accs=ACCS.filter(a=>own(save,'acc',a.id));
+ return{pet:pet.id,color:colors[Math.floor(rand()*colors.length)].id,acc:accs[Math.floor(rand()*accs.length)].id}}
+function onPet(x,y){return Math.abs(x-PET_AT.x)<=PET_BOX.w/2+3&&Math.abs(y-PET_AT.y)<=PET_BOX.h/2+4}
+// coins for a finished pet: more when you match their wish
+function payFor(wish,look){const color=look.color===wish.color,acc=look.accs.some(a=>(a.id||a)===wish.acc);return{coins:8+(color?6:0)+(acc?6:0)+(color&&acc?4:0)+Math.min(look.accs.length,4),color,acc}}
+// saves the photo and pays; keeps the 30 newest photos
+function finishPet(save,wish,look){const r=payFor(wish,look);save.coins+=r.coins;save.served++;if(r.color&&r.acc)save.perfect++;save.photos.unshift({pet:wish.pet,color:look.color,accs:look.accs.slice(0,8)});save.photos=save.photos.slice(0,30);return r}
+function buy(save,kind,id){const it=(kind==='color'?COLORS:ACCS).find(x=>x.id===id);if(!it||own(save,kind,id)||save.coins<it.price)return false;save.coins-=it.price;save.owned.push(kind+':'+id);return true}
+function defaultSave(){return{coins:0,served:0,perfect:0,owned:[],photos:[],sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0};
+ s.coins=num(raw.coins);s.served=num(raw.served);s.perfect=Math.min(num(raw.perfect),s.served);
+ if(Array.isArray(raw.owned))s.owned=[...new Set(raw.owned.filter(k=>typeof k==='string'&&((k.startsWith('color:')&&COLORS.some(c=>'color:'+c.id===k))||(k.startsWith('acc:')&&ACCS.some(a=>'acc:'+a.id===k)))))];
+ if(Array.isArray(raw.photos))s.photos=raw.photos.filter(ph=>ph&&PETS.some(p=>p.id===ph.pet)).slice(0,30).map(ph=>({pet:ph.pet,color:COLORS.some(c=>c.id===ph.color)?ph.color:'natural',accs:Array.isArray(ph.accs)?ph.accs.filter(a=>a&&ACCS.some(x=>x.id===a.id)).slice(0,8).map(a=>({id:a.id,x:Math.max(0,Math.min(100,Number(a.x)||50)),y:Math.max(0,Math.min(100,Number(a.y)||50))})):[]}));
+ s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+let S=loadSave(),C=null,step=0,mud=[],bubbles=[],drops=[],tangles=[],look={color:'natural',accs:[]},audio=null;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.25,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={scrub:()=>tone(500+Math.random()*300,.05,'triangle',.03),done:()=>[660,880,1100].forEach((f,i)=>setTimeout(()=>tone(f,.1,'triangle'),i*80)),snap:()=>{tone(1800,.04,'square',.04);setTimeout(()=>tone(900,.08,'square',.03),60)},coin:()=>[988,1318].forEach((f,i)=>setTimeout(()=>tone(f,.1,'square',.03),i*80)),place:()=>tone(820,.06,'triangle')};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2000)}
+function setTip(h){$('#tip').innerHTML=h}
+const pet=()=>PETS.find(p=>p.id===C.pet),color=id=>COLORS.find(c=>c.id===id),acc=id=>ACCS.find(a=>a.id===id);
+function pct(e){const b=$('#salon').getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function part(cls,x,y,html){const d=document.createElement('div');d.className='p '+cls;d.style.left=x+'%';d.style.top=y+'%';if(html!=null)d.innerHTML=html;$('#salon').append(d);return d}
+function label(x,y,t){const d=document.createElement('div');d.className='label';d.style.left=x+'%';d.style.top=y+'%';d.textContent=t;$('#salon').append(d)}
+function fx(x,y,t){const d=document.createElement('div');d.className='fx';d.textContent=t;d.style.left=x+'%';d.style.top=y+'%';$('#salon').append(d);setTimeout(()=>d.remove(),1000)}
+function applyColor(el,id){const c=color(id);el.classList.toggle('rainbow',c.filter==='rainbow');el.style.filter=c.filter==='rainbow'?'':c.filter}
+function renderTop(){$('#coins').textContent='🪙 '+S.coins;$('#shopCoins').textContent='🪙 '+S.coins;$('#served').textContent='✂️ '+S.served;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off');
+ const st=$('#steps');st.innerHTML='';STEPS.forEach((s,i)=>{const d=document.createElement('div');d.className='step'+(i<step?' done':i===step?' now':'');d.innerHTML='<span aria-hidden="true">'+(i<step?'✓':s.icon)+'</span>'+s.name;st.append(d)})}
+// a tool you drag over the pet; move(q) runs while it moves; when done() returns true the step is finished
+function tool(icon,x,y,{move,off=false}){const t=part('tool'+(off?' off':''),x,y,icon);if(off)return t;const home={x,y};let dragging=null;
+ t.addEventListener('pointerdown',e=>{e.preventDefault();t.setPointerCapture(e.pointerId);const p=pct(e);dragging={dx:p.x-parseFloat(t.style.left),dy:p.y-parseFloat(t.style.top)};t.classList.add('drag');t.classList.remove('back')});
+ t.addEventListener('pointermove',e=>{if(!dragging)return;const p=pct(e),q={x:p.x-dragging.dx,y:p.y-dragging.dy};t.style.left=q.x+'%';t.style.top=q.y+'%';move(q)});
+ const end=()=>{if(!dragging)return;dragging=null;t.classList.remove('drag');t.classList.add('back');t.style.left=home.x+'%';t.style.top=home.y+'%'};t.addEventListener('pointerup',end);t.addEventListener('pointercancel',end);return t}
+function newCustomer(){C=makeCustomer(S);step=0;mud=makeSpots(7);bubbles=[];drops=[];tangles=[];look={color:'natural',accs:[]};render();setTip('🐾 <b>'+pet().name+'</b> is here! First, <b>drag the sponge</b> 🧽 over the mud to scrub it off.');tone(660,.1,'triangle')}
+function nextStep(){sfx.done();fx(PET_AT.x,PET_AT.y-24,'✨');step++;if(step===1){drops=makeSpots(7);setTip('💨 Squeaky clean! Now <b>drag the hair dryer</b> over the pet to dry every drop.')}
+ else if(step===2){tangles=makeSpots(5);setTip('🪮 Nice and dry! Now <b>drag the comb</b> over the tangles.')}
+ else if(step===3)setTip('🎨 So soft! Now tap a <b>fur color</b> and <b>drag accessories</b> onto '+pet().name+'. Then tap <b>Take photo!</b>');
+ setTimeout(render,250)}
+function render(){const sc=$('#salon');sc.innerHTML='';renderTop();if(!C)return;const P=pet();
+ // the wish bubble
+ const w=document.createElement('div');w.className='wish';w.innerHTML='<span></span>';w.firstChild.innerHTML=P.icon+' '+P.name+': "I would love <b>'+color(C.color).name.toLowerCase()+' fur</b> and a <b>'+acc(C.acc).name.toLowerCase()+'</b> '+acc(C.acc).icon+'!"';sc.append(w);
+ // tub or table, and the pet
+ if(step<=1)part('tub',PET_AT.x,PET_AT.y+20);else part('table',PET_AT.x,PET_AT.y+22);
+ const pe=part('pet',PET_AT.x,PET_AT.y,P.icon);pe.id='petEl';if(step>=3)applyColor(pe,look.color);
+ if(step===0){mud.forEach(([x,y])=>part('mud',x,y));bubbles.forEach(([x,y])=>part('spot',x,y,'🫧'))}
+ if(step===1)drops.forEach(([x,y])=>part('spot',x,y,'💧'));
+ if(step===2)tangles.forEach(([x,y])=>part('spot',x,y,'🌀'));
+ // tools for each step
+ if(step===0){const sponge=tool('🧽',84,38,{off:!mud.length,move:q=>{const n=mud.length,left=clearSpots(mud,q.x,q.y);if(left.length<n){const gone=mud.filter(m=>!left.includes(m));bubbles.push(...gone);mud=left;sfx.scrub();redrawSpots();if(!mud.length){setTip('🫧 All scrubbed! Now <b>drag the shower</b> 🚿 to rinse off the bubbles.');setTimeout(render,200)}}}});label(84,49,'Sponge');
+  tool('🚿',84,72,{off:!!mud.length,move:q=>{const n=bubbles.length;bubbles=clearSpots(bubbles,q.x,q.y+6);if(bubbles.length<n){sfx.scrub();redrawSpots();if(!bubbles.length&&!mud.length)nextStep()}}});label(84,84,'Shower')}
+ if(step===1){tool('💨',84,50,{move:q=>{const n=drops.length;drops=clearSpots(drops,q.x-4,q.y);if(drops.length<n){sfx.scrub();redrawSpots();if(!drops.length)nextStep()}}});label(84,62,'Hair dryer')}
+ if(step===2){tool('🪮',84,50,{move:q=>{const n=tangles.length;tangles=clearSpots(tangles,q.x,q.y);if(tangles.length<n){sfx.scrub();fx(q.x,q.y,'✨');redrawSpots();if(!tangles.length)nextStep()}}});label(84,62,'Comb')}
+ if(step===3){const sh=document.createElement('div');sh.className='shelf';sc.append(sh);
+  COLORS.filter(c=>own(S,'color',c.id)).forEach((c,i)=>{const d=part('swatch'+(look.color===c.id?' on':''),82+(i%3)*6.5,12+Math.floor(i/3)*10);d.style.background=c.dot;d.setAttribute('role','button');d.setAttribute('aria-label',c.name+' fur');d.onclick=()=>{look.color=c.id;sfx.place();render()}});
+  ACCS.filter(a=>own(S,'acc',a.id)).forEach((a,i)=>{const d=part('acc',82+(i%3)*6.5,36+Math.floor(i/3)*12,a.icon);d.style.fontSize='5cqw';d.setAttribute('aria-label',a.name);dragAcc(d,{id:a.id,fresh:true})});
+  look.accs.forEach(a=>{const d=part('acc',a.x,a.y,acc(a.id).icon);dragAcc(d,a)});
+  const b=document.createElement('button');b.type='button';b.className='p photo';b.style.left=PET_AT.x+'%';b.style.top='92%';b.textContent='📸 Take photo!';b.onclick=takePhoto;sc.append(b)}
+}
+function redrawSpots(){const sc=$('#salon');sc.querySelectorAll('.mud,.spot').forEach(e=>e.remove());const before=sc.querySelector('.tool');const add=(cls,x,y,h)=>{const d=document.createElement('div');d.className='p '+cls;d.style.left=x+'%';d.style.top=y+'%';if(h)d.textContent=h;sc.insertBefore(d,before)};
+ if(step===0){mud.forEach(([x,y])=>add('mud',x,y));bubbles.forEach(([x,y])=>add('spot',x,y,'🫧'))}if(step===1)drops.forEach(([x,y])=>add('spot',x,y,'💧'));if(step===2)tangles.forEach(([x,y])=>add('spot',x,y,'🌀'))}
+// accessories: drag from the shelf onto the pet; drag off the pet to take them off
+function dragAcc(el,a){let d=null;el.addEventListener('pointerdown',e=>{e.preventDefault();el.setPointerCapture(e.pointerId);d=true;el.classList.add('drag')});
+ el.addEventListener('pointermove',e=>{if(!d)return;const p=pct(e);el.style.left=p.x+'%';el.style.top=p.y+'%'});
+ el.addEventListener('pointerup',e=>{if(!d)return;d=null;el.classList.remove('drag');const p=pct(e);
+  if(a.fresh){if(onPet(p.x,p.y)){if(look.accs.length>=6){notify('That is a lot of accessories! Take one off first.');render();return}look.accs.push({id:a.id,x:p.x,y:p.y});sfx.place();fx(p.x,p.y,'✨')}render();return}
+  if(onPet(p.x,p.y)){a.x=p.x;a.y=p.y}else{look.accs=look.accs.filter(x=>x!==a);tone(400,.08,'triangle',.03)}render()})}
+function photoHTML(ph){const P=PETS.find(p=>p.id===ph.pet),c=color(ph.color);let h='<div class="pic"><div class="pp" style="left:50%;top:52%;font-size:72cqw;'+(c.filter==='rainbow'?'animation:rain 2s linear infinite;':'filter:'+c.filter)+'">'+P.icon+'</div>';
+ for(const a of ph.accs){const x=50+(a.x-PET_AT.x)/PET_BOX.w*80,y=52+(a.y-PET_AT.y)/PET_BOX.h*80;h+='<div class="pp" style="left:'+x+'%;top:'+y+'%;font-size:18cqw">'+acc(a.id).icon+'</div>'}return h+'</div><div class="cap">'+P.name+'</div>'}
+function takePhoto(){const fl=document.createElement('div');fl.className='flash';$('#salon').append(fl);sfx.snap();step=4;renderTop();
+ setTimeout(()=>{const r=finishPet(S,C,look);save();renderTop();sfx.coin();const ph=S.photos[0];$('#photoBig').innerHTML=photoHTML(ph);$('#photoBig').style.setProperty('--tilt',(Math.random()*6-3)+'deg');
+  $('#photoText').textContent=(r.color&&r.acc?pet().name+' LOVES it! Exactly what they wished for! 💖':r.color||r.acc?pet().name+' likes it! (They wished for '+color(C.color).name.toLowerCase()+' fur and a '+acc(C.acc).name.toLowerCase()+'.)':pet().name+' says thank you! (Next time, try '+color(C.color).name.toLowerCase()+' fur and a '+acc(C.acc).name.toLowerCase()+'.)')+' +'+r.coins+' coins.';
+  const newPet=PETS.find(p=>p.after===S.served);if(newPet)$('#photoText').textContent+=' 🎉 '+newPet.icon+' '+newPet.name+' will start visiting your salon!';$('#photoDialog').showModal()},450)}
+$('#photoOk').onclick=()=>{$('#photoDialog').close();newCustomer()};
+$('#photoDialog').addEventListener('cancel',e=>{e.preventDefault();$('#photoDialog').close();newCustomer()});
+$('#wallBtn').onclick=()=>{const w=$('#wall');w.innerHTML='';if(!S.photos.length)w.innerHTML='<p style="grid-column:1/-1;text-align:center;color:var(--soft);font-weight:700">No photos yet. Style a pet and take its picture!</p>';S.photos.forEach((ph,i)=>{const d=document.createElement('div');d.className='polaroid';d.style.setProperty('--tilt',((i*37)%7-3)+'deg');d.innerHTML=photoHTML(ph);w.append(d)});
+ $('#wallSub').textContent=S.served+' pets styled · '+S.perfect+' perfect wishes';$('#wallDialog').showModal()};
+$('#wallClose').onclick=()=>$('#wallDialog').close();
+function renderShop(){renderTop();const box=$('#shopItems');box.innerHTML='';const head=t=>{const h=document.createElement('h3');h.textContent=t;box.append(h)};
+ const add=(kind,it,pic)=>{const owned=own(S,kind,it.id),d=document.createElement('div');d.className='item'+(owned?' own':'');d.innerHTML=pic+'<span class="nm"></span>';d.querySelector('.nm').textContent=it.name;const b=document.createElement('button');b.type='button';if(owned){b.textContent='✓ Yours';b.disabled=true}else{b.textContent='🪙 '+it.price;b.disabled=S.coins<it.price;b.setAttribute('aria-label','Buy '+it.name+' for '+it.price+' coins');b.onclick=()=>{if(buy(S,kind,it.id)){save();sfx.coin();notify(it.name+' is yours!');renderShop()}}}d.append(b);box.append(d)};
+ head('🎨 Fur colors');COLORS.forEach(c=>add('color',c,'<span class="dot" style="background:'+c.dot+'"></span>'));head('🎀 Accessories');ACCS.forEach(a=>add('acc',a,'<span class="ic" aria-hidden="true">'+a.icon+'</span>'))}
+$('#shopBtn').onclick=()=>{renderShop();$('#shopDialog').showModal()};$('#shopClose').onclick=()=>{$('#shopDialog').close();render()};
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+document.querySelectorAll('#wallDialog,#shopDialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){d.close();render()}}));
+newCustomer();
+window.__salon={get S(){return S},get C(){return C},get step(){return step},get look(){return look},spots:()=>({mud,bubbles,drops,tangles}),render,newCustomer};
+}
+</script>
+</body>
+</html>
