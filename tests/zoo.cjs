@@ -22,7 +22,7 @@ test('Wrong food gets a hint, full animals do not pay, and the ball makes them h
 test('Scooping poop pays, and clean, fed, happy animals bring more coins from visitors',()=>{
  const run=load();run('var s=defaultSave();s.animals[0].poop=[[-.5,0],[.6,.4]]');assert.equal(run('scoop(s,0,0,0)'),0,'too far away');assert.equal(run('scoop(s,0,-.4,.1)'),1);assert.equal(run('s.coins'),1);
  run('s.animals.forEach(a=>{a.food=100;a.fun=100})');assert.equal(run('happiness(s.animals[1])'),100);assert.equal(run('happiness(s.animals[0])'),75,'poop makes animals less happy');
- assert.equal(run('visitorPay(s)'),3);run('scoop(s,0,.6,.4)');run('s.animals.forEach(a=>{a.food=0;a.fun=0})');assert.equal(run('payVisitor(s)'),1);assert.equal(run('s.visitors'),1);
+ assert.equal(run('visitorPay(s)'),4);run('scoop(s,0,.6,.4)');run('s.animals.forEach(a=>{a.food=0;a.fun=0})');assert.equal(run('payVisitor(s)'),2);assert.equal(run('s.visitors'),1);
 });
 test('The shop sells each animal once and needs enough coins',()=>{
  const run=load();run('var s=defaultSave();s.coins=30');assert(!run("buyAnimal(s,'bunny')"));assert(run("buyAnimal(s,'penguin')&&s.coins===5&&s.animals.length===3"));assert(!run("buyAnimal(s,'penguin')"));assert(!run("buyAnimal(s,'dragon')"));

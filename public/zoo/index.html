@@ -153,8 +153,8 @@ function feed(S,i,food,rand=Math.random){const a=S.animals[i];if(!a)return{ok:fa
 function play(S,i){const a=S.animals[i];if(!a)return{ok:false};if(a.fun>=90)return{ok:true,full:true,coins:0};a.fun=100;S.played++;S.coins+=2;return{ok:true,coins:2}}
 // the shovel at (px,py) inside pen i (-1 to 1 each way) scoops poop close to it
 function scoop(S,i,px,py,reach=.45){const a=S.animals[i];if(!a)return 0;const n=a.poop.length;a.poop=a.poop.filter(([x,y])=>Math.hypot(x-px,y-py)>reach);const got=n-a.poop.length;S.coins+=got;S.scooped+=got;return got}
-// a visitor pays 1 coin, plus 1 for every happy animal
-function visitorPay(S){return 1+S.animals.filter(a=>happiness(a)>=60).length}
+// a visitor pays 2 coins, plus 1 for every happy animal
+function visitorPay(S){return 2+S.animals.filter(a=>happiness(a)>=60).length}
 function payVisitor(S){const c=visitorPay(S);S.coins+=c;S.visitors++;return c}
 function owns(S,id){return S.animals.some(a=>a.id===id)}
 function buyAnimal(S,id){const k=kind(id);if(!k||owns(S,id)||S.animals.length>=PENS.length||S.coins<k.price)return false;S.coins-=k.price;S.animals.push(newAnimal(id));return true}
