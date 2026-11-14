@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2a1d47">
+<meta name="author" content="Emilia">
+<meta name="description" content="Drag magic ingredients into a bubbling cauldron, stir it up, and pour your potion on a test buddy to see what happens. Discover over 20 silly potions. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/potion/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/potion/">
+<meta property="og:title" content="Magic Potion Lab · A Super Emilia Game">
+<meta property="og:description" content="Drag magic ingredients into a bubbling cauldron, stir it up, and pour your potion on a test buddy to see what happens. Discover over 20 silly potions. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Magic Potion Lab</title>
+<style>
+/* Layout: top bar, a tip line, then the lab (one drawn room): the ingredient shelf, the cauldron with its spoon, the test buddy on a stool, and sometimes a customer. Everything is done by dragging. Dialogs for new potions, the potion book and the shop. */
+:root{
+ color-scheme:dark;
+ --bg:#1d1433; --panel:#2a1d47; --panel-2:#352659; --line:#4b3a78; --ink:#f6efff; --soft:#bcaee0;
+ --magic:#b48cff; --magic-deep:#7d55e0; --gold:#ffcf4d; --mint:#6ee7b7; --pink:#ff8fc7;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(900px 500px at 20% -10%,#3b2a6b 0,transparent 60%),radial-gradient(700px 400px at 100% 0,#2b3b6b 0,transparent 55%),var(--bg);color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--panel-2);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.app{max-width:1000px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--panel-2);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mint);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--panel-2);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.coins{color:var(--gold)}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tip{margin:0;background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+/* the lab */
+.lab{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:3px solid #5b4893;box-shadow:0 8px 0 #120c22;background:linear-gradient(180deg,#3a2a66 0 64%,#2a1f4d 64%);container-type:inline-size;touch-action:none}
+.lab:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 12% 18%,#ffffff22 0 .3cqw,transparent .4cqw) 0 0/9cqw 7cqw;pointer-events:none}
+.p{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;font-size:6cqw;-webkit-user-select:none;user-select:none}
+.p.grab{cursor:grab;touch-action:none;filter:drop-shadow(0 0 1cqw #ffcf4d);z-index:6}
+.p.glow{animation:wob 1.2s ease-in-out infinite}
+.p.drag{cursor:grabbing;animation:none;z-index:30;transform:translate(-50%,-50%) scale(1.15)}
+.p.back{transition:left .3s ease,top .3s ease}
+.p.locked{filter:grayscale(1) brightness(.5);cursor:not-allowed}
+.shelf{background:linear-gradient(180deg,#8a5a34,#6b4224);border-radius:1cqw;box-shadow:0 1cqw 0 #3b2412}
+.jar{width:8cqw;height:9.5cqw;border-radius:2cqw 2cqw 2.4cqw 2.4cqw;background:linear-gradient(180deg,#ffffff30,#ffffff12);border:.4cqw solid #ffffff55;font-size:5cqw;padding-top:1cqw}
+.jar .nm{position:absolute;bottom:-3.2cqw;font-size:1.8cqw;font-weight:800;color:var(--soft);white-space:nowrap}
+.cauldron{width:30cqw;height:20cqw}
+.cauldron .pot{position:absolute;inset:18% 0 0 0;border-radius:40% 40% 46% 46%/30% 30% 70% 70%;background:radial-gradient(circle at 35% 30%,#4a4a5e,#1d1d28 70%);box-shadow:0 1.4cqw 0 #0008}
+.cauldron .brew{position:absolute;left:8%;right:8%;top:10%;height:22%;border-radius:50%;background:var(--brew,#5fd3a5);box-shadow:0 0 3cqw var(--brew,#5fd3a5),inset 0 -1cqw 0 #0003;transition:background .4s,box-shadow .4s}
+.cauldron .rim{position:absolute;left:3%;right:3%;top:8%;height:26%;border-radius:50%;border:1.6cqw solid #2c2c3c;box-sizing:border-box}
+.cauldron .inside{position:absolute;left:18%;right:18%;top:8%;height:20%;display:flex;justify-content:center;align-items:center;gap:1cqw;font-size:3.6cqw;z-index:2}
+.cauldron .legs{position:absolute;left:12%;right:12%;bottom:-6%;height:12%;background:linear-gradient(90deg,#1d1d28 0 12%,transparent 12% 88%,#1d1d28 88%)}
+.fire{font-size:5cqw;filter:drop-shadow(0 0 1.5cqw #ff9a3c);animation:flick .5s ease-in-out infinite alternate}
+.bubble{position:absolute;width:2cqw;height:2cqw;border-radius:50%;background:var(--brew,#5fd3a5);opacity:.8;pointer-events:none;animation:up 1.6s ease-out forwards}
+.spoon{font-size:8cqw}
+.ring{position:absolute;transform:translate(-50%,-50%);border:.5cqw dashed #ffcf4d88;border-radius:50%;pointer-events:none}
+.meter{position:absolute;transform:translate(-50%,-50%);width:22cqw;height:2.4cqw;border-radius:99px;background:#0006;overflow:hidden;border:.3cqw solid #ffffff44}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--gold));transition:width .1s}
+.bottle{font-size:7cqw;filter:drop-shadow(0 0 1.4cqw var(--brew,#5fd3a5))}
+.stool{width:14cqw;height:3cqw;border-radius:1cqw;background:#8a5a34;box-shadow:0 1cqw 0 #5a3a20}
+.buddy{font-size:12cqw;transition:filter .4s,transform .4s;transform-origin:50% 90%}
+.target{position:absolute;transform:translate(-50%,-50%);border:.5cqw dashed #ffcf4d;border-radius:2cqw;background:#ffcf4d18;pointer-events:none;animation:pulse 1.2s ease-in-out infinite}
+.customer{display:grid;justify-items:center;gap:.5cqw}
+.customer .who{font-size:9cqw}
+.customer .want{background:#fff;color:#2a1d47;border-radius:2cqw;padding:1cqw 1.4cqw;font-size:2cqw;font-weight:900;max-width:24cqw;text-align:center;line-height:1.2;font-family:var(--round)}
+.fx{position:absolute;transform:translate(-50%,-50%);pointer-events:none;font-size:4.5cqw;z-index:25}
+.label{position:absolute;transform:translate(-50%,-50%);font-size:1.9cqw;font-weight:900;color:var(--soft);white-space:nowrap;pointer-events:none;font-family:var(--round)}
+/* effects on the test buddy */
+.e-purple{filter:hue-rotate(250deg) saturate(2)}
+.e-float{animation:float 1.6s ease-in-out infinite}
+.e-shrink{transform:scale(.4)}
+.e-giant{transform:scale(1.7)}
+.e-bounce{animation:bounce .5s ease-in infinite alternate}
+.e-giggle{animation:shake .15s linear infinite}
+.e-fly{animation:fly 3s ease-in-out infinite}
+.e-frozen{filter:hue-rotate(180deg) brightness(1.3) saturate(.6)}
+.e-invisible{opacity:.12}
+.e-spin{animation:spin .8s linear infinite}
+.e-rainbow{animation:rainbow 1s linear infinite}
+.e-moon{animation:moon 1.4s ease-in-out infinite}
+.e-sleepy{transform:rotate(-80deg) translateY(10%)}
+.e-disco{animation:disco .4s ease-in-out infinite alternate}
+.e-gold{filter:sepia(1) saturate(4) hue-rotate(5deg) brightness(1.1)}
+/* dialogs */
+dialog{border:2px solid var(--line);border-radius:26px;padding:0;background:var(--panel);color:var(--ink);width:min(560px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #000a}
+dialog::backdrop{background:#0b0716cc;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg.center{justify-items:center;text-align:center}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.flask{width:90px;height:90px;border-radius:50% 50% 46% 46%;background:radial-gradient(circle at 35% 30%,#ffffff88 0 10%,var(--brew,#5fd3a5) 11%);box-shadow:0 0 30px var(--brew,#5fd3a5);display:grid;place-items:center;font-size:44px;animation:pop .5s ease}
+.newtag{background:var(--gold);color:#3b2a00;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:900;letter-spacing:1px}
+.recipe{display:flex;gap:6px;justify-content:center;font-size:26px}
+.primary{background:var(--magic);border-color:var(--magic-deep);color:#fff;box-shadow:0 4px 0 var(--magic-deep);font-size:17px;padding:11px 20px}
+.book{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:min(62dvh,520px);overflow:auto;padding:2px}
+.entry{display:grid;justify-items:center;gap:3px;padding:10px 6px;border-radius:16px;background:var(--panel-2);border:2px solid var(--line);text-align:center}
+.entry .dot{width:34px;height:34px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c);display:grid;place-items:center;font-size:18px}
+.entry .nm{font-size:12.5px;font-weight:900}
+.entry .rc{font-size:16px;letter-spacing:2px}
+.entry .ds{font-size:11px;color:var(--soft);font-weight:700;line-height:1.3}
+.entry.unknown{border-style:dashed;opacity:.8}
+.entry.unknown .dot{background:#4b3a78;box-shadow:none}
+.items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:min(58dvh,480px);overflow:auto;padding:2px}
+.items h3{grid-column:1/-1;margin:4px 0 0;font-size:15px}
+.item{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;padding:10px;border-radius:16px;border:2px solid var(--line);background:var(--panel-2)}
+.item .ic{font-size:30px;grid-row:span 2}
+.item .nm{font-weight:900;font-size:15px}
+.item .ds{font-size:12px;color:var(--soft);font-weight:700}
+.item button{grid-column:1/-1;padding:6px 8px;font-size:13.5px}
+.item.on{border-color:var(--mint)}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:#fff;color:#2a1d47;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes wob{0%,100%{rotate:0deg}50%{rotate:5deg}}
+@keyframes flick{from{transform:translate(-50%,-50%) scale(1)}to{transform:translate(-50%,-55%) scale(1.1)}}
+@keyframes up{from{transform:translate(0,0);opacity:.8}to{transform:translate(0,-9cqw);opacity:0}}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes pop{0%{transform:scale(.4)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes float{0%,100%{transform:translateY(-20%)}50%{transform:translateY(-34%)}}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-30%)}}
+@keyframes shake{0%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}100%{transform:rotate(-8deg)}}
+@keyframes fly{0%,100%{transform:translate(0,-30%) rotate(-6deg)}50%{transform:translate(-40%,-60%) rotate(6deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes rainbow{to{filter:hue-rotate(360deg) saturate(2)}}
+@keyframes moon{0%,100%{transform:translateY(0)}50%{transform:translateY(-70%)}}
+@keyframes disco{from{transform:rotate(-12deg) translateY(0)}to{transform:rotate(12deg) translateY(-10%)}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-260%) scale(1.1)}}
+@media (max-width:640px){.title strong{font-size:17px}.book{grid-template-columns:repeat(2,minmax(0,1fr))}.items{grid-template-columns:1fr}.lab{aspect-ratio:4/3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Magic Potion Lab</strong></div>
+  <span class="chip" id="found" aria-label="Potions discovered">🧪 0</span>
+  <span class="chip coins" id="coins" aria-label="Coins">🪙 0</span>
+ </div>
+ <div class="tools">
+  <button type="button" id="bookBtn">📖 Potion book</button>
+  <button type="button" id="shopBtn">🛒 Shop</button>
+  <button type="button" id="emptyBtn">🫗 Empty cauldron</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <p class="tip" id="tip" role="status">✨ Drag 2 ingredients from the shelf into the cauldron!</p>
+ <section class="lab" id="lab" aria-label="The potion lab. Drag ingredients into the cauldron, stir with the spoon, then drag the potion to your test buddy."></section>
+</div>
+
+<dialog id="potionDialog" aria-labelledby="potionTitle"><div class="dlg center">
+ <span class="newtag" id="potionNew">NEW POTION!</span>
+ <div class="flask" id="potionFlask" aria-hidden="true">✨</div>
+ <h2 id="potionTitle">Float Potion</h2>
+ <div class="recipe" id="potionRecipe" aria-hidden="true"></div>
+ <p id="potionText"></p>
+ <button type="button" class="primary" id="potionOk">Make another! 🧪</button>
+</div></dialog>
+<dialog id="bookDialog" aria-labelledby="bookTitle"><div class="dlg">
+ <header><h2 id="bookTitle">📖 Potion book</h2><button type="button" id="bookClose" aria-label="Close the potion book">✕</button></header>
+ <p id="bookSub"></p><div class="book" id="book"></div>
+</div></dialog>
+<dialog id="shopDialog" aria-labelledby="shopTitle"><div class="dlg">
+ <header><h2 id="shopTitle">🛒 Wizard shop</h2><span class="chip coins" id="shopCoins">🪙 0</span><button type="button" id="shopClose" aria-label="Close the shop">✕</button></header>
+ <div class="items" id="shopItems"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+// Ingredients unlock as you discover more potions (need = how many potions you must have found).
+const INGREDIENTS=[
+ {id:'mushroom',icon:'🍄',name:'Mushroom',need:0},{id:'flower',icon:'🌸',name:'Flower',need:0},{id:'leaf',icon:'🍃',name:'Leaf',need:0},{id:'bubble',icon:'🫧',name:'Bubbles',need:0},
+ {id:'feather',icon:'🪶',name:'Feather',need:2},{id:'berry',icon:'🍓',name:'Berry',need:2},
+ {id:'snow',icon:'❄️',name:'Snowflake',need:5},{id:'pepper',icon:'🌶️',name:'Pepper',need:5},
+ {id:'crystal',icon:'💎',name:'Crystal',need:8},{id:'moon',icon:'🌙',name:'Moon',need:8},
+ {id:'star',icon:'⭐',name:'Star',need:12},{id:'rainbow',icon:'🌈',name:'Rainbow',need:12}
+];
+// Recipes: which ingredients (in any order), the potion color, and what it does to the test buddy.
+// fx: a class on the buddy. parts: little pictures that pop out around it.
+const RECIPES=[
+ {id:'purple',name:'Purple Potion',mix:['mushroom','flower'],color:'#a66bff',fx:'e-purple',parts:'💜',does:'Turns your buddy purple!'},
+ {id:'float',name:'Float Potion',mix:['leaf','bubble'],color:'#9fe3ff',fx:'e-float',parts:'☁️',does:'Makes your buddy float up in the air.'},
+ {id:'shrink',name:'Shrink Potion',mix:['mushroom','leaf'],color:'#7fdc8a',fx:'e-shrink',parts:'🔍',does:'Makes your buddy teeny tiny.'},
+ {id:'bubbly',name:'Bubble Potion',mix:['flower','bubble'],color:'#ffb3e0',fx:'e-float',parts:'🫧',does:'Bubbles pop out everywhere!'},
+ {id:'bouncy',name:'Bouncy Potion',mix:['mushroom','bubble'],color:'#ff9f5a',fx:'e-bounce',parts:'⚡',does:'Boing boing! Your buddy cannot stop bouncing.'},
+ {id:'crown',name:'Flower Crown Potion',mix:['flower','leaf'],color:'#ffd36b',fx:'',parts:'🌼',does:'Flowers grow all around your buddy.'},
+ {id:'fly',name:'Flying Potion',mix:['feather','bubble'],color:'#cfe8ff',fx:'e-fly',parts:'🪽',does:'Your buddy grows wings and flies!'},
+ {id:'love',name:'Love Potion',mix:['berry','flower'],color:'#ff6b9a',fx:'e-bounce',parts:'💕',does:'Hearts float out everywhere.'},
+ {id:'giggle',name:'Giggle Potion',mix:['feather','mushroom'],color:'#ffe066',fx:'e-giggle',parts:'😂',does:'Hee hee hee! Your buddy cannot stop giggling.'},
+ {id:'giant',name:'Giant Potion',mix:['berry','leaf'],color:'#ff5a5f',fx:'e-giant',parts:'💪',does:'Your buddy grows super big!'},
+ {id:'frozen',name:'Frozen Potion',mix:['snow','bubble'],color:'#bfeaff',fx:'e-frozen',parts:'🧊',does:'Brrr! Your buddy turns icy blue.'},
+ {id:'dragon',name:'Dragon Breath',mix:['pepper','mushroom'],color:'#ff6a2b',fx:'e-giggle',parts:'🔥',does:'Your buddy breathes fire!'},
+ {id:'steamy',name:'Spinny Steam Potion',mix:['snow','pepper'],color:'#e6e6f0',fx:'e-spin',parts:'💨',does:'Steam puffs out and your buddy spins around.'},
+ {id:'snowy',name:'Snow Day Potion',mix:['snow','flower'],color:'#f2f8ff',fx:'',parts:'❄️',does:'It starts snowing!'},
+ {id:'invisible',name:'Invisible Potion',mix:['crystal','moon'],color:'#d9d2ff',fx:'e-invisible',parts:'👻',does:'Where did your buddy go? Almost invisible!'},
+ {id:'sleepy',name:'Sleepy Potion',mix:['moon','bubble'],color:'#6a5acd',fx:'e-sleepy',parts:'💤',does:'Yawn… your buddy falls asleep.'},
+ {id:'sparkle',name:'Sparkle Potion',mix:['crystal','berry'],color:'#ffb3f0',fx:'',parts:'✨',does:'Sparkles everywhere!'},
+ {id:'moonjump',name:'Moon Jump Potion',mix:['moon','feather'],color:'#c9c3ff',fx:'e-moon',parts:'🌙',does:'Your buddy jumps as high as the moon.'},
+ {id:'golden',name:'Golden Potion',mix:['crystal','pepper'],color:'#ffcf4d',fx:'e-gold',parts:'🪙',does:'Your buddy turns shiny gold!'},
+ {id:'rainbowp',name:'Rainbow Potion',mix:['star','rainbow'],color:'#ff8fc7',fx:'e-rainbow',parts:'🌈',does:'Your buddy changes through every color.'},
+ {id:'disco',name:'Disco Potion',mix:['rainbow','bubble'],color:'#b48cff',fx:'e-disco',parts:'🪩',does:'Dance party! Your buddy busts a move.'},
+ {id:'wizard',name:'Wizard Potion',mix:['star','mushroom','moon'],color:'#7d55e0',fx:'e-float',parts:'🪄',does:'Your buddy becomes a wizard!',becomes:'🧙'},
+ {id:'unicorn',name:'Unicorn Potion',mix:['star','feather','crystal'],color:'#ffd6f5',fx:'e-rainbow',parts:'🌟',does:'WOW! Your buddy turns into a unicorn!',becomes:'🦄'}
+];
+const MESS={id:'mess',name:'Oops Goop',color:'#8a6a4a',fx:'e-giggle',parts:'🤢',does:'Yuck! That mix did not work. Try different ingredients.'};
+const BUDDIES=[{id:'frog',icon:'🐸',name:'Froggy',price:0},{id:'cat',icon:'🐱',name:'Kitty',price:20},{id:'bunny',icon:'🐰',name:'Bunny',price:25},{id:'pig',icon:'🐷',name:'Piggy',price:30},{id:'owl',icon:'🦉',name:'Hootie',price:40},{id:'dragon',icon:'🐲',name:'Little Dragon',price:60},{id:'dino',icon:'🦖',name:'Dino',price:80}];
+const CUSTOMERS=[['🧙','Wizard Willow'],['🧚','Fairy Fern'],['🦉','Professor Hoot'],['🐻','Bear Bob'],['🐱','Witchy Cat'],['🐉','Draco']].map(([icon,name])=>({icon,name}));
+const SAVE_KEY='superEmiliaPotion';
+
+// ---------- pure game logic (also used by the tests) ----------
+const ingredient=id=>INGREDIENTS.find(i=>i.id===id);
+function keyFor(list){return list.slice().sort().join('+')}
+// what a mix makes: a recipe, or Oops Goop when the ingredients do not match any recipe
+function brew(list){if(list.length<2)return null;const k=keyFor(list);return RECIPES.find(r=>keyFor(r.mix)===k)||MESS}
+function ingredientsOpen(foundCount){return INGREDIENTS.filter(i=>foundCount>=i.need)}
+// counts how far the spoon has gone around the cauldron. Returns the turn added (in radians) since the last angle.
+function turnBetween(a,b){let d=b-a;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return Math.abs(d)}
+const STIR_NEEDED=4*Math.PI; // two times around
+// remembers a potion; returns whether it was new and which ingredients it unlocked
+function recordPotion(save,id){save.made++;if(id==='mess')return{first:false,unlocked:[]};const before=ingredientsOpen(save.found.length).length,first=!save.found.includes(id);if(first){save.found.push(id);save.coins+=5}const unlocked=ingredientsOpen(save.found.length).slice(before);return{first,unlocked}}
+// a customer asks for a potion you have already discovered
+function makeOrder(save,rand=Math.random){if(save.found.length<3)return null;const id=save.found[Math.floor(rand()*save.found.length)],who=CUSTOMERS[Math.floor(rand()*CUSTOMERS.length)];return{id,who,pay:8+RECIPES.find(r=>r.id===id).mix.length*4}}
+function serveOrder(save,order,id){if(!order||order.id!==id)return false;save.coins+=order.pay;save.orders++;return true}
+// a clue for a potion you have not found yet: one of its ingredients
+function clueFor(r,save){return r.mix.find(m=>ingredientsOpen(save.found.length).some(i=>i.id===m))||null}
+function buyBuddy(save,id){const b=BUDDIES.find(x=>x.id===id);if(!b||b.price===0||save.buddies.includes(id)||save.coins<b.price)return false;save.coins-=b.price;save.buddies.push(id);save.buddy=id;return true}
+function defaultSave(){return{found:[],made:0,coins:0,orders:0,buddies:[],buddy:'frog',sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0};
+ if(Array.isArray(raw.found))s.found=[...new Set(raw.found.filter(id=>RECIPES.some(r=>r.id===id)))];s.made=num(raw.made);s.coins=num(raw.coins);s.orders=num(raw.orders);
+ if(Array.isArray(raw.buddies))s.buddies=[...new Set(raw.buddies.filter(id=>BUDDIES.some(b=>b.id===id&&b.price>0)))];
+ if(raw.buddy==='frog'||s.buddies.includes(raw.buddy))s.buddy=raw.buddy;s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+let S=loadSave(),pot=[],stir=0,ready=null,order=null,orderT=8,busy=false,audio=null,bubbleT=0;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.3,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={plop:()=>tone(240,.12,'sine',.06),stir:()=>tone(380+Math.random()*120,.05,'triangle',.02),ready:()=>[523,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.14,'triangle'),i*90)),magic:()=>[660,880,990,1320,1760].forEach((f,i)=>setTimeout(()=>tone(f,.12,'sine',.04),i*70)),yuck:()=>tone(150,.4,'sawtooth',.04),coin:()=>[988,1318].forEach((f,i)=>setTimeout(()=>tone(f,.1,'square',.03),i*80)),no:()=>tone(220,.12,'sawtooth',.03)};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function setTip(h){$('#tip').innerHTML=h}
+const buddy=()=>BUDDIES.find(b=>b.id===S.buddy)||BUDDIES[0];
+function pct(e){const b=$('#lab').getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function part(cls,x,y,html,w,h){const d=document.createElement('div');d.className='p '+cls;d.style.left=x+'%';d.style.top=y+'%';if(w)d.style.width=w+'%';if(h)d.style.height=h+'%';if(html!=null)d.innerHTML=html;$('#lab').append(d);return d}
+function label(x,y,t){const d=document.createElement('div');d.className='label';d.style.left=x+'%';d.style.top=y+'%';d.textContent=t;$('#lab').append(d)}
+function box(cls,x,y,w,h){const d=document.createElement('div');d.className=cls;d.style.left=x+'%';d.style.top=y+'%';d.style.width=w+'%';d.style.height=h+'%';$('#lab').append(d);return d}
+function burst(x,y,ch,n=8){for(let k=0;k<n;k++){const d=document.createElement('div');d.className='fx';d.textContent=ch;d.style.left=(x+(Math.random()-.5)*22)+'%';d.style.top=(y+(Math.random()-.5)*14)+'%';d.style.animation='rise '+(1.2+Math.random())+'s ease-out '+(k*.08)+'s forwards';d.style.opacity='0';$('#lab').append(d);setTimeout(()=>d.remove(),2600)}}
+const CAUL={x:44,y:68},TEST={x:80,y:62};
+// drag helper: the thing follows the pointer; drop(q,p) returns true when it landed in a good spot
+function grabbable(el,{drop,move,free=true}){el.classList.add('grab','glow');const home={x:parseFloat(el.style.left),y:parseFloat(el.style.top)};let off=null;
+ el.addEventListener('pointerdown',e=>{if(busy)return;e.preventDefault();el.setPointerCapture(e.pointerId);const p=pct(e);off={x:p.x-parseFloat(el.style.left),y:p.y-parseFloat(el.style.top)};el.classList.add('drag');el.classList.remove('back')});
+ el.addEventListener('pointermove',e=>{if(!off)return;const p=pct(e),q={x:Math.max(0,Math.min(100,p.x-off.x)),y:Math.max(0,Math.min(100,p.y-off.y))};if(free){el.style.left=q.x+'%';el.style.top=q.y+'%'}if(move)move(q,p)});
+ const end=e=>{if(!off)return;off=null;el.classList.remove('drag');const q={x:parseFloat(el.style.left),y:parseFloat(el.style.top)},p=e.type==='pointercancel'?null:pct(e);if(drop&&drop(q,p))return;if(free){el.classList.add('back');el.style.left=home.x+'%';el.style.top=home.y+'%'}};
+ el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end)}
+const near=(q,p,c,rx,ry)=>[q,p].some(v=>v&&Math.abs(v.x-c.x)<=rx&&Math.abs(v.y-c.y)<=ry);
+function render(){const lab=$('#lab');lab.innerHTML='';$('#coins').textContent='🪙 '+S.coins;$('#shopCoins').textContent='🪙 '+S.coins;$('#found').textContent='🧪 '+S.found.length+' / '+RECIPES.length;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off');
+ // the ingredient shelf (two rows)
+ const open=ingredientsOpen(S.found.length).map(i=>i.id);box('p shelf',30,22,56,2.4);box('p shelf',30,44,56,2.4);
+ INGREDIENTS.forEach((ing,k)=>{const row=k<6?0:1,col=k%6,x=7+col*9.2,y=row?36:14,isOpen=open.includes(ing.id),j=part('jar'+(isOpen?'':' locked'),x,y,isOpen?ing.icon:'🔒');const nm=document.createElement('span');nm.className='nm';nm.textContent=isOpen?ing.name:'Find '+ing.need;j.append(nm);
+  j.setAttribute('aria-label',isOpen?ing.name+', drag it into the cauldron':ing.name+', locked until you find '+ing.need+' potions');
+  if(isOpen&&!ready&&pot.length<3)grabbable(j,{drop:(q,p)=>{if(near(q,p,{x:CAUL.x,y:CAUL.y-6},15,14)){addIngredient(ing.id);return true}return false}})});
+ // the cauldron on a little fire
+ const c=part('cauldron',CAUL.x,CAUL.y,'<div class="pot"></div><div class="brew"></div><div class="rim"></div><div class="inside"></div><div class="legs"></div>');c.style.setProperty('--brew',brewColor());lab.style.setProperty('--brew',brewColor());
+ c.querySelector('.inside').textContent=pot.map(id=>ingredient(id).icon).join('');part('fire',CAUL.x,CAUL.y+15,'🔥');if(!pot.length)label(CAUL.x,CAUL.y+22,'Drag ingredients here');
+ // the spoon: stir in circles once there are 2 or more ingredients
+ if(!ready){const sp=part('spoon',CAUL.x+19,CAUL.y-10,'🥄');sp.setAttribute('aria-label','Spoon');
+  if(pot.length>=2){const ring=document.createElement('div');ring.className='ring';ring.style.left=CAUL.x+'%';ring.style.top=(CAUL.y-4)+'%';ring.style.width='34cqw';ring.style.height='22cqw';lab.append(ring);
+   const m=part('meter',CAUL.x,95,'<i></i>');m.firstChild.style.width=Math.min(100,stir/STIR_NEEDED*100)+'%';label(CAUL.x,CAUL.y+22,'Stir it round and round!');
+   let lastA=null;grabbable(sp,{move:(q,p)=>{const a=Math.atan2((p.y-(CAUL.y-4))*0.625,p.x-CAUL.x);if(lastA!==null){stir+=turnBetween(lastA,a);m.firstChild.style.width=Math.min(100,stir/STIR_NEEDED*100)+'%';if(Math.random()<.25)sfx.stir();if(Math.random()<.2)bubbleUp()}lastA=a;if(stir>=STIR_NEEDED){finishStir()}},drop:()=>{lastA=null;return false}})}}
+ // the finished potion in a bottle, ready to pour
+ if(ready){const bt=part('bottle',CAUL.x,CAUL.y-18,'🧪');bt.style.setProperty('--brew',ready.color);label(CAUL.x,CAUL.y+22,'Drag the potion to '+(order?'your buddy or the customer':'your buddy')+'!');
+  box('target',TEST.x,TEST.y,20,30);if(order)box('target',90,22,18,30);
+  grabbable(bt,{drop:(q,p)=>{if(near(q,p,TEST,12,17)){pourOnBuddy();return true}if(order&&near(q,p,{x:90,y:22},11,17)){giveCustomer();return true}return false}})}
+ // the test buddy on a stool
+ part('stool',TEST.x,TEST.y+16);const b=part('buddy',TEST.x,TEST.y,buddy().icon);b.id='testBuddy';label(TEST.x,TEST.y+22,'Test buddy: '+buddy().name);
+ // a customer with an order
+ if(order){const cu=part('customer',90,22,'<span class="who"></span><span class="want"></span>');cu.querySelector('.who').textContent=order.who.icon;cu.querySelector('.want').textContent='Please make me a '+RECIPES.find(r=>r.id===order.id).name+'! 🪙'+order.pay}
+}
+function brewColor(){if(ready)return ready.color;if(!pot.length)return'#5fd3a5';const cols={mushroom:'#c96bff',flower:'#ff8fc7',leaf:'#6ee7b7',bubble:'#9fe3ff',feather:'#e6f0ff',berry:'#ff5a7a',snow:'#dff3ff',pepper:'#ff6a2b',crystal:'#d9b8ff',moon:'#7f74d6',star:'#ffd84d',rainbow:'#ff9ad5'};return cols[pot[pot.length-1]]}
+function bubbleUp(){const b=document.createElement('div');b.className='bubble';b.style.left=(CAUL.x-8+Math.random()*16)+'%';b.style.top=(CAUL.y-10)+'%';$('#lab').append(b);setTimeout(()=>b.remove(),1600)}
+function addIngredient(id){pot.push(id);stir=0;sfx.plop();burst(CAUL.x,CAUL.y-10,'💦',4);render();
+ setTip(pot.length===1?'Add one more ingredient (or two more for a super potion)!':pot.length===2?'Now <b>grab the spoon</b> 🥄 and stir round and round! (Or add one more ingredient first.)':'Three ingredients! <b>Grab the spoon</b> 🥄 and stir round and round.')}
+function finishStir(){ready=brew(pot);sfx.ready();burst(CAUL.x,CAUL.y-12,'✨',10);setTip('🧪 The potion is ready! <b>Drag the bottle</b> onto your test buddy'+(order?' or to the customer':'')+'.');setTimeout(render,50)}
+function resetPot(){pot=[];stir=0;ready=null;render()}
+function pourOnBuddy(){const r=ready;busy=true;document.querySelectorAll('#lab .bottle,#lab .target').forEach(e=>e.remove());burst(TEST.x,TEST.y,'💧',5);
+ setTimeout(()=>{const el=$('#testBuddy');if(r.becomes)el.textContent=r.becomes;if(r.fx)el.classList.add(r.fx);burst(TEST.x,TEST.y-8,r.parts,12);if(r.id==='mess')sfx.yuck();else sfx.magic();
+  setTimeout(()=>{busy=false;const res=recordPotion(S,r.id);save();showPotion(r,res)},2600)},300)}
+function giveCustomer(){const r=ready;if(serveOrder(S,order,r.id)){save();sfx.coin();burst(90,20,'🪙',8);notify(order.who.name+' says thank you! +'+order.pay+' coins');setTip('🎉 '+order.who.name+' loved the '+r.name+'!');recordPotion(S,r.id);save();order=null;orderT=14+Math.random()*10;resetPot()}
+ else{sfx.no();notify(order.who.name+' wanted a '+RECIPES.find(x=>x.id===order.id).name+', not '+(r.id==='mess'?'Oops Goop':'a '+r.name)+'!');setTip('Hmm, that was not the right potion. Check your 📖 Potion book for the recipe!')}}
+function showPotion(r,res){$('#potionNew').hidden=!res.first;$('#potionFlask').style.setProperty('--brew',r.color);$('#potionFlask').textContent=r.parts;$('#potionTitle').textContent=r.name;
+ $('#potionRecipe').textContent=r.mix?r.mix.map(m=>ingredient(m).icon).join(' + '):pot.map(m=>ingredient(m).icon).join(' + ');
+ $('#potionText').textContent=r.does+(res.first?' It is in your potion book now. +5 coins!':'')+(res.unlocked.length?' 🎉 New ingredients: '+res.unlocked.map(i=>i.icon+' '+i.name).join(' and ')+'!':'');
+ $('#potionDialog').showModal()}
+$('#potionOk').onclick=()=>{$('#potionDialog').close();resetPot();setTip(S.found.length===RECIPES.length?'🌟 You found every potion! You are a master wizard!':'✨ Drag 2 ingredients from the shelf into the cauldron!')};
+$('#emptyBtn').onclick=()=>{if(busy)return;if(!pot.length&&!ready){notify('The cauldron is already empty.');return}sfx.plop();resetPot();setTip('Cauldron emptied. Drag in new ingredients!')};
+// potion book
+$('#bookBtn').onclick=()=>{const bx=$('#book');bx.innerHTML='';for(const r of RECIPES){const got=S.found.includes(r.id),d=document.createElement('div');d.className='entry'+(got?'':' unknown');d.style.setProperty('--c',r.color);d.innerHTML='<span class="dot" aria-hidden="true"></span><span class="nm"></span><span class="rc" aria-hidden="true"></span><span class="ds"></span>';
+  d.querySelector('.dot').textContent=got?r.parts:'?';d.querySelector('.nm').textContent=got?r.name:'??? Potion';const clue=clueFor(r,S);d.querySelector('.rc').textContent=got?r.mix.map(m=>ingredient(m).icon).join('+'):clue?ingredient(clue).icon+' + '+'❔'.repeat(r.mix.length-1):'🔒';d.querySelector('.ds').textContent=got?r.does:clue?'Clue: it has '+ingredient(clue).name.toLowerCase()+'. '+r.mix.length+' ingredients.':'Needs ingredients you have not unlocked yet.';bx.append(d)}
+ $('#bookSub').textContent=S.found.length+' of '+RECIPES.length+' potions discovered · '+S.made+' potions made';$('#bookDialog').showModal()};
+$('#bookClose').onclick=()=>$('#bookDialog').close();
+// shop: new test buddies
+function renderShop(){$('#shopCoins').textContent='🪙 '+S.coins;const bx=$('#shopItems');bx.innerHTML='<h3>🧪 Test buddies</h3>';for(const b of BUDDIES){const own=b.price===0||S.buddies.includes(b.id),on=S.buddy===b.id,d=document.createElement('div');d.className='item'+(on?' on':'');d.innerHTML='<span class="ic" aria-hidden="true"></span><span class="nm"></span><span class="ds"></span>';d.children[0].textContent=b.icon;d.children[1].textContent=b.name;d.children[2].textContent=on?'Testing potions now':own?'Yours':'Try potions on '+b.name+'!';
+ const btn=document.createElement('button');btn.type='button';btn.textContent=on?'✓ Testing':own?'Use '+b.name:'🪙 '+b.price;btn.disabled=on||(!own&&S.coins<b.price);btn.onclick=()=>{if(own){S.buddy=b.id}else if(!buyBuddy(S,b.id))return;save();sfx.coin();renderShop();render()};d.append(btn);bx.append(d)}}
+$('#shopBtn').onclick=()=>{renderShop();$('#shopDialog').showModal()};$('#shopClose').onclick=()=>$('#shopDialog').close();
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();render()};
+document.querySelectorAll('#bookDialog,#shopDialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
+// customers show up now and then once you know a few potions; bubbles rise from the cauldron
+setInterval(()=>{if(document.querySelector('dialog[open]'))return;if(!order&&!busy){orderT-=1;if(orderT<=0){order=makeOrder(S);orderT=20;if(order){sfx.coin();setTip('🔔 '+order.who.name+' wants a <b>'+RECIPES.find(r=>r.id===order.id).name+'</b>! Make it and drag it to them for 🪙'+order.pay+'.');render()}}}if(Math.random()<.5)bubbleUp()},1000);
+if(S.found.length)setTip('✨ Welcome back, wizard! You have found '+S.found.length+' of '+RECIPES.length+' potions.');
+render();
+window.__potion={get S(){return S},get pot(){return pot},get ready(){return ready},get order(){return order},set order(v){order=v;render()},addIngredient,finishStir,pourOnBuddy,render};
+}
+</script>
+</body>
+</html>
