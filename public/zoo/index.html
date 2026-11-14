@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#e9f8df">
+<meta name="author" content="Emilia">
+<meta name="description" content="Run your own zoo: feed the animals, scoop the poop, play with them, and buy new animals with the coins visitors pay. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/zoo/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/zoo/">
+<meta property="og:title" content="Buddy Zoo · A Super Emilia Game">
+<meta property="og:description" content="Run your own zoo: feed the animals, scoop the poop, play with them, and buy new animals with the coins visitors pay. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Buddy Zoo</title>
+<style>
+/* Layout: top bar, a tip line, then the zoo (one drawn scene: 9 pens on the left, the tray of food and tools on the right, and a path where visitors walk). Everything is done by dragging from the tray. */
+:root{
+ color-scheme:light;
+ --bg:#e9f8df; --bg-2:#fff6dc; --paper:#fff; --line:#d5e6c8; --ink:#2c3a24; --soft:#62744f;
+ --leaf:#4caf50; --leaf-deep:#2f7d32; --gold:#ffc83d;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--leaf-deep);outline-offset:2px}
+.app{max-width:1000px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--leaf-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.coins{color:#a06b00;border-color:#f2d98a;background:#fff8dc}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+/* the zoo scene */
+.zoo{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #c6dcb5;background:#9fd67f;container-type:inline-size;touch-action:none}
+.zoo .path{position:absolute;left:0;width:77%;top:86%;height:12%;background:repeating-linear-gradient(90deg,#e9d3a8 0 3cqw,#e2c896 3cqw 6cqw);border-top:.4cqw solid #d0b07a}
+.zoo .tray{position:absolute;left:78%;right:1.2%;top:2.5%;bottom:2.5%;background:#fffbecdd;border-radius:2cqw;box-shadow:0 .6cqw 0 #0001}
+.p{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;-webkit-user-select:none;user-select:none}
+.pen{border:.6cqw dashed #9a6b3c;border-radius:1.6cqw;overflow:hidden;box-shadow:inset 0 0 0 .3cqw #ffffff66}
+.pen.empty{background:#ffffff55;border-color:#ffffffaa;cursor:pointer;color:#3e5a2b;font-weight:900;font-size:1.8cqw;text-align:center;gap:.4cqw}
+.pen.empty span{font-size:4cqw}
+.pen.hot{box-shadow:0 0 0 .7cqw #ffc83d}
+.pen .in{position:absolute;transform:translate(-50%,-50%);line-height:1;pointer-events:none}
+.pen .deco{font-size:4.2cqw;opacity:.9}
+.pen .name{left:3%;top:4%;transform:none;font-size:1.6cqw;font-weight:900;background:#ffffffcc;border-radius:1cqw;padding:.3cqw .7cqw;color:var(--ink)}
+.pen .hearts{right:3%;top:4%;left:auto;transform:none;font-size:1.6cqw;background:#ffffffcc;border-radius:1cqw;padding:.3cqw .6cqw}
+.pen .need{z-index:3;font-size:2.6cqw;background:#fff;border-radius:1.4cqw;padding:.5cqw;box-shadow:0 .3cqw 0 #0002;animation:bob 1s ease-in-out infinite}
+.pen .animal{font-size:8.4cqw;transition:left 1.6s ease-in-out,top 1.6s ease-in-out}
+.pen .animal i{display:block;font-style:normal;transition:transform .3s}
+.pen .animal.flip i{transform:scaleX(-1)}
+.pen .animal.yay i{animation:hop .5s ease-in-out 2}
+.pen .poop{font-size:3.2cqw}
+.item{font-size:5.2cqw;cursor:grab;touch-action:none;z-index:8;filter:drop-shadow(0 .3cqw 0 #0002)}
+.item.drag{cursor:grabbing;z-index:30;transform:translate(-50%,-50%) scale(1.25)}
+.item.back{transition:left .3s ease,top .3s ease}
+.label{position:absolute;transform:translate(-50%,-50%);font-size:1.6cqw;font-weight:900;color:var(--soft);white-space:nowrap;pointer-events:none}
+.visitor{font-size:4.4cqw;z-index:6;pointer-events:none}
+.visitor i{display:block;font-style:normal;animation:walk .5s ease-in-out infinite}
+.fx{position:absolute;transform:translate(-50%,-50%);font-size:3.4cqw;font-weight:900;pointer-events:none;animation:rise 1.1s ease-out forwards;z-index:25;color:#a06b00;text-shadow:0 .2cqw 0 #fff}
+/* dialogs */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(560px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #2c3a2455}
+dialog::backdrop{background:#2c3a2466;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:min(62dvh,520px);overflow:auto;padding:2px}
+.card{display:grid;justify-items:center;gap:3px;padding:10px 4px;border-radius:16px;border:2px solid var(--line);background:#fff;text-align:center}
+.card .ic{font-size:38px;line-height:1.1}
+.card .nm{font-size:14px;font-weight:900}
+.card .eat{font-size:12px;font-weight:700;color:var(--soft)}
+.card button{padding:5px 10px;font-size:13px}
+.card.own{background:#effcf0;border-color:#bfe6c4}
+.card.rare{border-color:#e3c7ff;background:#fbf6ff}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes bob{0%,100%{translate:0 0}50%{translate:0 -.6cqw}}
+@keyframes hop{0%,100%{translate:0 0}50%{translate:0 -2cqw}}
+@keyframes walk{0%,100%{translate:0 0;rotate:-4deg}50%{translate:0 -.5cqw;rotate:4deg}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-220%) scale(1.1)}}
+@media (max-width:640px){.title strong{font-size:17px}.items{grid-template-columns:repeat(2,minmax(0,1fr))}.zoo{aspect-ratio:4/3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Buddy Zoo</strong></div>
+  <span class="chip" id="visitors" aria-label="Visitors">🎟️ 0</span>
+  <span class="chip coins" id="coins" aria-label="Coins">🪙 0</span>
+ </div>
+ <div class="tools">
+  <button type="button" id="shopBtn">🛒 Buy animals</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <p class="tip" id="tip" role="status"></p>
+ <section class="zoo" id="zoo" aria-label="Your zoo. Drag food, the ball and the shovel from the tray onto the animal pens."></section>
+</div>
+
+<dialog id="shopDialog" aria-labelledby="shopTitle"><div class="dlg">
+ <header><h2 id="shopTitle">🛒 Buy animals</h2><span class="chip coins" id="shopCoins">🪙 0</span><button type="button" id="shopClose" aria-label="Close the shop">✕</button></header>
+ <p>Each new animal gets its own pen. Happy animals bring more visitors, and visitors pay coins!</p>
+ <div class="items" id="shopItems"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+const ANIMALS=[
+ {id:'bunny',icon:'🐰',name:'Bunny',food:'carrot',home:'meadow',price:0},
+ {id:'monkey',icon:'🐵',name:'Monkey',food:'banana',home:'jungle',price:0},
+ {id:'penguin',icon:'🐧',name:'Penguin',food:'fish',home:'ice',price:25},
+ {id:'giraffe',icon:'🦒',name:'Giraffe',food:'leaves',home:'savanna',price:40},
+ {id:'elephant',icon:'🐘',name:'Elephant',food:'peanuts',home:'savanna',price:60},
+ {id:'panda',icon:'🐼',name:'Panda',food:'bamboo',home:'forest',price:80},
+ {id:'lion',icon:'🦁',name:'Lion',food:'meat',home:'savanna',price:100},
+ {id:'unicorn',icon:'🦄',name:'Unicorn',food:'strawberry',home:'rainbow',price:150,rare:true},
+ {id:'dragon',icon:'🐲',name:'Dragon',food:'pepper',home:'volcano',price:200,rare:true}];
+const FOODS={carrot:{icon:'🥕',name:'carrots'},banana:{icon:'🍌',name:'bananas'},fish:{icon:'🐟',name:'fish'},leaves:{icon:'🍃',name:'leaves'},peanuts:{icon:'🥜',name:'peanuts'},bamboo:{icon:'🎋',name:'bamboo'},meat:{icon:'🍖',name:'meat'},strawberry:{icon:'🍓',name:'strawberries'},pepper:{icon:'🌶️',name:'hot peppers'}};
+const HOMES={meadow:{bg:'#c9efa8',deco:'🌷'},jungle:{bg:'#7fd17f',deco:'🌴'},ice:{bg:'#e3f3ff',deco:'🧊'},savanna:{bg:'#f6dd92',deco:'🌳'},forest:{bg:'#b5e3a6',deco:'⛰️'},rainbow:{bg:'linear-gradient(135deg,#ffd6e8,#fff3b8,#d4f5d0,#d5e8ff)',deco:'🌈'},volcano:{bg:'#ffc19a',deco:'🌋'}};
+// 9 pens in 3 rows (centers in % of the scene)
+const PEN={w:23,h:24.5},PENS=[[13.5,16],[38.5,16],[63.5,16],[13.5,43],[38.5,43],[63.5,43],[13.5,70],[38.5,70],[63.5,70]];
+const DRAIN={food:1.5,fun:1.1}; // how fast animals get hungry and bored (points per second)
+const SAVE_KEY='superEmiliaZoo';
+
+// ---------- pure game logic (also used by the tests) ----------
+const kind=id=>ANIMALS.find(a=>a.id===id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function newAnimal(id){return{id,food:60,fun:70,poop:[],digest:0}}
+// 0 to 100: fed and played with is happy, poop in the pen is not
+function happiness(a){return clamp(Math.round((a.food+a.fun)/2-25*a.poop.length),0,100)}
+function hearts(h){return h>=80?3:h>=55?2:h>=30?1:0}
+// time passes: animals get hungry and bored, and a while after eating they poop
+function tickZoo(S,dt,rand=Math.random){for(const a of S.animals){a.food=Math.max(0,a.food-DRAIN.food*dt);a.fun=Math.max(0,a.fun-DRAIN.fun*dt);
+ if(a.digest>0){a.digest-=dt;if(a.digest<=0){a.digest=0;if(a.poop.length<3)a.poop.push([Math.round((rand()*2-1)*100)/100,Math.round((rand()*2-1)*100)/100])}}}}
+// drop food on pen i
+function feed(S,i,food,rand=Math.random){const a=S.animals[i];if(!a)return{ok:false};if(kind(a.id).food!==food)return{ok:false,wrong:true};
+ if(a.food>=90)return{ok:true,full:true,coins:0};a.food=100;a.digest=6+rand()*5;S.fed++;S.coins+=2;return{ok:true,coins:2}}
+// drop the ball on pen i
+function play(S,i){const a=S.animals[i];if(!a)return{ok:false};if(a.fun>=90)return{ok:true,full:true,coins:0};a.fun=100;S.played++;S.coins+=2;return{ok:true,coins:2}}
+// the shovel at (px,py) inside pen i (-1 to 1 each way) scoops poop close to it
+function scoop(S,i,px,py,reach=.45){const a=S.animals[i];if(!a)return 0;const n=a.poop.length;a.poop=a.poop.filter(([x,y])=>Math.hypot(x-px,y-py)>reach);const got=n-a.poop.length;S.coins+=got;S.scooped+=got;return got}
+// a visitor pays 1 coin, plus 1 for every happy animal
+function visitorPay(S){return 1+S.animals.filter(a=>happiness(a)>=60).length}
+function payVisitor(S){const c=visitorPay(S);S.coins+=c;S.visitors++;return c}
+function owns(S,id){return S.animals.some(a=>a.id===id)}
+function buyAnimal(S,id){const k=kind(id);if(!k||owns(S,id)||S.animals.length>=PENS.length||S.coins<k.price)return false;S.coins-=k.price;S.animals.push(newAnimal(id));return true}
+function defaultSave(){return{coins:0,visitors:0,fed:0,played:0,scooped:0,animals:[newAnimal('bunny'),newAnimal('monkey')],sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0},pct=v=>{const n=Number(v);return Number.isFinite(n)?clamp(n,0,100):60};
+ for(const k of ['coins','visitors','fed','played','scooped'])s[k]=num(raw[k]);
+ if(Array.isArray(raw.animals)){const seen=new Set(),list=[];for(const a of raw.animals){if(!a||!kind(a.id)||seen.has(a.id))continue;seen.add(a.id);
+  list.push({id:a.id,food:pct(a.food),fun:pct(a.fun),digest:clamp(Number(a.digest)||0,0,15),poop:Array.isArray(a.poop)?a.poop.filter(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)).slice(0,3).map(p=>[clamp(p[0],-1,1),clamp(p[1],-1,1)]):[]})}
+  for(const id of ['monkey','bunny'])if(!seen.has(id))list.unshift(newAnimal(id));s.animals=list.slice(0,PENS.length)}
+ s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s),zoo=$('#zoo');
+let S=loadSave(),audio=null,pens=[],people=[],nextVisitor=2,saveT=0,wanderT=0,dragging=0,last=performance.now();
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.25,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={yum:()=>[523,659,784].forEach((f,i)=>setTimeout(()=>tone(f,.09,'triangle'),i*70)),nope:()=>tone(220,.15,'sawtooth',.03),scoop:()=>tone(300,.08,'square',.03),coin:()=>[988,1318].forEach((f,i)=>setTimeout(()=>tone(f,.08,'square',.025),i*70)),boing:()=>{tone(400,.12,'sine',.06);setTimeout(()=>tone(700,.12,'sine',.05),100)}};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function setTip(h){$('#tip').innerHTML=h}
+function pct(e){const b=zoo.getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function el(cls,x,y,html,parent=zoo){const d=document.createElement('div');d.className=cls;d.style.left=x+'%';d.style.top=y+'%';if(html!=null)d.innerHTML=html;parent.append(d);return d}
+function fx(x,y,t){const d=el('fx',x,y);d.textContent=t;setTimeout(()=>d.remove(),1100)}
+function penAt(x,y,pad=1.5){return PENS.findIndex(([cx,cy])=>Math.abs(x-cx)<=PEN.w/2+pad&&Math.abs(y-cy)<=PEN.h/2+pad)}
+// poop positions inside a pen: -1..1 each way <-> % of the pen
+const poopLeft=px=>50+px*36,poopTop=py=>58+py*28;
+function inPen(i,x,y){const [cx,cy]=PENS[i];return{px:((x-cx)/PEN.w*100)/36,py:((y-cy)/PEN.h*100+50-58)/28}}
+function renderTop(){$('#coins').textContent='🪙 '+S.coins;$('#shopCoins').textContent='🪙 '+S.coins;$('#visitors').textContent='🎟️ '+S.visitors;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
+// builds the whole scene (only when nothing is being dragged)
+function build(){zoo.innerHTML='';pens=[];people=[];el('path',0,0).removeAttribute('style');const tray=document.createElement('div');tray.className='tray';zoo.append(tray);
+ PENS.forEach(([cx,cy],i)=>{const a=S.animals[i],p=el('p pen'+(a?'':' empty'),cx,cy);p.style.width=PEN.w+'%';p.style.height=PEN.h+'%';
+  if(!a){p.innerHTML='<span>🔒</span>Buy an animal';p.setAttribute('role','button');p.setAttribute('aria-label','Empty pen. Open the shop to buy an animal.');p.onclick=openShop;pens.push(null);return}
+  const k=kind(a.id),h=HOMES[k.home];p.style.background=h.bg;p.setAttribute('aria-label',k.name+' pen');
+  el('in deco',84,82,h.deco,p);const nm=el('in name',0,0,k.name,p);nm.removeAttribute('style');const hs=el('in hearts',0,0,'',p);hs.removeAttribute('style');
+  const an=el('in animal',50,50,'<i>'+k.icon+'</i>',p),need=el('in need',22,72,'',p);pens.push({p,an,hs,need,poops:[],n:-1,ox:0,oy:0})});
+ // tray: foods for the animals you have, the ball and the shovel
+ const foods=[...new Set(S.animals.map(a=>kind(a.id).food))];const items=[...foods.map(f=>({kind:'food',food:f,icon:FOODS[f].icon,label:FOODS[f].name})),{kind:'ball',icon:'🎾',label:'ball'},{kind:'shovel',icon:'🧹',label:'scoop'}];
+ items.forEach((it,j)=>{const x=j%2?93:84,y=10+Math.floor(j/2)*15.5;const d=el('p item',x,y,it.icon);d.setAttribute('aria-label','Drag the '+it.label);el('label',x,y+6.2,it.label);drag(d,it,x,y)});
+ renderTop();update()}
+// updates what changes over time without rebuilding
+function update(){S.animals.forEach((a,i)=>{const v=pens[i];if(!v)return;const h=happiness(a),k=kind(a.id);v.hs.textContent=h<30?'😢':'❤️'.repeat(hearts(h));
+  const want=a.food<50?FOODS[k.food].icon:a.fun<50?'🎾':'';v.need.textContent=want;v.need.hidden=!want;
+  if(v.n!==a.poop.length||v.poops.length!==a.poop.length){v.poops.forEach(e=>e.remove());v.poops=a.poop.map(([px,py])=>el('in poop',poopLeft(px),poopTop(py),'💩',v.p));v.n=a.poop.length}});
+ renderTop()}
+function wander(){pens.forEach(v=>{if(!v||Math.random()<.35)return;const nx=Math.round((Math.random()*2-1)*22),ny=Math.round((Math.random()*2-1)*12);v.an.classList.toggle('flip',nx>v.ox);v.ox=nx;v.oy=ny;v.an.style.left=(50+nx)+'%';v.an.style.top=(50+ny)+'%'})}
+function cheer(i,t){const v=pens[i];if(!v)return;v.an.classList.remove('yay');void v.an.offsetWidth;v.an.classList.add('yay');const [cx,cy]=PENS[i];fx(cx,cy-6,t)}
+// drag an item from the tray onto a pen
+function drag(d,it,hx,hy){let off=null,hot=-1;const setHot=i=>{if(hot===i)return;if(hot>=0&&pens[hot])pens[hot].p.classList.remove('hot');hot=i;if(i>=0&&pens[i])pens[i].p.classList.add('hot')};
+ d.addEventListener('pointerdown',e=>{e.preventDefault();d.setPointerCapture(e.pointerId);const p=pct(e);off={dx:p.x-hx,dy:p.y-hy};d.classList.add('drag');d.classList.remove('back');dragging++});
+ d.addEventListener('pointermove',e=>{if(!off)return;const p=pct(e),q={x:p.x-off.dx,y:p.y-off.dy};d.style.left=q.x+'%';d.style.top=q.y+'%';
+  let i=penAt(q.x,q.y);if(i<0)i=penAt(p.x,p.y);setHot(i>=0&&S.animals[i]?i:-1);
+  if(it.kind==='shovel'&&hot>=0){const r=inPen(hot,q.x,q.y+2),got=scoop(S,hot,r.px,r.py);if(got){sfx.scoop();fx(q.x,q.y,'+'+got+' 🪙');update();if(!S.animals[hot].poop.length)setTip('✨ All clean! '+kind(S.animals[hot].id).name+' is happier now.')}}});
+ const end=e=>{if(!off)return;off=null;dragging--;d.classList.remove('drag');const i=hot;setHot(-1);d.classList.add('back');d.style.left=hx+'%';d.style.top=hy+'%';
+  if(i<0||!S.animals[i]||!e||e.type==='pointercancel')return;const k=kind(S.animals[i].id);
+  if(it.kind==='food'){const r=feed(S,i,it.food);if(r.wrong){sfx.nope();notify('The '+k.name.toLowerCase()+' does not eat '+FOODS[it.food].name+'! Try '+FOODS[k.food].icon+' '+FOODS[k.food].name+'.');return}
+   if(r.full){notify('The '+k.name.toLowerCase()+' is full! Come back when it is hungry.');return}sfx.yum();cheer(i,'😋 +2 🪙');setTip('😋 Yum! The '+k.name.toLowerCase()+' loved the '+FOODS[it.food].name+'. Watch out, it might make a 💩 soon. Scoop it with the 🧹!')}
+  if(it.kind==='ball'){const r=play(S,i);if(r.full){notify('The '+k.name.toLowerCase()+' already played. Try again later!');return}sfx.boing();cheer(i,'🎾 +2 🪙');setTip('🎾 Wheee! The '+k.name.toLowerCase()+' had fun playing.')}
+  save();update()};
+ d.addEventListener('pointerup',end);d.addEventListener('pointercancel',end)}
+// visitors walk along the path and pay when they leave
+function spawnVisitor(){const icons=['🧒','👧','👦','👩','👨','👵','👴','🧑'];const v={x:-4,el:el('p visitor',-4,92,'<i>'+icons[Math.floor(Math.random()*icons.length)]+'</i>')};people.push(v)}
+function loop(now){const dt=Math.min(.25,(now-last)/1000);last=now;requestAnimationFrame(loop);
+ if(document.hidden||document.querySelector('dialog[open]'))return;
+ tickZoo(S,dt);
+ nextVisitor-=dt;if(nextVisitor<=0){nextVisitor=4+Math.random()*2.5;spawnVisitor()}
+ for(const v of people){v.x+=dt*11;v.el.style.left=v.x+'%';if(v.x>76&&!v.paid){v.paid=true;const c=payVisitor(S);sfx.coin();fx(74,86,'+'+c+' 🪙');v.el.remove()}}people=people.filter(v=>!v.paid);
+ wanderT-=dt;if(wanderT<=0){wanderT=1.8;wander()}
+ saveT-=dt;if(saveT<=0){saveT=3;save()}
+ update()}
+// shop
+function openShop(){renderShop();$('#shopDialog').showModal()}
+function renderShop(){renderTop();const box=$('#shopItems');box.innerHTML='';ANIMALS.forEach(k=>{const own=owns(S,k.id),d=document.createElement('div');d.className='card'+(own?' own':k.rare?' rare':'');
+  d.innerHTML='<span class="ic" aria-hidden="true">'+k.icon+'</span><span class="nm"></span><span class="eat"></span>';d.querySelector('.nm').textContent=k.name+(k.rare&&!own?' ✨':'');d.querySelector('.eat').textContent='Eats '+FOODS[k.food].icon+' '+FOODS[k.food].name;
+  const b=document.createElement('button');b.type='button';if(own){b.textContent='✓ In your zoo';b.disabled=true}else{b.textContent='🪙 '+k.price;b.disabled=S.coins<k.price;b.setAttribute('aria-label','Buy the '+k.name+' for '+k.price+' coins');b.onclick=()=>{if(buyAnimal(S,k.id)){save();sfx.yum();notify('Welcome to the zoo, '+k.name+'! '+k.icon);renderShop()}}}
+  d.append(b);box.append(d)})}
+function closeShop(){$('#shopDialog').close()}
+$('#shopBtn').onclick=openShop;$('#shopClose').onclick=closeShop;
+$('#shopDialog').addEventListener('click',e=>{if(e.target===$('#shopDialog'))closeShop()});
+$('#shopDialog').addEventListener('close',()=>{if(!dragging)build();last=performance.now()});
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+window.addEventListener('pagehide',save);
+setTip('🦁 Welcome to your zoo! <b>Drag food</b> from the tray to hungry animals, <b>drag the 🎾 ball</b> to bored ones, and <b>scoop the 💩</b> with the 🧹. Happy animals bring more visitors, and visitors pay coins!');
+build();requestAnimationFrame(loop);
+window.__zoo={get S(){return S},build,update,spawnVisitor,PENS};
+}
+</script>
+</body>
+</html>
