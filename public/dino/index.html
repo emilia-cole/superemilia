@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fbeedb">
+<meta name="author" content="Emilia">
+<meta name="description" content="Brush away the dirt to find fossil bones, put the skeleton back together, and watch your dinosaur come alive in your own museum. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/dino/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/dino/">
+<meta property="og:title" content="Dino Dig · A Super Emilia Game">
+<meta property="og:description" content="Brush away the dirt to find fossil bones, put the skeleton back together, and watch your dinosaur come alive in your own museum. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Dino Dig</title>
+<style>
+/* Layout: top bar, the step bar (dig, build, museum), a tip line, then the scene. Dig: a grid of dirt over the bones, with the brush, pickaxe and basket on the right. Build: the dinosaur shadow in the middle and the bone pieces on the right. */
+:root{
+ color-scheme:light;
+ --bg:#fbeedb; --bg-2:#e9f3e1; --paper:#fff; --line:#ead8bd; --ink:#3b2d20; --soft:#7a6650;
+ --clay:#c46a3a; --clay-deep:#94461f; --gold:#ffc83d;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--clay-deep);outline-offset:2px}
+.app{max-width:1000px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--clay-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.coins{color:#a06b00;border-color:#f2d98a;background:#fff8dc}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.step{display:flex;justify-content:center;align-items:center;gap:6px;padding:8px 4px;border-radius:14px;background:#ffffffaa;border:2px solid var(--line);font-size:14px;font-weight:900;color:var(--soft)}
+.step span{font-size:20px}
+.step.now{background:#fff;border-color:var(--clay);color:var(--ink);box-shadow:0 0 0 3px #c46a3a33}
+.step.done{background:#f0faef;border-color:#8fcf8a;color:#2f6b2a}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+/* scene */
+.scene{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #dcc6a4;background:#f6e0b5;container-type:inline-size;touch-action:none}
+.p{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;-webkit-user-select:none;user-select:none}
+.pit{position:absolute;border-radius:2cqw;box-shadow:inset 0 .6cqw 1.4cqw #0003}
+.cell{position:absolute;border-radius:.6cqw;pointer-events:none;transition:opacity .25s,background-color .25s}
+.cell.rock{background:radial-gradient(circle at 35% 30%,#bdbdbd,#7c7c7c 70%)!important;box-shadow:inset 0 -.5cqw 0 #0003}
+.cell.gone{opacity:0}
+.tray{position:absolute;left:77%;right:1.2%;top:2.5%;bottom:2.5%;background:#fffaf0dd;border-radius:2cqw;box-shadow:0 .6cqw 0 #0001}
+.tool{font-size:8cqw;cursor:grab;touch-action:none;z-index:20;filter:drop-shadow(0 0 1cqw #ffc83d);animation:wob 1.2s ease-in-out infinite}
+.tool.drag{cursor:grabbing;animation:none;z-index:40;transform:translate(-50%,-50%) scale(1.15)}
+.tool.back,.frag.back,.gem.back{transition:left .3s ease,top .3s ease}
+.label{position:absolute;transform:translate(-50%,-50%);font-size:1.8cqw;font-weight:900;color:var(--soft);white-space:nowrap;pointer-events:none}
+.basket{font-size:10cqw;pointer-events:none}
+.basket.hot{filter:drop-shadow(0 0 1.4cqw #ffc83d)}
+/* bone pieces: a slice of the animal, shown as a bone-colored fossil */
+.frag{position:absolute;transform:translate(-50%,-50%);overflow:hidden;border-radius:1cqw;background:#f4ead2;box-shadow:0 0 0 .3cqw #d9c7a2,0 .4cqw 0 #0002;pointer-events:none;z-index:2;transition:background-color .8s,box-shadow .8s}
+.frag .whole{position:absolute;display:grid;place-items:center;line-height:1;filter:grayscale(1) sepia(.45) brightness(1.35) contrast(.85);transition:filter 1.2s}
+.frag.free{pointer-events:auto;cursor:grab;z-index:12;animation:glow 1.2s ease-in-out infinite}
+.frag.drag{cursor:grabbing;z-index:40;animation:none;transform:translate(-50%,-50%) scale(1.1)}
+.frag.tray{transform:translate(-50%,-50%) scale(.55)}
+.frag.tray.drag{transform:translate(-50%,-50%) scale(1)}
+.frag.placed{pointer-events:none;box-shadow:none;background:transparent;border-radius:0;z-index:5;animation:none;transform:translate(-50%,-50%)}
+.frag.hint{animation:none}
+.gem{font-size:4.6cqw;pointer-events:none;z-index:2}
+.gem.free{pointer-events:auto;cursor:grab;z-index:12;animation:glow 1.2s ease-in-out infinite}
+.gem.drag{z-index:40;animation:none;cursor:grabbing}
+.shadow{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;filter:brightness(0);opacity:.16;pointer-events:none}
+.slot{position:absolute;transform:translate(-50%,-50%);border:.35cqw dashed #b08a5a88;border-radius:.6cqw;pointer-events:none}
+.slot.hint{border-color:#ffc83d;background:#ffc83d44;border-style:solid}
+.alive .frag .whole{filter:none}
+.alive{animation:roar .6s ease-in-out 3}
+.fx{position:absolute;transform:translate(-50%,-50%);font-size:3.6cqw;font-weight:900;pointer-events:none;animation:rise 1.1s ease-out forwards;z-index:45;color:#a06b00;text-shadow:0 .2cqw 0 #fff}
+/* dialogs */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(580px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #3b2d2055}
+dialog::backdrop{background:#3b2d2066;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg.center{justify-items:center;text-align:center}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.big{font-size:110px;line-height:1;animation:roar .6s ease-in-out 2}
+.primary{background:var(--clay);border-color:var(--clay-deep);color:#fff;box-shadow:0 4px 0 var(--clay-deep);font-size:17px;padding:11px 20px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:min(62dvh,540px);overflow:auto;padding:2px}
+.grid h3{grid-column:1/-1;margin:6px 0 0;font-size:15px}
+.card{display:grid;justify-items:center;gap:3px;padding:10px 4px;border-radius:16px;border:2px solid var(--line);background:#fff;text-align:center}
+.card .ic{font-size:40px;line-height:1.1}
+.card .ic.unknown{filter:brightness(0);opacity:.25}
+.card .nm{font-size:13.5px;font-weight:900}
+.card .sub{font-size:12px;font-weight:700;color:var(--soft)}
+.card button{padding:5px 10px;font-size:13px}
+.card.own{background:#f0faef;border-color:#bfe6c4}
+.card.here{border-color:var(--clay);box-shadow:0 0 0 2px #c46a3a44}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes wob{0%,100%{rotate:0deg}50%{rotate:6deg}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 .3cqw #ffc83d)}50%{filter:drop-shadow(0 0 1.4cqw #ffc83d)}}
+@keyframes roar{0%,100%{rotate:0deg;scale:1}30%{rotate:-4deg;scale:1.05}70%{rotate:4deg;scale:1.05}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-220%) scale(1.1)}}
+@media (max-width:640px){.title strong{font-size:17px}.step{font-size:12px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.scene{aspect-ratio:4/3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Dino Dig</strong></div>
+  <span class="chip" id="foundChip" aria-label="Animals found">🦴 0 / 12</span>
+  <span class="chip coins" id="coins" aria-label="Coins">🪙 0</span>
+ </div>
+ <div class="tools">
+  <button type="button" id="museumBtn">🏛️ Museum</button>
+  <button type="button" id="sitesBtn">🗺️ Dig sites</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <div class="steps" id="steps"></div>
+ <p class="tip" id="tip" role="status"></p>
+ <section class="scene" id="scene" aria-label="The dig site"></section>
+</div>
+
+<dialog id="doneDialog" aria-labelledby="doneTitle"><div class="dlg center">
+ <div class="big" id="doneIcon" aria-hidden="true"></div>
+ <h2 id="doneTitle"></h2>
+ <p id="doneText"></p>
+ <button type="button" class="primary" id="doneOk">Dig again! ⛏️</button>
+</div></dialog>
+<dialog id="museumDialog" aria-labelledby="museumTitle"><div class="dlg">
+ <header><h2 id="museumTitle">🏛️ Your museum</h2><button type="button" id="museumClose" aria-label="Close the museum">✕</button></header>
+ <p id="museumSub"></p><div class="grid" id="museumGrid"></div>
+</div></dialog>
+<dialog id="sitesDialog" aria-labelledby="sitesTitle"><div class="dlg">
+ <header><h2 id="sitesTitle">🗺️ Dig sites</h2><span class="chip coins" id="sitesCoins">🪙 0</span><button type="button" id="sitesClose" aria-label="Close dig sites">✕</button></header>
+ <p>Each place has different animals hiding in the ground. Far away places have bigger skeletons!</p>
+ <div class="grid" id="sitesGrid"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+// grid: how the skeleton is cut into pieces [columns, rows]
+const SITES=[
+ {id:'desert',name:'Desert Canyon',icon:'🏜️',price:0,grid:[2,2],dirt:['#b9773f','#dca06a'],sand:'#f6e0b5'},
+ {id:'ice',name:'Frozen Tundra',icon:'🏔️',price:40,grid:[3,2],dirt:['#8fa9bd','#c7dae8'],sand:'#eef6fb'},
+ {id:'sea',name:'Ocean Cliffs',icon:'🏖️',price:80,grid:[3,2],dirt:['#a88b62','#d4bd95'],sand:'#f3ead6'},
+ {id:'volcano',name:'Volcano Valley',icon:'🌋',price:150,grid:[3,3],dirt:['#5e4032','#93644c'],sand:'#ecc6a8'}];
+const CREATURES=[
+ {id:'trex',icon:'🦖',name:'T. rex',site:'desert'},{id:'bronto',icon:'🦕',name:'Brontosaurus',site:'desert'},{id:'ptero',icon:'🦅',name:'Pterodactyl',site:'desert'},
+ {id:'mammoth',icon:'🦣',name:'Woolly Mammoth',site:'ice'},{id:'saber',icon:'🐅',name:'Saber-Tooth Tiger',site:'ice'},{id:'sloth',icon:'🦥',name:'Giant Sloth',site:'ice'},
+ {id:'megalodon',icon:'🦈',name:'Megalodon',site:'sea'},{id:'archelon',icon:'🐢',name:'Giant Sea Turtle',site:'sea'},{id:'supercroc',icon:'🐊',name:'Super Croc',site:'sea'},
+ {id:'titanoboa',icon:'🐍',name:'Titanoboa',site:'volcano'},{id:'firelizard',icon:'🦎',name:'Fire Lizard',site:'volcano'},{id:'dragon',icon:'🐉',name:'Fire Dragon',site:'volcano'}];
+const TREASURES={gem:{icon:'💎',name:'gem',coins:5},tooth:{icon:'🦷',name:'tooth',coins:3},shell:{icon:'🐚',name:'shell fossil',coins:2},coin:{icon:'🪙',name:'old coin',coins:4}};
+// the dig pit: a grid of dirt (in % of the scene)
+const DIG={x0:3,y0:5,w:72,h:90,cols:10,rows:7};
+const DIRT_HP=2.2,ROCK_HP=3,ROCKS=7;
+const SAVE_KEY='superEmiliaDino';
+
+// ---------- pure game logic (also used by the tests) ----------
+const site=id=>SITES.find(s=>s.id===id),creature=id=>CREATURES.find(c=>c.id===id);
+function siteOpen(save,id){const s=site(id);return!!s&&(s.price===0||save.sites.includes(id))}
+// which animal is buried here: usually one you have not found yet
+function pickCreature(save,siteId,rand=Math.random){const list=CREATURES.filter(c=>c.site===siteId),fresh=list.filter(c=>!save.found[c.id]);const from=fresh.length&&rand()<.75?fresh:list;return from[Math.floor(rand()*from.length)].id}
+// a new dig: dirt cells, some rocks, the bone pieces and a few treasures, spread apart
+function makeDig(siteId,rand=Math.random){const s=site(siteId),n=DIG.cols*DIG.rows,cells=[];for(let i=0;i<n;i++)cells.push({hp:DIRT_HP,rock:false});
+ const pieces=s.grid[0]*s.grid[1],extra=2+(rand()<.5?1:0),want=pieces+extra;let spots=[];
+ for(let gap=2;gap>=1&&spots.length<want;gap--){for(let tries=0;tries<40&&spots.length<want;tries++){spots=[];const order=[...Array(n).keys()].sort(()=>rand()-.5);
+  for(const i of order){const r=Math.floor(i/DIG.cols),c=i%DIG.cols;if(spots.every(j=>Math.max(Math.abs(Math.floor(j/DIG.cols)-r),Math.abs(j%DIG.cols-c))>=gap))spots.push(i);if(spots.length===want)break}}}
+ const kinds=Object.keys(TREASURES);const dig={site:siteId,cells,pieces:spots.slice(0,pieces).map((cell,i)=>({i,cell,got:false})),treasures:spots.slice(pieces,want).map(cell=>({kind:kinds[Math.floor(rand()*kinds.length)],cell,got:false}))};
+ const free=[...Array(n).keys()].filter(i=>!dig.treasures.some(t=>t.cell===i)).sort(()=>rand()-.5);for(const i of free.slice(0,ROCKS)){cells[i].rock=true;cells[i].hp=ROCK_HP}
+ return dig}
+const cellXY=i=>({x:DIG.x0+(i%DIG.cols+.5)*DIG.w/DIG.cols,y:DIG.y0+(Math.floor(i/DIG.cols)+.5)*DIG.h/DIG.rows});
+// the brush or pickaxe moved `dist` (in cells) around point (cx,cy) (in cells): dirt wears away; rocks only break with the pickaxe
+function digAt(dig,cx,cy,dist,tool){const reach=tool==='brush'?.95:.75;let changed=[],blocked=false;
+ dig.cells.forEach((cell,i)=>{if(cell.hp<=0)return;const c=i%DIG.cols+.5,r=Math.floor(i/DIG.cols)+.5;if(Math.hypot(c-cx,r-cy)>reach)return;
+  if(cell.rock){if(tool!=='pick'){blocked=true;return}cell.hp-=dist*1.3;if(cell.hp<=0){cell.hp=0;cell.rock=false}changed.push(i);return}
+  cell.hp=Math.max(0,cell.hp-dist*(tool==='brush'?1:.6));changed.push(i)});return{changed,blocked}}
+const isFree=(dig,cell)=>dig.cells[cell].hp<=0;
+const bonesLeft=dig=>dig.pieces.filter(p=>!p.got).length;
+// putting a piece in the skeleton: close enough to its own spot (sizes in the same units)
+function snapOK(x,y,tx,ty,pw,ph){return Math.abs(x-tx)<=pw*.5&&Math.abs(y-ty)<=ph*.5}
+function addTreasure(save,kind){const t=TREASURES[kind];if(!t)return 0;save.coins+=t.coins;save.treasures++;return t.coins}
+// a finished skeleton: more coins for a new animal
+function finishDig(save,id){const isNew=!save.found[id];save.found[id]=(save.found[id]||0)+1;save.digs++;const coins=isNew?15:8;save.coins+=coins;return{coins,isNew}}
+function buySite(save,id){const s=site(id);if(!s||siteOpen(save,id)||save.coins<s.price)return false;save.coins-=s.price;save.sites.push(id);return true}
+const foundCount=save=>CREATURES.filter(c=>save.found[c.id]).length;
+function defaultSave(){return{coins:0,digs:0,treasures:0,found:{},sites:[],here:'desert',sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0};
+ s.coins=num(raw.coins);s.digs=num(raw.digs);s.treasures=num(raw.treasures);
+ if(raw.found&&typeof raw.found==='object')for(const c of CREATURES){const n=num(raw.found[c.id]);if(n)s.found[c.id]=n}
+ if(Array.isArray(raw.sites))s.sites=[...new Set(raw.sites.filter(id=>SITES.some(x=>x.id===id&&x.price>0)))];
+ s.here=siteOpen(s,raw.here)?raw.here:'desert';s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s),scene=$('#scene');
+let S=loadSave(),mode='dig',dig=null,who=null,audio=null,cellEls=[],placed=0,blockedTold=false;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05,end=1.25){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*end,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={brush:()=>tone(1200+Math.random()*500,.03,'triangle',.012),clink:()=>tone(900,.05,'square',.04,.7),find:()=>[784,988,1318].forEach((f,i)=>setTimeout(()=>tone(f,.09,'triangle'),i*70)),drop:()=>tone(500,.08,'triangle',.05,.8),snap:()=>tone(660,.07,'square',.035),nope:()=>tone(220,.14,'sawtooth',.03,.9),roar:()=>{tone(140,.7,'sawtooth',.07,.45);setTimeout(()=>tone(110,.6,'sawtooth',.05,.5),200)},coin:()=>[988,1318].forEach((f,i)=>setTimeout(()=>tone(f,.08,'square',.025),i*70))};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function setTip(h){$('#tip').innerHTML=h}
+function rect(){return scene.getBoundingClientRect()}
+const AR=()=>{const b=rect();return b.width/b.height||1.6}; // 1cqw = AR % of the height
+function pct(e){const b=rect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function el(cls,x,y,html){const d=document.createElement('div');d.className=cls;if(x!=null){d.style.left=x+'%';d.style.top=y+'%'}if(html!=null)d.innerHTML=html;scene.append(d);return d}
+function label(x,y,t){const d=el('label',x,y);d.textContent=t;return d}
+function fx(x,y,t){const d=el('fx',x,y);d.textContent=t;setTimeout(()=>d.remove(),1100)}
+function renderTop(){$('#coins').textContent='🪙 '+S.coins;$('#sitesCoins').textContent='🪙 '+S.coins;$('#foundChip').textContent='🦴 '+foundCount(S)+' / '+CREATURES.length;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off');
+ const st=$('#steps');st.innerHTML='';[['dig','⛏️','Dig'],['build','🧩','Build'],['done','🏛️','Museum']].forEach(([id,ic,nm],i,all)=>{const now=all.findIndex(a=>a[0]===mode);const d=document.createElement('div');d.className='step'+(i<now?' done':i===now?' now':'');d.innerHTML='<span aria-hidden="true">'+(i<now?'✓':ic)+'</span>'+nm;st.append(d)})}
+// one slice of the animal: piece k of a cols x rows grid, the whole animal is `size` cqw
+function frag(id,k,cols,rows,size){const c=k%cols,r=Math.floor(k/cols),f=document.createElement('div');f.className='frag';f.style.width=size/cols+'cqw';f.style.height=size/rows+'cqw';
+ const w=document.createElement('div');w.className='whole';w.style.width=size+'cqw';w.style.height=size+'cqw';w.style.left=-c*size/cols+'cqw';w.style.top=-r*size/rows+'cqw';w.style.fontSize=size*.86+'cqw';w.textContent=creature(id).icon;f.append(w);scene.append(f);return f}
+// generic drag: onMove(q,p) while moving, onDrop(q,p) returns true to keep it where it is
+function draggable(d,home,{onMove,onDrop,start}){let off=null;
+ d.addEventListener('pointerdown',e=>{if(start&&!start())return;e.preventDefault();d.setPointerCapture(e.pointerId);const p=pct(e);off={dx:p.x-parseFloat(d.style.left),dy:p.y-parseFloat(d.style.top)};d.classList.add('drag');d.classList.remove('back')});
+ d.addEventListener('pointermove',e=>{if(!off)return;const p=pct(e),q={x:p.x-off.dx,y:p.y-off.dy};d.style.left=q.x+'%';d.style.top=q.y+'%';if(onMove)onMove(q,p)});
+ const end=e=>{if(!off)return;off=null;d.classList.remove('drag');const p=pct(e),q={x:parseFloat(d.style.left),y:parseFloat(d.style.top)};if(e.type!=='pointercancel'&&onDrop&&onDrop(q,p))return;d.classList.add('back');d.style.left=home.x+'%';d.style.top=home.y+'%'};
+ d.addEventListener('pointerup',end);d.addEventListener('pointercancel',end)}
+
+// ----- dig -----
+const BASKET={x:88,y:76};
+function nearBasket(q,p){return[q,p].some(a=>Math.abs(a.x-BASKET.x)<11&&Math.abs(a.y-BASKET.y)<17)}
+function startDig(){mode='dig';who=pickCreature(S,S.here);dig=makeDig(S.here);placed=0;drawDig();
+ setTip('⛏️ Something is buried at the <b>'+site(S.here).name+'</b>! <b>Drag the brush</b> 🖌️ back and forth to sweep the dirt away. Rocks 🪨 need the <b>pickaxe</b> ⛏️.')}
+function drawDig(){scene.innerHTML='';renderTop();const s=site(S.here),cw=DIG.w/DIG.cols,ch=DIG.h/DIG.rows;scene.style.background=s.sand;
+ const pit=el('pit');Object.assign(pit.style,{left:DIG.x0+'%',top:DIG.y0+'%',width:DIG.w+'%',height:DIG.h+'%',background:s.sand});
+ const [gc,gr]=s.grid,size=10.5*gc;
+ dig.pieces.forEach(pc=>{const f=frag(who,pc.i,gc,gr,size),xy=cellXY(pc.cell);f.style.left=xy.x+'%';f.style.top=xy.y+'%';pc.el=f;
+  draggable(f,xy,{start:()=>f.classList.contains('free'),onMove:(q,p)=>$('.basket').classList.toggle('hot',nearBasket(q,p)),onDrop:(q,p)=>{$('.basket').classList.remove('hot');if(!nearBasket(q,p))return false;pc.got=true;f.remove();sfx.drop();fx(BASKET.x,BASKET.y-14,'🦴');updateBasket();if(!bonesLeft(dig))setTimeout(startBuild,700);else setTip('🧺 Into the basket! '+bonesLeft(dig)+' more bone'+(bonesLeft(dig)===1?'':'s')+' to find.');return true}})});
+ dig.treasures.forEach(t=>{const xy=cellXY(t.cell),g=el('p gem',xy.x,xy.y,TREASURES[t.kind].icon);t.el=g;
+  draggable(g,xy,{start:()=>g.classList.contains('free'),onMove:(q,p)=>$('.basket').classList.toggle('hot',nearBasket(q,p)),onDrop:(q,p)=>{$('.basket').classList.remove('hot');if(!nearBasket(q,p))return false;t.got=true;g.remove();const c=addTreasure(S,t.kind);save();sfx.coin();fx(BASKET.x,BASKET.y-14,'+'+c+' 🪙');renderTop();setTip('✨ A '+TREASURES[t.kind].name+'! +'+c+' coins.');return true}})});
+ cellEls=dig.cells.map((cell,i)=>{const xy=cellXY(i),d=el('cell');Object.assign(d.style,{left:(xy.x-cw/2-.15)+'%',top:(xy.y-ch/2-.25)+'%',width:(cw+.3)+'%',height:(ch+.5)+'%'});return d});
+ dig.cells.forEach((c,i)=>paintCell(i));
+ el('tray');
+ digTool('🖌️','brush',88,16,'Brush');digTool('⛏️','pick',88,42,'Pickaxe');
+ el('p basket',BASKET.x,BASKET.y,'🧺');el('label',BASKET.x,BASKET.y+13).id='basketLabel';updateBasket();refreshFree()}
+function paintCell(i){const c=dig.cells[i],d=cellEls[i],s=site(S.here);d.classList.toggle('rock',c.rock&&c.hp>0);d.classList.toggle('gone',c.hp<=0);if(!c.rock)d.style.background=c.hp>DIRT_HP/2?s.dirt[0]:s.dirt[1]}
+function updateBasket(){const l=$('#basketLabel');if(l)l.textContent=(dig.pieces.length-bonesLeft(dig))+' / '+dig.pieces.length+' bones'}
+function refreshFree(){let fresh=false;dig.pieces.forEach(pc=>{if(!pc.got&&isFree(dig,pc.cell)&&!pc.el.classList.contains('free')){pc.el.classList.add('free');fresh=true}});
+ dig.treasures.forEach(t=>{if(!t.got&&isFree(dig,t.cell)&&!t.el.classList.contains('free')){t.el.classList.add('free');fresh='t'}});
+ if(fresh){sfx.find();setTip(fresh==='t'?'💎 Treasure! <b>Drag it into the basket</b> 🧺 for coins.':'🦴 A bone! <b>Drag it into the basket</b> 🧺.')}}
+function digTool(icon,kind,x,y,name){const t=el('p tool',x,y,icon);t.setAttribute('aria-label','Drag the '+name.toLowerCase());label(x,y+11,name);let last=null,clink=0;
+ draggable(t,{x,y},{onMove:q=>{const hx=kind==='brush'?q.x-2:q.x-2.5,hy=kind==='brush'?q.y+3:q.y+3,cx=(hx-DIG.x0)/(DIG.w/DIG.cols),cy=(hy-DIG.y0)/(DIG.h/DIG.rows);
+   if(last){const d=Math.min(1.2,Math.hypot(cx-last.cx,cy-last.cy));if(d>0){const r=digAt(dig,cx,cy,d,kind);r.changed.forEach(paintCell);if(r.changed.length){if(kind==='pick'&&r.changed.some(i=>dig.cells[i].rock||dig.cells[i].hp===0)&&++clink%3===0)sfx.clink();else if(kind==='brush'&&Math.random()<.35)sfx.brush();refreshFree()}
+    if(r.blocked&&!blockedTold){blockedTold=true;setTip('🪨 That is a rock! The brush cannot move it. Grab the <b>pickaxe</b> ⛏️ and scrape the rock to break it.')}}}last={cx,cy}},onDrop:()=>{last=null;return false}})}
+
+// ----- build -----
+let BUILD={x:42,y:50,size:44};
+function startBuild(){mode='build';scene.innerHTML='';renderTop();placed=0;const s=site(S.here),[gc,gr]=s.grid,ar=AR(),size=BUILD.size,pw=size/gc,ph=size/gr;scene.style.background='linear-gradient(180deg,#fff7e8,'+s.sand+')';
+ const sh=el('shadow',BUILD.x,BUILD.y,creature(who).icon);Object.assign(sh.style,{width:size+'cqw',height:size+'cqw',fontSize:size*.86+'cqw'});
+ const target=k=>({x:BUILD.x+(k%gc+.5-gc/2)*pw,y:BUILD.y+(Math.floor(k/gc)+.5-gr/2)*ph*ar});
+ const slots=[];for(let k=0;k<gc*gr;k++){const t=target(k),sl=el('slot',t.x,t.y);sl.style.width=pw+'cqw';sl.style.height=ph+'cqw';slots.push(sl)}
+ el('tray');const order=[...Array(gc*gr).keys()].sort(()=>Math.random()-.5),rows=Math.ceil(order.length/2),stepY=Math.min(22,86/rows);
+ const group=document.createElement('div');
+ order.forEach((k,j)=>{const home={x:j%2?93:83,y:9+stepY/2+Math.floor(j/2)*stepY},f=frag(who,k,gc,gr,size);f.classList.add('free','tray');f.style.left=home.x+'%';f.style.top=home.y+'%';f.setAttribute('aria-label','Bone piece');
+  draggable(f,home,{start:()=>!f.classList.contains('placed'),onDrop:(q,p)=>{const t=target(k);
+   const ok=[q,p].some(a=>snapOK(a.x,a.y/ar,t.x,t.y/ar,pw,ph));if(ok){f.classList.remove('free','tray');f.classList.add('placed','back');f.style.left=t.x+'%';f.style.top=t.y+'%';slots[k].remove();sfx.snap();placed++;
+     if(placed===gc*gr)setTimeout(comeAlive,350);else setTip('🧩 It fits! '+(gc*gr-placed)+' more piece'+(gc*gr-placed===1?'':'s')+'.');return true}
+   const over=slots.findIndex((sl,i)=>{const tt=target(i);return snapOK(q.x,q.y/ar,tt.x,tt.y/ar,pw,ph)});if(over>=0){sfx.nope();setTip('🤔 Hmm, that piece goes somewhere else. Look at the shape! The glowing box is where it goes.');slots[k].classList.add('hint');setTimeout(()=>slots[k]&&slots[k].classList.remove('hint'),1300)}return false}})});
+ setTip('🧩 You found all the bones! Now <b>drag each piece</b> onto the shadow to put the '+creature(who).name+' back together.')}
+function comeAlive(){scene.classList.add('alive');scene.querySelectorAll('.frag').forEach(f=>f.classList.add('placed'));sfx.roar();const r=finishDig(S,who);save();renderTop();
+ setTip('🎉 ROAR! The '+creature(who).name+' came alive!');
+ setTimeout(()=>{scene.classList.remove('alive');mode='done';renderTop();const c=creature(who);$('#doneIcon').textContent=c.icon;$('#doneTitle').textContent=(r.isNew?'New! ':'')+'You found a '+c.name+'!';
+  $('#doneText').textContent=(r.isNew?'It is now in your museum. ':'You found another one! ')+'+'+r.coins+' coins. You have found '+foundCount(S)+' of '+CREATURES.length+' animals.';sfx.coin();$('#doneDialog').showModal()},1900)}
+$('#doneOk').onclick=()=>{$('#doneDialog').close()};
+$('#doneDialog').addEventListener('close',startDig);
+
+// ----- museum and sites -----
+$('#museumBtn').onclick=()=>{const g=$('#museumGrid');g.innerHTML='';SITES.forEach(s=>{const h=document.createElement('h3');h.textContent=s.icon+' '+s.name;g.append(h);
+  CREATURES.filter(c=>c.site===s.id).forEach(c=>{const n=S.found[c.id]||0,d=document.createElement('div');d.className='card'+(n?' own':'');d.innerHTML='<span class="ic'+(n?'':' unknown')+'" aria-hidden="true">'+c.icon+'</span><span class="nm"></span><span class="sub"></span>';
+   d.querySelector('.nm').textContent=n?c.name:'???';d.querySelector('.sub').textContent=n?'Found '+n+(n===1?' time':' times'):'Not found yet';g.append(d)})});
+ $('#museumSub').textContent=foundCount(S)+' of '+CREATURES.length+' animals found · '+S.digs+' skeletons built · '+S.treasures+' treasures';$('#museumDialog').showModal()};
+$('#museumClose').onclick=()=>$('#museumDialog').close();
+function renderSites(){renderTop();const g=$('#sitesGrid');g.innerHTML='';SITES.forEach(s=>{const open=siteOpen(S,s.id),d=document.createElement('div');d.className='card'+(s.id===S.here?' here':open?' own':'');
+  const found=CREATURES.filter(c=>c.site===s.id&&S.found[c.id]).length;d.innerHTML='<span class="ic" aria-hidden="true">'+s.icon+'</span><span class="nm"></span><span class="sub"></span>';d.querySelector('.nm').textContent=s.name;d.querySelector('.sub').textContent=found+' / 3 found · '+s.grid[0]*s.grid[1]+' bones';
+  const b=document.createElement('button');b.type='button';if(s.id===S.here){b.textContent='📍 Digging here';b.disabled=true}else if(open){b.textContent='⛏️ Dig here';b.onclick=()=>{S.here=s.id;save();$('#sitesDialog').close();startDig()}}
+  else{b.textContent='🪙 '+s.price;b.disabled=S.coins<s.price;b.setAttribute('aria-label','Open '+s.name+' for '+s.price+' coins');b.onclick=()=>{if(buySite(S,s.id)){S.here=s.id;save();sfx.coin();notify('Welcome to '+s.name+'! '+s.icon);$('#sitesDialog').close();startDig()}}}
+  d.append(b);g.append(d)})}
+$('#sitesBtn').onclick=()=>{renderSites();$('#sitesDialog').showModal()};$('#sitesClose').onclick=()=>$('#sitesDialog').close();
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d&&d.id!=='doneDialog')d.close()}));
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+startDig();
+window.__dino={get S(){return S},get dig(){return dig},get who(){return who},get mode(){return mode},startDig,startBuild,cellXY,DIG};
+}
+</script>
+</body>
+</html>
