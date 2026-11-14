@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffe3c2">
+<meta name="author" content="Emilia">
+<meta name="description" content="A buddy carnival with ring toss, whack-a-mole, balloon pop, a duck pond, and a ferris wheel. Win tickets and trade them for prizes. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/carnival/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/carnival/">
+<meta property="og:title" content="Buddy Carnival · A Super Emilia Game">
+<meta property="og:description" content="A buddy carnival with ring toss, whack-a-mole, balloon pop, a duck pond, and a ferris wheel. Win tickets and trade them for prizes. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Buddy Carnival</title>
+<style>
+/* Layout: two screens. The midway (a row of striped booth tents, the prize shelf) and a game screen (a stage where each mini-game is played). Results and the prize booth open in dialogs. */
+:root{
+ color-scheme:light;
+ --sky:#ffe3c2; --sky-2:#ffd1e6; --paper:#fffaf3; --line:#f0d6bd; --ink:#3d2730; --soft:#86656f;
+ --red:#ff5a6e; --red-deep:#d63a50; --yellow:#ffcf4d; --blue:#5aa9ff; --green:#4cc38a;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:linear-gradient(180deg,var(--sky),var(--sky-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--red-deep);outline-offset:2px}
+.app{max-width:980px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--red-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.tix{color:#b0303f;border-color:#ffc0c8;background:#fff0f2}
+h1{margin:0;font-size:clamp(24px,5vw,34px);letter-spacing:-.6px}
+.lede{margin:2px 0 0;color:var(--soft);font-weight:600}
+/* the midway */
+.booths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.booth{position:relative;display:grid;justify-items:center;gap:4px;padding:0 0 12px;border-radius:20px;overflow:hidden;background:var(--paper);box-shadow:0 5px 0 var(--line);text-align:center}
+.booth .tent{width:100%;height:30px;background:repeating-linear-gradient(90deg,var(--c1,#ff5a6e) 0 22px,#fff 22px 44px);clip-path:polygon(0 0,100% 0,100% 70%,96% 100%,92% 70%,88% 100%,84% 70%,80% 100%,76% 70%,72% 100%,68% 70%,64% 100%,60% 70%,56% 100%,52% 70%,48% 100%,44% 70%,40% 100%,36% 70%,32% 100%,28% 70%,24% 100%,20% 70%,16% 100%,12% 70%,8% 100%,4% 70%,0 100%)}
+.booth .bi{font-size:46px;line-height:1.1;margin-top:6px}
+.booth .bn{font-weight:900;font-size:17px}
+.booth .bd{font-size:12.5px;color:var(--soft);font-weight:700;padding:0 8px;line-height:1.3}
+.booth .bb{font-size:12px;font-weight:900;color:#b0303f}
+.booth.prize{--c1:#ffcf4d}
+.shelfbox{background:var(--paper);border:2px solid var(--line);border-radius:20px;padding:12px}
+.shelfbox h2{margin:0 0 8px;font-size:18px}
+.myprizes{display:flex;flex-wrap:wrap;gap:6px;font-size:34px;min-height:44px;align-items:center;border-bottom:8px solid #c98e5c;padding-bottom:6px}
+.myprizes .none{font-size:14px;color:var(--soft);font-weight:700}
+/* game screen */
+.gamehead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gamehead h1{font-size:24px;margin-right:auto}
+.stage{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #e8b9a2;container-type:inline-size;touch-action:none;background:linear-gradient(180deg,#8fd0ff 0 55%,#7fcf6a 55%)}
+.o{position:absolute;transform:translate(-50%,-50%);line-height:1;-webkit-user-select:none;user-select:none;pointer-events:none}
+.hud{position:absolute;left:2cqw;top:2cqw;display:flex;gap:1.4cqw;z-index:10}
+.hud span{background:#fffe;border-radius:99px;padding:.8cqw 1.8cqw;font-weight:900;font-size:2.6cqw;color:var(--ink);box-shadow:0 .4cqw 0 #0002}
+.say{position:absolute;left:50%;top:13%;transform:translateX(-50%);background:#fffe;border-radius:2cqw;padding:1cqw 2.4cqw;font-weight:900;font-size:2.8cqw;z-index:10;white-space:nowrap;box-shadow:0 .4cqw 0 #0002}
+/* ring toss */
+.counter{background:linear-gradient(180deg,#c98e5c,#a86e3d);box-shadow:0 1cqw 0 #7a4c26}
+.bottle{font-size:7cqw}
+.ring{width:9cqw;height:4cqw;border-radius:50%;border:1.4cqw solid var(--rc,#ff5a6e);box-shadow:0 .4cqw 0 #0003}
+.ringhint{font-size:2.6cqw;font-weight:900;color:#fff;text-shadow:0 .3cqw 0 #0005}
+/* whack-a-mole */
+.hole{width:15cqw;height:5cqw;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#3a2516,#5a3a20 70%);box-shadow:0 .6cqw 0 #3a7a2e}
+.mole{font-size:9cqw;pointer-events:auto;cursor:pointer;transition:transform .12s ease}
+.mole.down{transform:translate(-50%,-10%) scale(.2);opacity:0}
+.bonk{font-size:5cqw;animation:pop .4s ease forwards}
+/* balloons */
+.balloon{font-size:8cqw;pointer-events:auto;cursor:pointer;filter:hue-rotate(var(--h,0deg))}
+.balloon.special{filter:drop-shadow(0 0 1.4cqw #ffcf4d)}
+/* duck pond */
+.pond{border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#9fe3ff,#4fa7d8);box-shadow:inset 0 0 0 1.4cqw #bfeaff,0 1cqw 0 #3a7a2e}
+.duck{font-size:7cqw;pointer-events:auto;cursor:pointer}
+.duck.flip{animation:flip .6s ease forwards}
+.ducknum{font-size:5cqw;font-weight:900;color:#b0303f;background:#fff;border-radius:2cqw;padding:1cqw 2cqw}
+/* ferris wheel */
+.wheel{width:52cqw;height:52cqw;border-radius:50%;border:1.2cqw solid #ff5a6e;background:repeating-conic-gradient(from 0deg,#fff 0 2deg,transparent 2deg 45deg);transform:translate(-50%,-50%) rotate(var(--r,0deg))}
+.cart{font-size:5cqw;background:var(--cc,#ffcf4d);border-radius:1.4cqw;padding:.4cqw .8cqw;box-shadow:0 .4cqw 0 #0003}
+.stand{width:4cqw;background:#c96b5a;transform-origin:top center}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(.4);opacity:1}100%{transform:translate(-50%,-120%) scale(1.3);opacity:0}}
+@keyframes flip{0%{transform:translate(-50%,-50%) rotateY(0)}100%{transform:translate(-50%,-50%) rotateY(180deg)}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-200%) scale(1.1)}}
+.fx{animation:rise 1s ease-out forwards;font-size:4cqw}
+/* dialogs */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(520px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #3d273055}
+dialog::backdrop{background:#3d273066;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg.center{justify-items:center;text-align:center}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.dlg .big{font-size:60px;line-height:1}
+.tickets{font-size:30px;font-weight:900;color:#b0303f}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.primary{background:var(--red);border-color:var(--red-deep);color:#fff;box-shadow:0 4px 0 var(--red-deep);font-size:17px;padding:11px 20px}
+.prizes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:min(60dvh,480px);overflow:auto;padding:2px}
+.pz{display:grid;justify-items:center;gap:3px;padding:10px 4px;border-radius:16px;border:2px solid var(--line);background:#fff;text-align:center}
+.pz .pi{font-size:36px;line-height:1.1}
+.pz .pn{font-size:12.5px;font-weight:900}
+.pz button{padding:5px 10px;font-size:13px}
+.pz.own{background:#effcf5;border-color:#bfe8d4}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@media (max-width:640px){.booths{grid-template-columns:repeat(2,minmax(0,1fr))}.title strong{font-size:17px}.stage{aspect-ratio:4/3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Buddy Carnival</strong></div>
+  <span class="chip" id="ducks" aria-label="Duck tokens">🦆 0</span>
+  <span class="chip tix" id="tix" aria-label="Tickets">🎟️ 0</span>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <section id="midway" style="display:grid;gap:12px">
+  <div><h1>🎪 Welcome to the carnival!</h1><p class="lede">Play games to win 🎟️ tickets, then trade them for prizes. Every game you finish also gives you a 🦆 duck token for the Duck Pond.</p></div>
+  <div class="booths" id="booths"></div>
+  <div class="shelfbox"><h2>🏆 My prizes</h2><div class="myprizes" id="myPrizes"></div></div>
+ </section>
+ <section id="game" hidden style="display:grid;gap:10px">
+  <div class="gamehead"><h1 id="gameTitle">Ring Toss</h1><button type="button" id="leaveBtn">← Back to the carnival</button></div>
+  <div class="stage" id="stage" aria-live="polite"></div>
+  <p class="lede" id="gameHelp" style="text-align:center"></p>
+ </section>
+</div>
+
+<dialog id="resultDialog" aria-labelledby="resultTitle"><div class="dlg center">
+ <div class="big" id="resultBig" aria-hidden="true">🎉</div>
+ <h2 id="resultTitle">Great job!</h2>
+ <div class="tickets" id="resultTix">+0 🎟️</div>
+ <p id="resultText"></p>
+ <div class="row"><button type="button" id="againBtn">↻ Play again</button><button type="button" class="primary" id="midwayBtn">Back to the carnival</button></div>
+</div></dialog>
+<dialog id="prizeDialog" aria-labelledby="prizeTitle"><div class="dlg">
+ <header><h2 id="prizeTitle">🎁 Prize booth</h2><span class="chip tix" id="prizeTix">🎟️ 0</span><button type="button" id="prizeClose" aria-label="Close the prize booth">✕</button></header>
+ <div class="prizes" id="prizeList"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+const GAMES=[
+ {id:'ring',icon:'🎯',name:'Ring Toss',c1:'#ff5a6e',desc:'Aim and let go to toss rings over the bottles.',help:'Drag left and right to aim the ring, then let go to throw it! 5 rings.'},
+ {id:'whack',icon:'🔨',name:'Whack-a-Mole',c1:'#5aa9ff',desc:'Bonk the buddies when they pop up!',help:'Tap the buddies when they pop out of the holes. Golden ones are worth 3!'},
+ {id:'balloon',icon:'🎈',name:'Balloon Pop',c1:'#4cc38a',desc:'Pop the balloons before they float away.',help:'Tap the balloons to pop them. Sparkly ones are worth 3!'},
+ {id:'duck',icon:'🦆',name:'Duck Pond',c1:'#ffcf4d',desc:'Pick a duck to win a surprise prize. Uses 1 duck token.',help:'Tap any duck to see how many tickets it has on the bottom!'},
+ {id:'wheel',icon:'🎡',name:'Ferris Wheel',c1:'#b48cff',desc:'Take a relaxing ride to the very top.',help:'Sit back and enjoy the ride!'}
+];
+const PRIZES=[['balloon','🎈','Balloon',5],['lolly','🍭','Giant lollipop',8],['teddy','🧸','Teddy bear',10],['yoyo','🪀','Yo-yo',12],['puppy','🐶','Plush puppy',15],['kite','🪁','Kite',20],['hat','🎩','Magic hat',25],['robot','🤖','Toy robot',30],['unicorn','🦄','Unicorn plush',40],['dragon','🐉','Dragon plush',50],['crown','👑','Royal crown',60],['trophy','🏆','Golden trophy',100]].map(([id,icon,name,price])=>({id,icon,name,price}));
+const SAVE_KEY='superEmiliaCarnival';
+const RING_HIT=5.5; // how close (in % of the stage width) the ring must land to a bottle
+
+// ---------- pure game logic (also used by the tests) ----------
+// tickets won for a score in each game
+function ticketsFor(game,score){if(game==='ring')return score*3+(score>=5?5:0);if(game==='whack'||game==='balloon')return Math.floor(score/2);if(game==='duck')return score;return 0}
+// where the bottles are at time t: they slide left and right together
+function bottleXs(t,level=1){const off=10*Math.sin(t*(0.45+0.1*level));return[22,36,50,64,78].map(x=>x+off)}
+// which bottle a ring lands on (index), or -1 for a miss
+function ringLands(x,bottles,taken=[]){let best=-1,d=RING_HIT;bottles.forEach((b,i)=>{const dd=Math.abs(b-x);if(!taken.includes(i)&&dd<=d){d=dd;best=i}});return best}
+// what a duck has on the bottom: mostly small numbers, sometimes a big one
+function duckPrize(rand=Math.random){const r=rand();return r<.4?2:r<.7?3:r<.88?5:r<.97?8:15}
+// applies a finished game; returns the tickets won and whether it was a new best
+function finishGame(save,game,score){const t=ticketsFor(game,score);save.tickets+=t;save.total+=t;save.plays++;const better=game!=='duck'&&game!=='wheel'&&score>(save.best[game]||0);if(better)save.best[game]=score;if(game!=='duck'&&game!=='wheel')save.ducks++;if(game==='duck')save.ducks=Math.max(0,save.ducks-1);if(game==='wheel')save.rides++;return{tickets:t,better}}
+function buyPrize(save,id){const p=PRIZES.find(x=>x.id===id);if(!p||save.prizes.includes(id)||save.tickets<p.price)return false;save.tickets-=p.price;save.prizes.push(id);return true}
+function defaultSave(){return{tickets:0,total:0,plays:0,ducks:1,rides:0,best:{},prizes:[],sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:null};
+ s.tickets=num(raw.tickets)??0;s.total=Math.max(num(raw.total)??0,s.tickets);s.plays=num(raw.plays)??0;s.ducks=Math.min(num(raw.ducks)??1,99);s.rides=num(raw.rides)??0;
+ if(raw.best&&typeof raw.best==='object')for(const g of ['ring','whack','balloon']){const b=num(raw.best[g]);if(b)s.best[g]=Math.min(b,999)}
+ if(Array.isArray(raw.prizes))s.prizes=[...new Set(raw.prizes.filter(id=>PRIZES.some(p=>p.id===id)))];s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+let S=loadSave(),G=null,raf=0,last=0,audio=null;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.3,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={hit:()=>[660,990].forEach((f,i)=>setTimeout(()=>tone(f,.1,'triangle'),i*70)),miss:()=>tone(220,.15,'sawtooth',.03),bonk:()=>tone(300,.08,'square',.05),pop:()=>tone(900+Math.random()*300,.06,'triangle',.05),win:()=>[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.15),i*90)),coin:()=>[988,1318].forEach((f,i)=>setTimeout(()=>tone(f,.1,'square',.03),i*80)),whoosh:()=>tone(400,.25,'sine',.04)};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2000)}
+function renderTop(){$('#tix').textContent='🎟️ '+S.tickets;$('#ducks').textContent='🦆 '+S.ducks;$('#prizeTix').textContent='🎟️ '+S.tickets;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
+function renderMidway(){renderTop();const box=$('#booths');box.innerHTML='';
+ const card=(g,best,onClick,cls='')=>{const b=document.createElement('button');b.type='button';b.className='booth '+cls;b.style.setProperty('--c1',g.c1);b.innerHTML='<span class="tent"></span><span class="bi" aria-hidden="true"></span><span class="bn"></span><span class="bd"></span><span class="bb"></span>';b.querySelector('.bi').textContent=g.icon;b.querySelector('.bn').textContent=g.name;b.querySelector('.bd').textContent=g.desc;b.querySelector('.bb').textContent=best;b.onclick=onClick;box.append(b)};
+ for(const g of GAMES){const best=g.id==='duck'?'You have '+S.ducks+' duck token'+(S.ducks===1?'':'s'):g.id==='wheel'?(S.rides?'Rides: '+S.rides:'All aboard!'):(S.best[g.id]?'Best: '+S.best[g.id]:'Not played yet');card(g,best,()=>start(g.id))}
+ card({icon:'🎁',name:'Prize booth',c1:'#ffcf4d',desc:'Trade your tickets for prizes!'},S.prizes.length+' of '+PRIZES.length+' prizes',openPrizes,'prize');
+ const mp=$('#myPrizes');mp.innerHTML='';if(!S.prizes.length){const n=document.createElement('span');n.className='none';n.textContent='No prizes yet. Win tickets and visit the prize booth!';mp.append(n)}else for(const p of PRIZES)if(S.prizes.includes(p.id)){const s=document.createElement('span');s.textContent=p.icon;s.title=p.name;mp.append(s)}}
+function show(screen){$('#midway').hidden=screen!=='midway';$('#game').hidden=screen!=='game'}
+// stage helpers (positions in % of the stage)
+const stage=()=>$('#stage');
+function o(cls,x,y,html,w,h){const d=document.createElement('div');d.className='o '+cls;d.style.left=x+'%';d.style.top=y+'%';if(w)d.style.width=w+'%';if(h)d.style.height=h+'%';if(html!=null)d.innerHTML=html;stage().append(d);return d}
+function fx(x,y,t){const d=o('fx',x,y,t);setTimeout(()=>d.remove(),1000)}
+function pct(e){const b=stage().getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function hud(items){let h=stage().querySelector('.hud');if(!h){h=document.createElement('div');h.className='hud';stage().append(h)}h.innerHTML='';for(const t of items){const s=document.createElement('span');s.textContent=t;h.append(s)}}
+function say(t){let s=stage().querySelector('.say');if(!s){s=document.createElement('div');s.className='say';stage().append(s)}s.textContent=t}
+function start(id){cancelAnimationFrame(raf);const g=GAMES.find(x=>x.id===id);if(id==='duck'&&S.ducks<1){notify('You need a 🦆 duck token. Finish any other game to get one!');return}
+ show('game');$('#gameTitle').textContent=g.icon+' '+g.name;$('#gameHelp').textContent=g.help;stage().innerHTML='';stage().onpointerdown=stage().onpointermove=stage().onpointerup=null;G={id,t:0,score:0,over:false};
+ ({ring:startRing,whack:startWhack,balloon:startBalloon,duck:startDuck,wheel:startWheel})[id]();last=performance.now();raf=requestAnimationFrame(loop)}
+function loop(now){const dt=Math.min(.05,(now-last)/1000||0);last=now;if(G&&!G.over&&!document.querySelector('dialog[open]')){G.t+=dt;G.step&&G.step(dt)}raf=requestAnimationFrame(loop)}
+function end(){if(!G||G.over)return;G.over=true;const id=G.id,r=finishGame(S,id,G.score);save();renderTop();sfx.win();
+ const g=GAMES.find(x=>x.id===id);$('#resultBig').textContent=r.tickets>=10?'🎉':g.icon;
+ $('#resultTitle').textContent=id==='wheel'?'What a view!':id==='duck'?'Your duck had '+G.score+'!':r.tickets?'You won tickets!':'Nice try!';
+ $('#resultTix').textContent='+'+r.tickets+' 🎟️';$('#resultTix').hidden=id==='wheel';
+ $('#resultText').textContent=id==='ring'?'You ringed '+G.score+' of 5 bottles.'+(G.score>=5?' A perfect game: +5 bonus!':''):id==='whack'?'You bonked '+G.score+' points of buddies!':id==='balloon'?'You popped '+G.score+' points of balloons!':id==='duck'?'Pick another duck with your next duck token.':'You could see the whole carnival from the top!';
+ if(r.better)$('#resultText').textContent+=' 🏆 New best!';if(id!=='duck'&&id!=='wheel')$('#resultText').textContent+=' You also got a 🦆 duck token.';
+ $('#againBtn').hidden=id==='duck'&&S.ducks<1;$('#resultDialog').showModal()}
+$('#againBtn').onclick=()=>{$('#resultDialog').close();start(G.id)};
+$('#midwayBtn').onclick=()=>{$('#resultDialog').close();goMidway()};
+$('#resultDialog').addEventListener('cancel',e=>{e.preventDefault();$('#resultDialog').close();goMidway()});
+function goMidway(){cancelAnimationFrame(raf);G=null;show('midway');renderMidway()}
+$('#leaveBtn').onclick=goMidway;
+
+// ----- Ring toss: drag to aim, let go to throw -----
+function startRing(){const st=stage();st.style.background='linear-gradient(180deg,#ffd9a8 0 40%,#fff3e2 40% 62%,#e9c79a 62%)';
+ o('counter',50,48,'',92,6);const bottles=[0,1,2,3,4].map(i=>o('bottle',22+i*14,38,'🍾'));const ringed=[];let rings=5,aimX=50,flying=null;
+ const ring=o('ring',aimX,86);const hint=o('ringhint',50,96,'⬅ drag to aim, let go to throw ➡');
+ G.step=dt=>{const xs=bottleXs(G.t);bottles.forEach((b,i)=>b.style.left=xs[i]+'%');ringed.forEach(r=>r.el.style.left=xs[r.i]+'%');
+  if(flying){flying.t+=dt;const k=Math.min(1,flying.t/.55);ring.style.top=(86-(86-36)*k)+'%';ring.style.transform='translate(-50%,-50%) scale('+(1-k*.35)+')';
+   if(k>=1){const i=ringLands(flying.x,xs);if(i>=0){G.score++;sfx.hit();const el=o('ring',xs[i],36);el.style.setProperty('--rc',['#ff5a6e','#5aa9ff','#4cc38a','#ffcf4d','#b48cff'][ringed.length]);el.style.transform='translate(-50%,-50%) scale(.65)';el.style.marginTop=(-1.2*ringed.filter(r=>r.i===i).length)+'cqw';ringed.push({i,el});fx(xs[i],30,'⭐');say('Ringer! 🎯')}else{sfx.miss();say('So close!')}
+    flying=null;rings--;if(rings<=0){ring.remove();setTimeout(end,700)}else{ring.style.top='86%';ring.style.transform='translate(-50%,-50%)';ring.style.setProperty('--rc',['#ff5a6e','#5aa9ff','#4cc38a','#ffcf4d','#b48cff'][5-rings])}}}
+  hud(['Rings: '+rings,'Ringers: '+G.score])};
+ let aiming=false;st.onpointerdown=e=>{if(flying||rings<=0)return;aiming=true;st.setPointerCapture(e.pointerId);aimX=Math.max(8,Math.min(92,pct(e).x));ring.style.left=aimX+'%';hint.remove()};
+ st.onpointermove=e=>{if(!aiming)return;aimX=Math.max(8,Math.min(92,pct(e).x));ring.style.left=aimX+'%'};
+ st.onpointerup=()=>{if(!aiming)return;aiming=false;flying={x:aimX,t:0};sfx.whoosh()};say('Toss the rings over the bottles!')}
+
+// ----- Whack-a-mole: tap buddies when they pop up -----
+function startWhack(){const st=stage();st.style.background='linear-gradient(180deg,#8fd0ff 0 30%,#7fcf6a 30%)';const holes=[];
+ for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=25+c*25,y=40+r*22;o('hole',x,y+4);holes.push({x,y,mole:null})}
+ const FACES=['🐹','🐰','🐶','🐱','🐸'];let spawn=.6;
+ G.step=dt=>{spawn-=dt;const left=Math.max(0,25-G.t);if(spawn<=0&&left>0){const free=holes.filter(h=>!h.mole);if(free.length){const h=free[Math.floor(Math.random()*free.length)],gold=Math.random()<.12,m=o('mole',h.x,h.y-3,gold?'🌟':FACES[Math.floor(Math.random()*FACES.length)]);m.setAttribute('role','button');m.setAttribute('aria-label',gold?'Golden buddy':'Buddy');
+    h.mole={el:m,life:Math.max(.7,1.15-G.t*.015),gold};m.onpointerdown=e=>{e.stopPropagation();if(!h.mole||h.mole.el!==m)return;G.score+=gold?3:1;sfx.bonk();fx(h.x,h.y-10,gold?'+3 ⭐':'💥');m.classList.add('down');h.mole=null;setTimeout(()=>m.remove(),150)}}spawn=Math.max(.35,.75-G.t*.012)}
+  holes.forEach(h=>{if(h.mole){h.mole.life-=dt;if(h.mole.life<=0){const el=h.mole.el;el.classList.add('down');h.mole=null;setTimeout(()=>el.remove(),150)}}});
+  hud(['⏱️ '+Math.ceil(left),'Score: '+G.score]);if(left<=0&&!holes.some(h=>h.mole))end()};say('Bonk the buddies! 🔨')}
+
+// ----- Balloon pop: tap balloons before they float away -----
+function startBalloon(){const st=stage();st.style.background='linear-gradient(180deg,#8fd0ff,#dff3ff)';const balloons=[];let spawn=0;
+ G.step=dt=>{spawn-=dt;const left=Math.max(0,20-G.t);if(spawn<=0&&left>0){const special=Math.random()<.1,x=8+Math.random()*84,b=o('balloon'+(special?' special':''),x,108,special?'🎊':'🎈');b.style.setProperty('--h',Math.floor(Math.random()*360)+'deg');b.setAttribute('role','button');b.setAttribute('aria-label','Balloon');
+   const obj={el:b,x,y:108,v:16+Math.random()*12+G.t*.6,wob:Math.random()*6,special};balloons.push(obj);b.onpointerdown=e=>{e.stopPropagation();if(obj.gone)return;obj.gone=true;G.score+=special?3:1;sfx.pop();fx(obj.x,obj.y,special?'+3 ✨':'💥');b.remove()};spawn=Math.max(.3,.55-G.t*.01)}
+  for(const b of balloons){if(b.gone)continue;b.y-=b.v*dt;b.el.style.top=b.y+'%';b.el.style.left=(b.x+Math.sin(G.t*2+b.wob)*2)+'%';if(b.y<-10){b.gone=true;b.el.remove()}}
+  hud(['⏱️ '+Math.ceil(left),'Score: '+G.score]);if(left<=0&&!balloons.some(b=>!b.gone))end()};say('Pop the balloons! 🎈')}
+
+// ----- Duck pond: pick a duck -----
+function startDuck(){const st=stage();st.style.background='linear-gradient(180deg,#ffd9a8 0 30%,#7fcf6a 30%)';o('pond',50,60,'',80,70);let picked=false;
+ const ducks=[0,1,2,3,4,5,6,7].map(i=>{const d=o('duck',50,60,'🦆');d.setAttribute('role','button');d.setAttribute('aria-label','Duck '+(i+1));d.onpointerdown=e=>{e.stopPropagation();if(picked)return;picked=true;G.score=duckPrize();sfx.coin();d.classList.add('flip');setTimeout(()=>{d.innerHTML='<span class="ducknum">'+G.score+' 🎟️</span>';d.classList.remove('flip');setTimeout(end,1200)},600)};return d});
+ G.step=dt=>{if(picked)return;ducks.forEach((d,i)=>{const a=G.t*.5+i*Math.PI/4;d.style.left=(50+33*Math.cos(a))+'%';d.style.top=(60+24*Math.sin(a))+'%';d.style.transform='translate(-50%,-50%) scaleX('+(Math.sin(a)>0?-1:1)+')'})};say('Pick a duck! 🦆')}
+
+// ----- Ferris wheel: a relaxing ride -----
+function startWheel(){const st=stage();st.style.background='linear-gradient(180deg,#ffb37a,#ffd1e6 60%,#7fcf6a 60%)';
+ for(const [x,e] of [[10,'🎪'],[88,'🎠'],[20,'🌳'],[78,'🌳'],[6,'🍿']])o('',x,74,e).style.fontSize='6cqw';
+ const leg1=o('stand',50,50,'',null,42);leg1.style.transform='translate(-50%,0) rotate(18deg)';const leg2=o('stand',50,50,'',null,42);leg2.style.transform='translate(-50%,0) rotate(-18deg)';
+ const wheel=o('wheel',50,50,'');const carts=[0,1,2,3,4,5,6,7].map(i=>{const c=o('cart',50,50,i===0?'🐱':['🐶','🐰','🐻','🐼','🦊','🐸','🐷'][i-1]);c.style.setProperty('--cc',['#ffcf4d','#5aa9ff','#4cc38a','#ff8fc7','#b48cff','#ff9a3c','#7fe0c4','#ff5a6e'][i]);return c});
+ const RX=24,RY=24/0.625*(stage().clientHeight&&stage().clientWidth?stage().clientWidth/stage().clientHeight*0.625:1);let top=false;G.step=dt=>{const ang=G.t*.55;wheel.style.setProperty('--r',(ang*57.3)+'deg');carts.forEach((c,i)=>{const a=ang+i*Math.PI/4+Math.PI/2;c.style.left=(50+RX*Math.cos(a))+'%';c.style.top=(50+RY*Math.sin(a))+'%'});
+  const myA=((ang+Math.PI/2)%(2*Math.PI));if(!top&&Math.abs(myA-3*Math.PI/2)<.15){top=true;say('Wow! You can see the whole carnival! 🎆');sfx.coin();for(let k=0;k<5;k++)setTimeout(()=>fx(20+Math.random()*60,15+Math.random()*20,'🎆'),k*200)}
+  if(G.t>13)end()};say('Here we go! 🎡')}
+
+// ----- Prize booth -----
+function openPrizes(){renderPrizes();$('#prizeDialog').showModal()}
+function renderPrizes(){renderTop();const box=$('#prizeList');box.innerHTML='';for(const p of PRIZES){const own=S.prizes.includes(p.id),d=document.createElement('div');d.className='pz'+(own?' own':'');d.innerHTML='<span class="pi" aria-hidden="true"></span><span class="pn"></span>';d.firstChild.textContent=p.icon;d.children[1].textContent=p.name;const b=document.createElement('button');b.type='button';
+ if(own){b.textContent='✓ Yours';b.disabled=true}else{b.textContent='🎟️ '+p.price;b.disabled=S.tickets<p.price;b.setAttribute('aria-label','Get the '+p.name+' for '+p.price+' tickets');b.onclick=()=>{if(buyPrize(S,p.id)){save();sfx.win();notify('You got the '+p.name+'! '+p.icon);renderPrizes();renderMidway()}}}d.append(b);box.append(d)}}
+$('#prizeClose').onclick=()=>$('#prizeDialog').close();
+$('#prizeDialog').addEventListener('click',e=>{if(e.target===$('#prizeDialog'))$('#prizeDialog').close()});
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+renderMidway();
+window.__carnival={get S(){return S},get G(){return G},start,goMidway};
+}
+</script>
+</body>
+</html>

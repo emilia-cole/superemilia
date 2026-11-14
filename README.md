@@ -6,9 +6,9 @@ Play at **https://superemilia.com/world/**. The site is hosted on GitHub Pages.
 
 ## The game menu
 
-**https://superemilia.com** opens a game menu with ten games: Super Emilia World, Mystery Egg Bakery (`/bakery/`), Memory Match (`/memory/`), Buddy Garden (`/garden/`), Dress-Up Studio (`/studio/`), Pet Vet Clinic (`/vet/`), Buddy Kart Racing (`/race/`), Fishing Friends (`/fish/`), Buddy Hotel (`/hotel/`), and Magic Potion Lab (`/potion/`). Each card shows the player's saved progress (read from the same browser save the game uses) and changes its button to keep playing once there is progress. Inside the game, **← All games** in the footer returns to the menu. Because the menu and every game share the superemilia.com address, saved progress carries over automatically.
+**https://superemilia.com** opens a game menu with eleven games: Super Emilia World, Mystery Egg Bakery (`/bakery/`), Memory Match (`/memory/`), Buddy Garden (`/garden/`), Dress-Up Studio (`/studio/`), Pet Vet Clinic (`/vet/`), Buddy Kart Racing (`/race/`), Fishing Friends (`/fish/`), Buddy Hotel (`/hotel/`), Magic Potion Lab (`/potion/`), and Buddy Carnival (`/carnival/`). Each card shows the player's saved progress (read from the same browser save the game uses) and changes its button to keep playing once there is progress. Inside the game, **← All games** in the footer returns to the menu. Because the menu and every game share the superemilia.com address, saved progress carries over automatically.
 
-The menu also has a **🏆 Prize Room**: every game has 4 or 5 prizes (49 in all, counting the grand prize), worked out from each game's own save. Examples are finishing your first level, hatching an egg, finding a garden buddy, helping a rare pet, and winning 1st place in a race. Winning a prize in all 10 games gives the 🌟 **Super Emilia Superstar** grand prize. Prizes won since the last visit are marked NEW. The prize rules live in the second `<script>` in `public/index.html`.
+The menu also has a **🏆 Prize Room**: every game has 4 or 5 prizes (54 in all, counting the grand prize), worked out from each game's own save. Examples are finishing your first level, hatching an egg, finding a garden buddy, helping a rare pet, and winning 1st place in a race. Winning a prize in all 11 games gives the 🌟 **Super Emilia Superstar** grand prize. Prizes won since the last visit are marked NEW. The prize rules live in the second `<script>` in `public/index.html`.
 
 On page load, the cover artwork appears for five seconds before fading into the ready screen. Phones use the square cover and wider screens use the landscape cover. **Skip intro** or Escape dismisses it early. Gameplay waits for the player to start.
 
@@ -43,6 +43,10 @@ On page load, the cover artwork appears for five seconds before fading into the 
 ## Magic Potion Lab
 
 **https://superemilia.com/potion/** is a potion-mixing game played by dragging. Drag 2 or 3 ingredients from the shelf into the cauldron, grab the spoon and stir it around the cauldron twice, then drag the finished potion bottle onto the test buddy to see what it does (turn purple, float, shrink, grow wings, breathe fire, become a unicorn, and more). There are 23 potions; a mix that matches no recipe makes Oops Goop. Discovering potions unlocks more of the 12 ingredients and earns coins, and the potion book gives a one-ingredient clue for undiscovered potions. After 3 discoveries, customers ask for potions you know; drag the right one to them for coins. Coins buy new test buddies. Progress is saved under `superEmiliaPotion`.
+
+## Buddy Carnival
+
+**https://superemilia.com/carnival/** is a carnival of mini-games that win tickets. **Ring Toss**: drag to aim a ring under the sliding bottles and let go to throw (5 rings, 3 tickets per ringer, +5 for all five). **Whack-a-Mole**: tap buddies as they pop out of 9 holes for 25 seconds (golden ones are worth 3). **Balloon Pop**: tap rising balloons for 20 seconds (sparkly ones are worth 3). Each of these also earns a duck token for the **Duck Pond**, where picking a duck reveals 2 to 15 tickets. The **Ferris Wheel** is a relaxing ride. Tickets buy 12 prizes at the prize booth, shown on the prize shelf. Progress is saved under `superEmiliaCarnival`.
 
 ## Controls
 
@@ -187,11 +191,11 @@ The page includes Open Graph and large Twitter card metadata with original wide 
 
 ## Make changes
 
-The menu is `public/index.html`; the games are `public/world/index.html`, `public/bakery/index.html`, `public/memory/index.html`, `public/garden/index.html`, `public/studio/index.html`, `public/vet/index.html`, `public/race/index.html`, `public/fish/index.html`, `public/hotel/index.html`, and `public/potion/index.html`. Neither has dependencies or a build step. Run `python3 -m http.server --directory public` and open http://localhost:8000 to try both; asset links start with `/assets/`, so opening the files directly from disk shows the game without its cover art.
+The menu is `public/index.html`; the games are `public/world/index.html`, `public/bakery/index.html`, `public/memory/index.html`, `public/garden/index.html`, `public/studio/index.html`, `public/vet/index.html`, `public/race/index.html`, `public/fish/index.html`, `public/hotel/index.html`, `public/potion/index.html`, and `public/carnival/index.html`. Neither has dependencies or a build step. Run `python3 -m http.server --directory public` and open http://localhost:8000 to try both; asset links start with `/assets/`, so opening the files directly from disk shows the game without its cover art.
 
 To add another game, put it in its own folder under `public/` (for example `public/new-game/index.html`) and add a card linking to it in `public/index.html`.
 
-Push changes to `main` to publish automatically. The **Deploy game to GitHub Pages** workflow checks every page's script, runs `node tests/game.cjs`, `node tests/bakery.cjs`, `node tests/memory.cjs`, `node tests/garden.cjs`, `node tests/studio.cjs`, `node tests/vet.cjs`, `node tests/race.cjs`, `node tests/fish.cjs`, `node tests/hotel.cjs`, and `node tests/potion.cjs`, uploads only the `public` folder, and deploys to the `github-pages` environment.
+Push changes to `main` to publish automatically. The **Deploy game to GitHub Pages** workflow checks every page's script, runs `node tests/game.cjs`, `node tests/bakery.cjs`, `node tests/memory.cjs`, `node tests/garden.cjs`, `node tests/studio.cjs`, `node tests/vet.cjs`, `node tests/race.cjs`, `node tests/fish.cjs`, `node tests/hotel.cjs`, `node tests/potion.cjs`, and `node tests/carnival.cjs`, uploads only the `public` folder, and deploys to the `github-pages` environment.
 
 ## Hosting and domain
 
