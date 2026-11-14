@@ -34,7 +34,7 @@ On page load, the cover artwork appears for five seconds before fading into the 
 
 ## Fishing Friends
 
-**https://superemilia.com/fish/** is a fishing game. Tap **Cast**, wait for the bobber to dip and the ❗ to show, tap **Reel!**, then keep tapping to fill the green bar before the fish pulls away (the space bar works too). Six spots (Lily Pond, Rushing River, Misty Lake, Sunny Ocean, Icy Sea, and Magic Lagoon) each have common, uncommon, rare, and legendary fish, 32 in all (including a Baby Shark at Lily Pond and a Shark in the ocean), plus hidden treasure. Coins unlock new spots and buy stronger rods, golden bait (more rare fish), and aquarium decorations. Every new kind of fish swims in your aquarium, and the fish book records how many you caught and the biggest. Progress is saved under `superEmiliaFish`.
+**https://superemilia.com/fish/** is a fishing game. Tap **Cast**, wait for the bobber to dip and the ❗ to show, tap **Reel!**, then keep tapping to fill the green bar before the fish pulls away (the space bar works too). Reeling is meant to be gentle: about 3 taps a second lands any fish, from a 5-tap minnow to a legendary fish in about 25 taps. Six spots (Lily Pond, Rushing River, Misty Lake, Sunny Ocean, Icy Sea, and Magic Lagoon) each have common, uncommon, rare, and legendary fish, 32 in all (including a Baby Shark at Lily Pond and a Shark in the ocean), plus hidden treasure. Coins unlock new spots and buy stronger rods, golden bait (more rare fish), and aquarium decorations. Every new kind of fish swims in your aquarium, and the fish book records how many you caught and the biggest. Progress is saved under `superEmiliaFish`.
 
 ## Controls
 

@@ -27,7 +27,9 @@ test('Tapping fast reels a fish in, and stopping lets it get away',()=>{
  run("var r2=startReel(FISH[0],RODS[0]);for(let t=0;t<30&&!r2.done;t+=.1)reelTick(r2,.1)");assert(run('r2.done&&!r2.won&&r2.progress===0'),'no taps, the fish swims away');
  // a legendary fish needs a better rod or very fast taps
  const taps=(fish,rod,perSec)=>run(`(()=>{const r=startReel(FISH.find(f=>f.id==='${fish}'),RODS.find(x=>x.id==='${rod}'));for(let t=0;t<20&&!r.done;t+=1/${perSec}){reelTick(r,1/${perSec});reelTap(r)}return r.won})()`);
- assert(!taps('whale','stick',5),'a whale is too strong for slow taps on a stick');assert(taps('whale','stick',9),'fast taps can still win');assert(taps('whale','magic',5),'the magic rod helps');
+ assert(!taps('whale','stick',1),'a whale needs more than one tap a second');assert(taps('whale','stick',3),'3 taps a second lands even a whale');assert(taps('whale','magic',2.5),'the magic rod helps');
+ for(const f of ['minnow','babyshark','shark','seadragon'])assert(taps(f,'stick',3),f+' can be landed at 3 taps a second');
+ assert(run("startReel(FISH.find(f=>f.id==='minnow'),RODS[0])").step*5>=60,'a minnow takes only about 5 taps');
  assert(run("biteWait(RODS[3],()=>.5)<biteWait(RODS[0],()=>.5)"),'better rods get bites faster');
 });
 test('Catches fill the fish book and pay coins; coins buy spots, rods, bait and decorations',()=>{
@@ -49,6 +51,6 @@ test('Saves keep the fish book and ignore broken or unknown data',()=>{
 test('Sharks can bite at Lily Pond and at the ocean',()=>{
  const run=load();assert(run("FISH.some(f=>f.icon==='🦈'&&f.spot==='pond')&&FISH.some(f=>f.icon==='🦈'&&f.spot==='ocean')"));
  let n=0;for(let k=0;k<1500;k++)if(run("pickCatch('pond',false).id")==='babyshark')n++;assert(n>60,'a baby shark bites now and then: '+n);
- assert(run("(()=>{const r=startReel(FISH.find(f=>f.id==='babyshark'),RODS[0]);for(let t=0;t<10&&!r.done;t+=1/7){reelTick(r,1/7);reelTap(r)}return r.won})()"),'7 taps a second lands a baby shark with the starter rod');
+ assert(run("(()=>{const r=startReel(FISH.find(f=>f.id==='babyshark'),RODS[0]);for(let t=0;t<10&&!r.done;t+=1/7){reelTick(r,1/7);reelTap(r)}return r.won})()"),'a baby shark is easy to land');
 });
 console.log(checks+' fish checks passed.');
