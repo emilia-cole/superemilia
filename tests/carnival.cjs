@@ -5,9 +5,9 @@ const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 function load(storage={}){const sandbox={console,Math,Number,JSON,Array,Object,String,Set,localStorage:{getItem:k=>storage[k]??null,setItem:(k,v)=>storage[k]=v}};vm.createContext(sandbox);vm.runInContext(script,sandbox);return code=>vm.runInContext(code,sandbox)}
 let checks=0;const test=(name,fn)=>{fn();console.log('✓ '+name);checks++};
 
-test('The carnival has thirteen games and a prize booth with 24 prizes',()=>{
+test('The carnival has thirteen games and a prize booth with 36 prizes',()=>{
  const run=load();assert.deepEqual([...run('GAMES.map(g=>g.id)')],['ring','whack','balloon','cans','popcorn','striker','claw','cotton','bumper','face','duck','wheel','carousel']);
- assert.equal(run('PRIZES.length'),24);assert(run('PRIZES.every((p,i)=>i===0||p.price>=PRIZES[i-1].price)'));assert.equal(run('new Set(PRIZES.map(p=>p.id)).size'),24);
+ assert.equal(run('PRIZES.length'),36);assert(run('PRIZES.every((p,i)=>i===0||p.price>=PRIZES[i-1].price)'));assert.equal(run('new Set(PRIZES.map(p=>p.id)).size'),36);
 });
 test('Ring toss: a ring lands on the closest bottle when it is close enough',()=>{
  const run=load();assert.equal(run('ringLands(50,[22,36,50,64,78])'),2);assert.equal(run('ringLands(50+RING_HIT-0.1,[22,36,50,64,78])'),2);assert.equal(run('ringLands(43,[22,36,50,64,78])'),-1,'between two bottles is a miss');

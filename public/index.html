@@ -434,7 +434,7 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
     <h2>Buddy Carnival</h2>
     <p id="carnivalAbout">Play ring toss, a claw machine, bumper cars, whack-a-mole, and more to win tickets, ride the ferris wheel and carousel, and trade tickets for prizes.</p>
     <ul class="progress" id="carnivalProgress" aria-label="Your saved Buddy Carnival progress">
-     <li class="flag">13 games · 24 prizes to win</li>
+     <li class="flag">13 games · 36 prizes to win</li>
     </ul>
     <span class="play" aria-hidden="true">Play now →</span>
    </div>
@@ -557,10 +557,10 @@ function count(v){var n=Math.floor(Number(v));return isFinite(n)&&n>0?n:0}
 (function(){
  // Buddy Carnival progress
  var save=readSave('superEmiliaCarnival');if(!save)return;
- var plays=count(save.plays),tix=count(save.tickets),ids=['balloon','bow','popcorn','lolly','cupcake','teddy','yoyo','paint','puppy','skates','kite','panda','hat','giraffe','robot','rocket','shark','unicorn','octopus','dragon','crown','minicarousel','trophy','diamond'],prizes=0,seen={};
+ var plays=count(save.plays),tix=count(save.tickets),ids=['balloon','bow','popcorn','lolly','cupcake','teddy','yoyo','paint','puppy','skates','kite','panda','hat','giraffe','robot','rocket','shark','unicorn','octopus','dragon','crown','minicarousel','trophy','diamond','frog','sunglasses','drum','penguin','guitar','wand','dino','whale','castle','telescope','train','rainbowstar'],prizes=0,seen={};
  if(Array.isArray(save.prizes))save.prizes.forEach(function(id){if(ids.indexOf(id)>=0&&!seen[id]){seen[id]=1;prizes++}});
  if(!plays)return;
- showProgress('carnivalProgress','#playCarnival .play',[['coin','🎟️ '+tix.toLocaleString('en-US')+' tickets'],['flag','🎪 '+plays+' game'+(plays===1?'':'s')],['crown','🧸 '+prizes+' / 24 prizes']],'Keep playing →');
+ showProgress('carnivalProgress','#playCarnival .play',[['coin','🎟️ '+tix.toLocaleString('en-US')+' tickets'],['flag','🎪 '+plays+' game'+(plays===1?'':'s')],['crown','🧸 '+prizes+' / 36 prizes']],'Keep playing →');
 })();
 </script>
 <script>
