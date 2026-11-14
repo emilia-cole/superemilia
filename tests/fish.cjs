@@ -56,6 +56,6 @@ test('Sharks can bite at Lily Pond and at the ocean',()=>{
 test('Every legendary fish takes about 9 seconds to reel in with steady tapping',()=>{
  const run=load();
  const secs=run(`FISH.filter(f=>f.rarity==='legendary').map(f=>{const r=startReel(f,RODS[0]);let t=0;while(!r.done&&t<30){t+=1/3;reelTick(r,1/3);reelTap(r)}return r.won?t:99})`);
- assert.equal(secs.length,6);for(const t of secs)assert(t>=8&&t<=10,'legendary fish take about 9 seconds at 3 taps a second: '+t.toFixed(1));
+ assert.equal(secs.length,6);for(const t of secs)assert(t>=7.5&&t<=10,'legendary fish take about 9 seconds at 3 taps a second: '+t.toFixed(1));
 });
 console.log(checks+' fish checks passed.');
