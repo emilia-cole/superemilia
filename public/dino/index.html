@@ -49,7 +49,7 @@ button:focus-visible{outline:3px solid var(--clay-deep);outline-offset:2px}
 .scene{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #dcc6a4;background:#f6e0b5;container-type:inline-size;touch-action:none}
 .p{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;-webkit-user-select:none;user-select:none}
 .pit{position:absolute;border-radius:2cqw;box-shadow:inset 0 .6cqw 1.4cqw #0003}
-.cell{position:absolute;border-radius:.6cqw;pointer-events:none;transition:opacity .25s,background-color .25s}
+.cell{position:absolute;z-index:4;border-radius:.6cqw;pointer-events:none;transition:opacity .25s,background-color .25s}
 .cell.rock{background:radial-gradient(circle at 35% 30%,#bdbdbd,#7c7c7c 70%)!important;box-shadow:inset 0 -.5cqw 0 #0003}
 .cell.gone{opacity:0}
 .tray{position:absolute;left:77%;right:1.2%;top:2.5%;bottom:2.5%;background:#fffaf0dd;border-radius:2cqw;box-shadow:0 .6cqw 0 #0001}
@@ -161,7 +161,7 @@ const CREATURES=[
 const TREASURES={gem:{icon:'💎',name:'gem',coins:5},tooth:{icon:'🦷',name:'tooth',coins:3},shell:{icon:'🐚',name:'shell fossil',coins:2},coin:{icon:'🪙',name:'old coin',coins:4}};
 // the dig pit: a grid of dirt (in % of the scene)
 const DIG={x0:3,y0:5,w:72,h:90,cols:10,rows:7};
-const DIRT_HP=2.2,ROCK_HP=3,ROCKS=7;
+const DIRT_HP=4.5,ROCK_HP=5,ROCKS=14; // deep dirt takes lots of brushing; rocks take lots of pickaxe
 const SAVE_KEY='superEmiliaDino';
 
 // ---------- pure game logic (also used by the tests) ----------
@@ -179,7 +179,7 @@ function makeDig(siteId,rand=Math.random){const s=site(siteId),n=DIG.cols*DIG.ro
  return dig}
 const cellXY=i=>({x:DIG.x0+(i%DIG.cols+.5)*DIG.w/DIG.cols,y:DIG.y0+(Math.floor(i/DIG.cols)+.5)*DIG.h/DIG.rows});
 // the brush or pickaxe moved `dist` (in cells) around point (cx,cy) (in cells): dirt wears away; rocks only break with the pickaxe
-function digAt(dig,cx,cy,dist,tool){const reach=tool==='brush'?.95:.75;let changed=[],blocked=false;
+function digAt(dig,cx,cy,dist,tool){const reach=tool==='brush'?.7:.6;let changed=[],blocked=false;
  dig.cells.forEach((cell,i)=>{if(cell.hp<=0)return;const c=i%DIG.cols+.5,r=Math.floor(i/DIG.cols)+.5;if(Math.hypot(c-cx,r-cy)>reach)return;
   if(cell.rock){if(tool!=='pick'){blocked=true;return}cell.hp-=dist*1.3;if(cell.hp<=0){cell.hp=0;cell.rock=false}changed.push(i);return}
   cell.hp=Math.max(0,cell.hp-dist*(tool==='brush'?1:.6));changed.push(i)});return{changed,blocked}}
@@ -234,7 +234,7 @@ function startDig(){mode='dig';who=pickCreature(S,S.here);dig=makeDig(S.here);pl
  setTip('⛏️ Something is buried at the <b>'+site(S.here).name+'</b>! <b>Drag the brush</b> 🖌️ back and forth to sweep the dirt away. Rocks 🪨 need the <b>pickaxe</b> ⛏️.')}
 function drawDig(){scene.innerHTML='';renderTop();const s=site(S.here),cw=DIG.w/DIG.cols,ch=DIG.h/DIG.rows;scene.style.background=s.sand;
  const pit=el('pit');Object.assign(pit.style,{left:DIG.x0+'%',top:DIG.y0+'%',width:DIG.w+'%',height:DIG.h+'%',background:s.sand});
- const [gc,gr]=s.grid,size=10.5*gc;
+ const [gc,gr]=s.grid,size=7*gc; // each piece fits under one patch of dirt, so nothing peeks out
  dig.pieces.forEach(pc=>{const f=frag(who,pc.i,gc,gr,size),xy=cellXY(pc.cell);f.style.left=xy.x+'%';f.style.top=xy.y+'%';pc.el=f;
   draggable(f,xy,{start:()=>f.classList.contains('free'),onMove:(q,p)=>$('.basket').classList.toggle('hot',nearBasket(q,p)),onDrop:(q,p)=>{$('.basket').classList.remove('hot');if(!nearBasket(q,p))return false;pc.got=true;f.remove();sfx.drop();fx(BASKET.x,BASKET.y-14,'🦴');updateBasket();if(!bonesLeft(dig))setTimeout(startBuild,700);else setTip('🧺 Into the basket! '+bonesLeft(dig)+' more bone'+(bonesLeft(dig)===1?'':'s')+' to find.');return true}})});
  dig.treasures.forEach(t=>{const xy=cellXY(t.cell),g=el('p gem',xy.x,xy.y,TREASURES[t.kind].icon);t.el=g;
@@ -244,7 +244,7 @@ function drawDig(){scene.innerHTML='';renderTop();const s=site(S.here),cw=DIG.w/
  el('tray');
  digTool('🖌️','brush',88,16,'Brush');digTool('⛏️','pick',88,42,'Pickaxe');
  el('p basket',BASKET.x,BASKET.y,'🧺');el('label',BASKET.x,BASKET.y+13).id='basketLabel';updateBasket();refreshFree()}
-function paintCell(i){const c=dig.cells[i],d=cellEls[i],s=site(S.here);d.classList.toggle('rock',c.rock&&c.hp>0);d.classList.toggle('gone',c.hp<=0);if(!c.rock)d.style.background=c.hp>DIRT_HP/2?s.dirt[0]:s.dirt[1]}
+function paintCell(i){const c=dig.cells[i],d=cellEls[i],s=site(S.here);d.classList.toggle('rock',c.rock&&c.hp>0);d.classList.toggle('gone',c.hp<=0);if(!c.rock)d.style.background=c.hp>DIRT_HP*2/3?s.dirt[0]:c.hp>DIRT_HP/3?'color-mix(in srgb,'+s.dirt[0]+','+s.dirt[1]+')':s.dirt[1]}
 function updateBasket(){const l=$('#basketLabel');if(l)l.textContent=(dig.pieces.length-bonesLeft(dig))+' / '+dig.pieces.length+' bones'}
 function refreshFree(){let fresh=false;dig.pieces.forEach(pc=>{if(!pc.got&&isFree(dig,pc.cell)&&!pc.el.classList.contains('free')){pc.el.classList.add('free');fresh=true}});
  dig.treasures.forEach(t=>{if(!t.got&&isFree(dig,t.cell)&&!t.el.classList.contains('free')){t.el.classList.add('free');fresh='t'}});
