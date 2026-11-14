@@ -95,6 +95,26 @@ h1{margin:0;font-size:clamp(24px,5vw,34px);letter-spacing:-.6px}
 .top{border-radius:50% 50% 8% 8%/90% 90% 10% 10%;background:repeating-linear-gradient(90deg,#ff5a6e 0 5cqw,#fff 5cqw 10cqw);box-shadow:0 1cqw 0 #0002}
 .base{border-radius:50%;background:radial-gradient(ellipse,#ffe08a,#e8b62f);box-shadow:0 1cqw 0 #b88a1c}
 .horse{font-size:7cqw}
+/* claw machine */
+.glass{border:1.2cqw solid #5aa9ff;border-radius:2cqw;background:linear-gradient(180deg,#e6f6ff88,#bfe6ff88)}
+.rail{background:#7a8ea8;border-radius:1cqw}
+.claw{font-size:6cqw;display:grid;justify-items:center}
+.claw .cable{width:.5cqw;background:#555;}
+.toy{font-size:6cqw}
+.chute{background:#3d2730;border-radius:1cqw}
+/* cotton candy */
+.machine{border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#fff,#ffd1e6 60%,#ff8fc7);box-shadow:0 1cqw 0 #d65a9f,inset 0 0 0 1cqw #fff}
+.fluff{border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff,var(--fc,#ffb3e0) 60%);box-shadow:0 0 3cqw var(--fc,#ffb3e0);transition:width .2s,height .2s}
+.stick{font-size:7cqw}
+/* bumper cars */
+.arena{border-radius:3cqw;background:repeating-linear-gradient(45deg,#4b4380 0 4cqw,#433b75 4cqw 8cqw);border:1.4cqw solid #ffcf4d}
+.car{font-size:7cqw;transition:transform .05s}
+.car.me{filter:drop-shadow(0 0 1.2cqw #ffcf4d)}
+/* face painting */
+.face{font-size:34cqw}
+.paint{font-size:6cqw;pointer-events:auto;cursor:grab}
+.sticker{font-size:5cqw;pointer-events:auto;cursor:grab}
+.donebtn{pointer-events:auto;font-size:2.8cqw;font-weight:900;background:#ff5a6e;color:#fff;border:none;border-radius:2cqw;padding:1.2cqw 2.4cqw;box-shadow:0 .6cqw 0 #d63a50;cursor:pointer;font-family:inherit}
 /* duck pond */
 .pond{border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#9fe3ff,#4fa7d8);box-shadow:inset 0 0 0 1.4cqw #bfeaff,0 1cqw 0 #3a7a2e}
 .duck{font-size:7cqw;pointer-events:auto;cursor:pointer}
@@ -178,6 +198,10 @@ const GAMES=[
  {id:'cans',icon:'🥫',name:'Can Knockdown',c1:'#ff9a3c',desc:'Throw balls to knock down the tower of cans.',help:'Drag the ball and let go where you want to throw it! 3 balls.'},
  {id:'popcorn',icon:'🍿',name:'Popcorn Catch',c1:'#ff8fc7',desc:'Slide the bucket to catch falling popcorn.',help:'Drag left and right to move the bucket. Candy is worth 3!'},
  {id:'striker',icon:'🔔',name:'High Striker',c1:'#7fe0c4',desc:'Swing the hammer to ring the bell!',help:'Tap when the power meter is near the top to ring the bell. 3 swings.'},
+ {id:'claw',icon:'🧸',name:'Claw Machine',c1:'#5aa9ff',desc:'Drop the claw to grab a prize.',help:'Drag left and right to move the claw, then let go to drop it! 3 tries.'},
+ {id:'cotton',icon:'🍭',name:'Cotton Candy',c1:'#ff8fc7',desc:'Swirl the stick to make cotton candy.',help:'Drag the stick around and around the machine to make it big and fluffy! 15 seconds.'},
+ {id:'bumper',icon:'🚗',name:'Bumper Cars',c1:'#ff9a3c',desc:'Drive your car and bump the others!',help:'Hold down and move the mouse (or your finger). Your car drives toward it. Bump the other cars!'},
+ {id:'face',icon:'🎨',name:'Face Painting',c1:'#b48cff',desc:'Paint a buddy face with stars and hearts.',help:'Drag the paint pictures onto the face, then tap All done!'},
  {id:'duck',icon:'🦆',name:'Duck Pond',c1:'#ffcf4d',desc:'Pick a duck to win a surprise prize. Uses 1 duck token.',help:'Tap any duck to see how many tickets it has on the bottom!'},
  {id:'wheel',icon:'🎡',name:'Ferris Wheel',c1:'#b48cff',desc:'Take a relaxing ride to the very top.',help:'Sit back and enjoy the ride!'},
  {id:'carousel',icon:'🎠',name:'Carousel',c1:'#ffcf4d',desc:'Ride the merry-go-round with your buddies.',help:'Wheee! Enjoy the music and the ride.'}
@@ -188,8 +212,11 @@ const RING_HIT=5.5; // how close (in % of the stage width) the ring must land to
 
 // ---------- pure game logic (also used by the tests) ----------
 // tickets won for a score in each game
-const SCORED=['ring','whack','balloon','cans','popcorn','striker'],RIDES=['wheel','carousel'];
-function ticketsFor(game,score){if(game==='ring')return score*3+(score>=5?5:0);if(game==='cans')return score*2+(score>=6?6:0);if(game==='whack'||game==='balloon'||game==='popcorn')return Math.floor(score/2);if(game==='duck'||game==='striker')return score;return 0}
+const SCORED=['ring','whack','balloon','cans','popcorn','striker','claw','cotton','bumper'],RIDES=['wheel','carousel'];
+function ticketsFor(game,score){if(game==='ring')return score*3+(score>=5?5:0);if(game==='cans')return score*2+(score>=6?6:0);if(game==='whack'||game==='balloon'||game==='popcorn')return Math.floor(score/2);if(game==='duck'||game==='striker'||game==='claw')return score;if(game==='cotton')return Math.min(score,20);if(game==='bumper')return Math.floor(score*0.8);if(game==='face')return 4;return 0}
+// claw machine: the claw grabs the prize closest to it, if it is close enough
+const CLAW_REACH=5;
+function clawGrab(x,toys){let best=-1,d=CLAW_REACH;toys.forEach((t,i)=>{if(t.gone)return;const dd=Math.abs(t.x-x);if(dd<=d){d=dd;best=i}});return best}
 // can knockdown: 6 cans in a tower. A ball knocks over cans near where it lands, and cans fall when a can under them falls.
 const CANS=[{x:42,y:57,r:0},{x:50,y:57,r:0},{x:58,y:57,r:0},{x:46,y:45,r:1,on:[0,1]},{x:54,y:45,r:1,on:[1,2]},{x:50,y:33,r:2,on:[3,4]}];
 function knockCans(down,hx,hy){const out=down.slice();CANS.forEach((c,i)=>{if(!out[i]&&Math.abs(c.x-hx)<=6.5&&Math.abs(c.y-hy)<=8)out[i]=true});let moved=true;while(moved){moved=false;CANS.forEach((c,i)=>{if(!out[i]&&c.on&&c.on.some(j=>out[j])){out[i]=true;moved=true}})}return out}
@@ -202,7 +229,7 @@ function ringLands(x,bottles,taken=[]){let best=-1,d=RING_HIT;bottles.forEach((b
 // what a duck has on the bottom: mostly small numbers, sometimes a big one
 function duckPrize(rand=Math.random){const r=rand();return r<.4?2:r<.7?3:r<.88?5:r<.97?8:15}
 // applies a finished game; returns the tickets won and whether it was a new best
-function finishGame(save,game,score){const t=ticketsFor(game,score);save.tickets+=t;save.total+=t;save.plays++;const better=SCORED.includes(game)&&score>(save.best[game]||0);if(better)save.best[game]=score;if(SCORED.includes(game))save.ducks++;if(game==='duck')save.ducks=Math.max(0,save.ducks-1);if(RIDES.includes(game))save.rides++;return{tickets:t,better}}
+function finishGame(save,game,score){const t=ticketsFor(game,score);save.tickets+=t;save.total+=t;save.plays++;const better=SCORED.includes(game)&&score>(save.best[game]||0);if(better)save.best[game]=score;if(SCORED.includes(game)||game==='face')save.ducks++;if(game==='duck')save.ducks=Math.max(0,save.ducks-1);if(RIDES.includes(game))save.rides++;return{tickets:t,better}}
 function buyPrize(save,id){const p=PRIZES.find(x=>x.id===id);if(!p||save.prizes.includes(id)||save.tickets<p.price)return false;save.tickets-=p.price;save.prizes.push(id);return true}
 function defaultSave(){return{tickets:0,total:0,plays:0,ducks:1,rides:0,best:{},prizes:[],sound:true}}
 function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:null};
@@ -222,7 +249,7 @@ let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classLi
 function renderTop(){$('#tix').textContent='🎟️ '+S.tickets;$('#ducks').textContent='🦆 '+S.ducks;$('#prizeTix').textContent='🎟️ '+S.tickets;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
 function renderMidway(){renderTop();const box=$('#booths');box.innerHTML='';
  const card=(g,best,onClick,cls='')=>{const b=document.createElement('button');b.type='button';b.className='booth '+cls;b.style.setProperty('--c1',g.c1);b.innerHTML='<span class="tent"></span><span class="bi" aria-hidden="true"></span><span class="bn"></span><span class="bd"></span><span class="bb"></span>';b.querySelector('.bi').textContent=g.icon;b.querySelector('.bn').textContent=g.name;b.querySelector('.bd').textContent=g.desc;b.querySelector('.bb').textContent=best;b.onclick=onClick;box.append(b)};
- for(const g of GAMES){const best=g.id==='duck'?'You have '+S.ducks+' duck token'+(S.ducks===1?'':'s'):RIDES.includes(g.id)?'All aboard!':(S.best[g.id]?'Best: '+S.best[g.id]:'Not played yet');card(g,best,()=>start(g.id))}
+ for(const g of GAMES){const best=g.id==='face'?'Make art!':g.id==='duck'?'You have '+S.ducks+' duck token'+(S.ducks===1?'':'s'):RIDES.includes(g.id)?'All aboard!':(S.best[g.id]?'Best: '+S.best[g.id]:'Not played yet');card(g,best,()=>start(g.id))}
  card({icon:'🎁',name:'Prize booth',c1:'#ffcf4d',desc:'Trade your tickets for prizes!'},S.prizes.length+' of '+PRIZES.length+' prizes',openPrizes,'prize');
  const mp=$('#myPrizes');mp.innerHTML='';if(!S.prizes.length){const n=document.createElement('span');n.className='none';n.textContent='No prizes yet. Win tickets and visit the prize booth!';mp.append(n)}else for(const p of PRIZES)if(S.prizes.includes(p.id)){const s=document.createElement('span');s.textContent=p.icon;s.title=p.name;mp.append(s)}}
 function show(screen){$('#midway').hidden=screen!=='midway';$('#game').hidden=screen!=='game'}
@@ -235,14 +262,14 @@ function hud(items){let h=stage().querySelector('.hud');if(!h){h=document.create
 function say(t){let s=stage().querySelector('.say');if(!s){s=document.createElement('div');s.className='say';stage().append(s)}s.textContent=t}
 function start(id){cancelAnimationFrame(raf);const g=GAMES.find(x=>x.id===id);if(id==='duck'&&S.ducks<1){notify('You need a 🦆 duck token. Finish any other game to get one!');return}
  show('game');$('#gameTitle').textContent=g.icon+' '+g.name;$('#gameHelp').textContent=g.help;stage().innerHTML='';stage().onpointerdown=stage().onpointermove=stage().onpointerup=null;G={id,t:0,score:0,over:false};
- ({ring:startRing,whack:startWhack,balloon:startBalloon,duck:startDuck,wheel:startWheel,cans:startCans,popcorn:startPopcorn,striker:startStriker,carousel:startCarousel})[id]();last=performance.now();raf=requestAnimationFrame(loop)}
+ ({ring:startRing,whack:startWhack,balloon:startBalloon,duck:startDuck,wheel:startWheel,cans:startCans,popcorn:startPopcorn,striker:startStriker,carousel:startCarousel,claw:startClaw,cotton:startCotton,bumper:startBumper,face:startFace})[id]();last=performance.now();raf=requestAnimationFrame(loop)}
 function loop(now){const dt=Math.min(.05,(now-last)/1000||0);last=now;if(G&&!G.over&&!document.querySelector('dialog[open]')){G.t+=dt;G.step&&G.step(dt)}raf=requestAnimationFrame(loop)}
 function end(){if(!G||G.over)return;G.over=true;const id=G.id,r=finishGame(S,id,G.score);save();renderTop();sfx.win();
  const g=GAMES.find(x=>x.id===id);$('#resultBig').textContent=r.tickets>=10?'🎉':g.icon;
- $('#resultTitle').textContent=id==='wheel'?'What a view!':id==='carousel'?'Wheee! What a ride!':id==='duck'?'Your duck had '+G.score+'!':r.tickets?'You won tickets!':'Nice try!';
+ $('#resultTitle').textContent=id==='face'?'Masterpiece! 🎨':id==='wheel'?'What a view!':id==='carousel'?'Wheee! What a ride!':id==='duck'?'Your duck had '+G.score+'!':r.tickets?'You won tickets!':'Nice try!';
  $('#resultTix').textContent='+'+r.tickets+' 🎟️';$('#resultTix').hidden=RIDES.includes(id);
- $('#resultText').textContent=id==='ring'?'You ringed '+G.score+' of 5 bottles.'+(G.score>=5?' A perfect game: +5 bonus!':''):id==='whack'?'You bonked '+G.score+' points of buddies!':id==='balloon'?'You popped '+G.score+' points of balloons!':id==='cans'?'You knocked down '+G.score+' of 6 cans.'+(G.score>=6?' All of them: +6 bonus!':''):id==='popcorn'?'You caught '+G.score+' points of popcorn!':id==='striker'?'You scored '+G.score+' points'+(G.bells?' and rang the bell '+G.bells+' time'+(G.bells===1?'':'s')+'!':'.'):id==='duck'?'Pick another duck with your next duck token.':id==='carousel'?'Round and round you went!':'You could see the whole carnival from the top!';
- if(r.better)$('#resultText').textContent+=' 🏆 New best!';if(SCORED.includes(id))$('#resultText').textContent+=' You also got a 🦆 duck token.';
+ $('#resultText').textContent=id==='ring'?'You ringed '+G.score+' of 5 bottles.'+(G.score>=5?' A perfect game: +5 bonus!':''):id==='whack'?'You bonked '+G.score+' points of buddies!':id==='balloon'?'You popped '+G.score+' points of balloons!':id==='cans'?'You knocked down '+G.score+' of 6 cans.'+(G.score>=6?' All of them: +6 bonus!':''):id==='popcorn'?'You caught '+G.score+' points of popcorn!':id==='striker'?'You scored '+G.score+' points'+(G.bells?' and rang the bell '+G.bells+' time'+(G.bells===1?'':'s')+'!':'.'):id==='claw'?'Your prizes were worth '+G.score+' tickets!':id==='cotton'?'You swirled '+G.score+' times. So fluffy!':id==='bumper'?'You bumped '+G.score+' times!':id==='face'?'What a beautiful face painting!':id==='duck'?'Pick another duck with your next duck token.':id==='carousel'?'Round and round you went!':'You could see the whole carnival from the top!';
+ if(r.better)$('#resultText').textContent+=' 🏆 New best!';if(SCORED.includes(id)||id==='face')$('#resultText').textContent+=' You also got a 🦆 duck token.';
  $('#againBtn').hidden=id==='duck'&&S.ducks<1;$('#resultDialog').showModal()}
 $('#againBtn').onclick=()=>{$('#resultDialog').close();start(G.id)};
 $('#midwayBtn').onclick=()=>{$('#resultDialog').close();goMidway()};
@@ -330,6 +357,51 @@ function startCarousel(){const st=stage();st.style.background='linear-gradient(1
  const riders=['🐱','🐶','🐰','🐻','🐼','🦊'].map(r=>o('',50,50,r));riders.forEach(r=>r.style.fontSize='4cqw');
  G.step=dt=>{horses.forEach((h,i)=>{const a=G.t*1.1+i*Math.PI/3,x=50+30*Math.cos(a),depth=Math.sin(a),y=60+6*depth+Math.sin(G.t*4+i)*3;h.style.left=x+'%';h.style.top=y+'%';h.style.zIndex=Math.round(depth*10)+20;h.style.transform='translate(-50%,-50%) scaleX('+(Math.cos(a+Math.PI/2)>0?-1:1)+') scale('+(0.8+0.25*(depth+1)/2)+')';poles[i].style.left=x+'%';poles[i].style.top=(y-14)+'%';poles[i].style.zIndex=h.style.zIndex-1;riders[i].style.left=x+'%';riders[i].style.top=(y-7)+'%';riders[i].style.zIndex=Number(h.style.zIndex)+1});
   if(Math.random()<dt*3)fx(20+Math.random()*60,30+Math.random()*20,['🎵','🎶'][Math.floor(Math.random()*2)]);if(Math.random()<dt*2)tone([523,587,659,784,880][Math.floor(Math.random()*5)],.18,'triangle',.03);if(G.t>12)end()};say('Round and round! 🎠')}
+
+// ----- Claw machine: drag to move the claw, let go to drop it -----
+function startClaw(){const st=stage();st.style.background='linear-gradient(180deg,#ffd1e6,#fff3e2)';o('glass',50,52,'',70,88);o('rail',50,14,'',66,2.5);o('chute',22,86,'',10,10);o('',22,76,'⬇').style.fontSize='4cqw';
+ const VALUES={'🧸':5,'🐶':4,'🐰':4,'🦄':8,'🐼':5,'🦊':4,'🐸':3,'🐙':6,'🐲':10};const kinds=Object.keys(VALUES);
+ const toys=[];for(let i=0;i<8;i++){const x=33+i*6.6,e=kinds[Math.floor(Math.random()*kinds.length)];toys.push({x,y:82-(i%2)*6,e,el:o('toy',x,82-(i%2)*6,e),gone:false})}
+ let cx=50,tries=3,phase='move',cy=20,held=-1,holding=false;const claw=o('claw',cx,cy,'<span class="cable" style="height:0"></span><span>🦾</span>');claw.style.transform='translate(-50%,-50%) rotate(180deg)';
+ st.onpointerdown=e=>{if(phase!=='move'||tries<=0)return;holding=true;st.setPointerCapture(e.pointerId);cx=Math.max(30,Math.min(82,pct(e).x))};
+ st.onpointermove=e=>{if(!holding||phase!=='move')return;cx=Math.max(30,Math.min(82,pct(e).x))};
+ st.onpointerup=()=>{if(!holding)return;holding=false;if(phase==='move'){phase='down';sfx.whoosh()}};
+ G.step=dt=>{claw.style.left=cx+'%';
+  if(phase==='down'){cy+=55*dt;if(cy>=72){cy=72;held=clawGrab(cx,toys);if(held>=0){sfx.hit();say('Got one! '+toys[held].e)}else{sfx.miss();say('Missed! So close.')}phase='up'}}
+  else if(phase==='up'){cy-=45*dt;if(held>=0){toys[held].el.style.left=cx+'%';toys[held].el.style.top=(cy+8)+'%'}if(cy<=20){cy=20;phase=held>=0?'carry':'reset'}}
+  else if(phase==='carry'){cx-=40*dt;toys[held].el.style.left=cx+'%';if(cx<=22){cx=22;const t=toys[held];t.gone=true;G.score+=VALUES[t.e];fx(22,70,'+'+VALUES[t.e]+' 🎟️');sfx.coin();t.el.remove();held=-1;phase='reset'}}
+  else if(phase==='reset'){tries--;phase=tries>0?'move':'done';if(tries<=0)setTimeout(end,700);cx=Math.max(30,cx)}
+  claw.style.top=cy+'%';hud(['Tries: '+Math.max(0,tries),'Tickets: '+G.score])};say('Grab a prize! 🧸')}
+
+// ----- Cotton candy: swirl the stick around the machine -----
+function startCotton(){const st=stage();st.style.background='linear-gradient(180deg,#ffe6f3,#fff3e2)';const C={x:50,y:58};o('machine',C.x,C.y+8,'',48,46);
+ const colors=['#ffb3e0','#b3d9ff','#c9f2c7','#fff0a8','#e0c9ff'],col=colors[Math.floor(Math.random()*colors.length)];const fluff=o('fluff',C.x,C.y-4,'',4,6);fluff.style.setProperty('--fc',col);const stick=o('stick',C.x+20,C.y-10,'🥢');
+ let turn=0,lastA=null,holding=false;
+ st.onpointerdown=e=>{holding=true;st.setPointerCapture(e.pointerId);lastA=null};st.onpointerup=()=>{holding=false;lastA=null};
+ st.onpointermove=e=>{if(!holding||G.over)return;const p=pct(e);stick.style.left=p.x+'%';stick.style.top=p.y+'%';const a=Math.atan2((p.y-C.y)*0.625,p.x-C.x);if(lastA!==null){let d=a-lastA;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;turn+=Math.abs(d);const n=Math.floor(turn/(2*Math.PI));if(n>G.score){G.score=n;tone(500+n*30,.08,'triangle',.04);fx(C.x+(Math.random()-.5)*20,C.y-15,'✨')}}lastA=a};
+ G.step=dt=>{const left=Math.max(0,15-G.t),size=4+Math.min(G.score,20)*1.6;fluff.style.width=size+'%';fluff.style.height=(size*1.6)+'%';fluff.style.top=(C.y-4-size*.4)+'%';hud(['⏱️ '+Math.ceil(left),'Swirls: '+G.score]);if(left<=0)end()};say('Swirl the stick round and round! 🍭')}
+
+// ----- Bumper cars: drive toward the pointer and bump the other cars -----
+function startBumper(){const st=stage();st.style.background='#2a1f4d';o('arena',50,52,'',94,88);
+ const me={x:50,y:75,vx:0,vy:0,el:o('car me',50,75,'🚗')};const others=['🚙','🚕','🏎️','🚓'].map((c,i)=>({x:20+i*20,y:30+(i%2)*12,vx:(i%2?-1:1)*(16+i*3),vy:(i%2?1:-1)*12,el:o('car',20+i*20,30,c),cool:0}));
+ let target=null;st.onpointerdown=e=>{st.setPointerCapture(e.pointerId);target=pct(e)};st.onpointermove=e=>{if(target||e.buttons)target=pct(e)};st.onpointerup=()=>{target=null};
+ const wall=c=>{if(c.x<9){c.x=9;c.vx=Math.abs(c.vx)}if(c.x>91){c.x=91;c.vx=-Math.abs(c.vx)}if(c.y<14){c.y=14;c.vy=Math.abs(c.vy)}if(c.y>90){c.y=90;c.vy=-Math.abs(c.vy)}};
+ G.step=dt=>{const left=Math.max(0,25-G.t);if(target){const dx=target.x-me.x,dy=(target.y-me.y)/0.625,d=Math.hypot(dx,dy)||1;me.vx+=(dx/d*40-me.vx)*Math.min(1,dt*4);me.vy+=(dy/d*40*0.625-me.vy)*Math.min(1,dt*4)}else{me.vx*=.96;me.vy*=.96}
+  me.x+=me.vx*dt;me.y+=me.vy*dt;wall(me);
+  for(const c of others){c.x+=c.vx*dt;c.y+=c.vy*dt;wall(c);c.cool=Math.max(0,c.cool-dt);if(c.cool<=0&&Math.abs(c.x-me.x)<7&&Math.abs(c.y-me.y)<10){c.cool=.6;G.score++;sfx.bonk();fx((c.x+me.x)/2,(c.y+me.y)/2-6,'💥');const sx=Math.sign(c.x-me.x)||1,sy=Math.sign(c.y-me.y)||1;c.vx=sx*Math.abs(c.vx||18);c.vy=sy*Math.abs(c.vy||12);me.vx=-sx*20;me.vy=-sy*14}
+   c.el.style.left=c.x+'%';c.el.style.top=c.y+'%';c.el.style.transform='translate(-50%,-50%) scaleX('+(c.vx<0?1:-1)+')'}
+  me.el.style.left=me.x+'%';me.el.style.top=me.y+'%';me.el.style.transform='translate(-50%,-50%) scaleX('+(me.vx<0?1:-1)+')';
+  hud(['⏱️ '+Math.ceil(left),'Bumps: '+G.score]);if(left<=0)end()};say('Bump bump! 🚗💥')}
+
+// ----- Face painting: drag paint pictures onto the face -----
+function startFace(){const st=stage();st.style.background='linear-gradient(180deg,#fff3e2,#ffe0ee)';const faces=['🐱','🐶','🐰','🐻','🐼','🐯'];o('face',38,52,faces[Math.floor(Math.random()*faces.length)]);
+ const PAINTS=['⭐','❤️','🦋','🌈','🌸','✨','🌙','🐾','💜','🍀'];let placed=0;
+ PAINTS.forEach((ch,i)=>{const x=78+(i%2)*10,y=16+Math.floor(i/2)*16,pnt=o('paint',x,y,ch);pnt.setAttribute('role','button');pnt.setAttribute('aria-label','Paint '+ch);
+  pnt.onpointerdown=e=>{e.stopPropagation();e.preventDefault();const stk=o('sticker',x,y,ch);stk.setPointerCapture(e.pointerId);sfx.pop();
+   const mv=ev=>{const p=pct(ev);stk.style.left=p.x+'%';stk.style.top=p.y+'%'};stk.onpointermove=mv;stk.onpointerup=ev=>{const p=pct(ev);stk.onpointermove=null;stk.onpointerup=null;if(Math.abs(p.x-38)<20&&Math.abs(p.y-52)<34){placed++;tone(700+placed*40,.08,'triangle',.04);fx(p.x,p.y,'✨');
+     stk.onpointerdown=e2=>{e2.stopPropagation();stk.setPointerCapture(e2.pointerId);stk.onpointermove=mv;stk.onpointerup=ev2=>{stk.onpointermove=null;const q=pct(ev2);if(!(Math.abs(q.x-38)<20&&Math.abs(q.y-52)<34)){stk.remove();placed=Math.max(0,placed-1)}}}}else stk.remove()}}});
+ const btn=document.createElement('button');btn.type='button';btn.className='o donebtn';btn.style.left='38%';btn.style.top='93%';btn.textContent='All done! 🎨';btn.onclick=e=>{e.stopPropagation();if(!placed){say('Add some paint first!');return}G.score=placed;end()};st.append(btn);
+ G.step=()=>hud(['Paint: '+placed]);say('Make the face fancy! 🎨')}
 
 // ----- Prize booth -----
 function openPrizes(){renderPrizes();$('#prizeDialog').showModal()}

@@ -5,8 +5,8 @@ const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 function load(storage={}){const sandbox={console,Math,Number,JSON,Array,Object,String,Set,localStorage:{getItem:k=>storage[k]??null,setItem:(k,v)=>storage[k]=v}};vm.createContext(sandbox);vm.runInContext(script,sandbox);return code=>vm.runInContext(code,sandbox)}
 let checks=0;const test=(name,fn)=>{fn();console.log('✓ '+name);checks++};
 
-test('The carnival has nine games and a prize booth with 24 prizes',()=>{
- const run=load();assert.deepEqual([...run('GAMES.map(g=>g.id)')],['ring','whack','balloon','cans','popcorn','striker','duck','wheel','carousel']);
+test('The carnival has thirteen games and a prize booth with 24 prizes',()=>{
+ const run=load();assert.deepEqual([...run('GAMES.map(g=>g.id)')],['ring','whack','balloon','cans','popcorn','striker','claw','cotton','bumper','face','duck','wheel','carousel']);
  assert.equal(run('PRIZES.length'),24);assert(run('PRIZES.every((p,i)=>i===0||p.price>=PRIZES[i-1].price)'));assert.equal(run('new Set(PRIZES.map(p=>p.id)).size'),24);
 });
 test('Ring toss: a ring lands on the closest bottle when it is close enough',()=>{
@@ -43,5 +43,11 @@ test('High striker and popcorn give fair points',()=>{
  const run=load();assert.equal(run('strikerPoints(95)'),5);assert.equal(run('strikerPoints(80)'),3);assert.equal(run('strikerPoints(55)'),2);assert.equal(run('strikerPoints(10)'),1);
  assert.equal(run("ticketsFor('striker',15)"),15);assert.equal(run("ticketsFor('popcorn',30)"),15);
  run('var s=defaultSave()');run("finishGame(s,'carousel',0)");assert(run('s.rides===1&&s.ducks===1'),'rides do not give duck tokens');run("finishGame(s,'cans',4)");assert(run('s.ducks===2&&s.best.cans===4'));
+});
+test('Claw machine, cotton candy, bumper cars and face painting',()=>{
+ const run=load();const toys="[{x:40},{x:50},{x:60,gone:true}]";
+ assert.equal(run(`clawGrab(51,${toys})`),1);assert.equal(run(`clawGrab(44,${toys})`),0);assert.equal(run(`clawGrab(60,${toys})`),-1,'a prize already won is gone');assert.equal(run(`clawGrab(80,${toys})`),-1);
+ assert.equal(run("ticketsFor('claw',13)"),13);assert.equal(run("ticketsFor('cotton',30)"),20,'cotton candy tickets top out at 20');assert.equal(run("ticketsFor('bumper',15)"),12);assert.equal(run("ticketsFor('face',9)"),4);
+ run('var s=defaultSave()');run("finishGame(s,'face',5)");assert(run('s.ducks===2&&s.tickets===4&&!s.best.face'),'face painting gives a duck token but has no best score');
 });
 console.log(checks+' carnival checks passed.');
