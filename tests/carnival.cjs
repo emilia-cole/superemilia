@@ -5,9 +5,9 @@ const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 function load(storage={}){const sandbox={console,Math,Number,JSON,Array,Object,String,Set,localStorage:{getItem:k=>storage[k]??null,setItem:(k,v)=>storage[k]=v}};vm.createContext(sandbox);vm.runInContext(script,sandbox);return code=>vm.runInContext(code,sandbox)}
 let checks=0;const test=(name,fn)=>{fn();console.log('✓ '+name);checks++};
 
-test('The carnival has five games and a prize booth with twelve prizes',()=>{
- const run=load();assert.deepEqual([...run('GAMES.map(g=>g.id)')],['ring','whack','balloon','duck','wheel']);
- assert.equal(run('PRIZES.length'),12);assert(run('PRIZES.every((p,i)=>i===0||p.price>=PRIZES[i-1].price)'));assert.equal(run('new Set(PRIZES.map(p=>p.id)).size'),12);
+test('The carnival has nine games and a prize booth with 24 prizes',()=>{
+ const run=load();assert.deepEqual([...run('GAMES.map(g=>g.id)')],['ring','whack','balloon','cans','popcorn','striker','duck','wheel','carousel']);
+ assert.equal(run('PRIZES.length'),24);assert(run('PRIZES.every((p,i)=>i===0||p.price>=PRIZES[i-1].price)'));assert.equal(run('new Set(PRIZES.map(p=>p.id)).size'),24);
 });
 test('Ring toss: a ring lands on the closest bottle when it is close enough',()=>{
  const run=load();assert.equal(run('ringLands(50,[22,36,50,64,78])'),2);assert.equal(run('ringLands(50+RING_HIT-0.1,[22,36,50,64,78])'),2);assert.equal(run('ringLands(43,[22,36,50,64,78])'),-1,'between two bottles is a miss');
@@ -30,5 +30,18 @@ test('Saves keep tickets and prizes, and ignore broken or unknown data',()=>{
  const run=load({superEmiliaCarnival:JSON.stringify({tickets:40,total:90,plays:7,ducks:3,rides:2,best:{ring:4,whack:30,moon:9},prizes:['teddy','teddy','yacht'],sound:false})});run('var s=loadSave()');
  assert(run("s.tickets===40&&s.total===90&&s.plays===7&&s.ducks===3&&s.rides===2&&s.best.ring===4&&s.best.whack===30&&!s.best.moon&&s.sound===false"));assert.deepEqual([...run('s.prizes')],['teddy']);
  const bad=load({superEmiliaCarnival:'{oops'});assert(bad('loadSave().tickets===0&&loadSave().ducks===1'));
+});
+test('Can knockdown: hitting a bottom can makes the cans on top of it fall too',()=>{
+ const run=load();const none='[false,false,false,false,false,false]';
+ assert.deepEqual([...run(`knockCans(${none},50,33)`)],[false,false,false,false,false,true],'the top can alone');
+ assert.deepEqual([...run(`knockCans(${none},42,57)`)],[true,false,false,true,false,true],'the left can takes down the cans above it');
+ assert.equal(run(`knockCans(${none},50,57).filter(Boolean).length`),4,'the middle bottom can knocks down the 3 cans above it, the side cans stay up');
+ assert.equal(run(`knockCans(${none},10,10).filter(Boolean).length`),0,'a miss knocks nothing');
+ assert.equal(run("ticketsFor('cans',6)"),18);assert.equal(run("ticketsFor('cans',3)"),6);
+});
+test('High striker and popcorn give fair points',()=>{
+ const run=load();assert.equal(run('strikerPoints(95)'),5);assert.equal(run('strikerPoints(80)'),3);assert.equal(run('strikerPoints(55)'),2);assert.equal(run('strikerPoints(10)'),1);
+ assert.equal(run("ticketsFor('striker',15)"),15);assert.equal(run("ticketsFor('popcorn',30)"),15);
+ run('var s=defaultSave()');run("finishGame(s,'carousel',0)");assert(run('s.rides===1&&s.ducks===1'),'rides do not give duck tokens');run("finishGame(s,'cans',4)");assert(run('s.ducks===2&&s.best.cans===4'));
 });
 console.log(checks+' carnival checks passed.');

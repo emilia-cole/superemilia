@@ -73,6 +73,28 @@ h1{margin:0;font-size:clamp(24px,5vw,34px);letter-spacing:-.6px}
 /* balloons */
 .balloon{font-size:8cqw;pointer-events:auto;cursor:pointer;filter:hue-rotate(var(--h,0deg))}
 .balloon.special{filter:drop-shadow(0 0 1.4cqw #ffcf4d)}
+/* can knockdown */
+.can{font-size:7cqw;transition:transform .5s ease,opacity .5s ease}
+.can.down{transform:translate(-50%,40%) rotate(80deg);opacity:.25}
+.ball{font-size:6cqw;pointer-events:auto;cursor:grab}
+.aim{position:absolute;width:5cqw;height:5cqw;border-radius:50%;border:.5cqw dashed #ff5a6e;transform:translate(-50%,-50%);pointer-events:none}
+/* popcorn */
+.bucket{font-size:9cqw}
+.kernel{font-size:4.5cqw}
+/* high striker */
+.tower{background:linear-gradient(90deg,#ff5a6e 0 30%,#fff 30% 70%,#ff5a6e 70%);border-radius:1cqw;box-shadow:0 .6cqw 0 #0002}
+.puck{width:5cqw;height:3cqw;border-radius:1cqw;background:#ffcf4d;border:.4cqw solid #c9952b;transition:top .5s cubic-bezier(.2,.9,.3,1)}
+.bell{font-size:8cqw}
+.bell.ring{animation:shake .15s linear 6}
+.power{position:absolute;transform:translate(-50%,-50%);width:6cqw;border-radius:2cqw;background:linear-gradient(0deg,#4cc38a,#ffcf4d 60%,#ff5a6e 88%);border:.5cqw solid #fff;overflow:hidden}
+.power i{position:absolute;left:-1cqw;right:-1cqw;height:1cqw;background:#3d2730;border-radius:1cqw}
+.hammer{font-size:9cqw;transform-origin:80% 80%;transition:transform .15s}
+.hammer.swing{transform:translate(-50%,-50%) rotate(-70deg)}
+@keyframes shake{0%{rotate:-12deg}50%{rotate:12deg}100%{rotate:-12deg}}
+/* carousel */
+.top{border-radius:50% 50% 8% 8%/90% 90% 10% 10%;background:repeating-linear-gradient(90deg,#ff5a6e 0 5cqw,#fff 5cqw 10cqw);box-shadow:0 1cqw 0 #0002}
+.base{border-radius:50%;background:radial-gradient(ellipse,#ffe08a,#e8b62f);box-shadow:0 1cqw 0 #b88a1c}
+.horse{font-size:7cqw}
 /* duck pond */
 .pond{border-radius:50%;background:radial-gradient(ellipse at 50% 40%,#9fe3ff,#4fa7d8);box-shadow:inset 0 0 0 1.4cqw #bfeaff,0 1cqw 0 #3a7a2e}
 .duck{font-size:7cqw;pointer-events:auto;cursor:pointer}
@@ -153,16 +175,26 @@ const GAMES=[
  {id:'ring',icon:'🎯',name:'Ring Toss',c1:'#ff5a6e',desc:'Aim and let go to toss rings over the bottles.',help:'Drag left and right to aim the ring, then let go to throw it! 5 rings.'},
  {id:'whack',icon:'🔨',name:'Whack-a-Mole',c1:'#5aa9ff',desc:'Bonk the buddies when they pop up!',help:'Tap the buddies when they pop out of the holes. Golden ones are worth 3!'},
  {id:'balloon',icon:'🎈',name:'Balloon Pop',c1:'#4cc38a',desc:'Pop the balloons before they float away.',help:'Tap the balloons to pop them. Sparkly ones are worth 3!'},
+ {id:'cans',icon:'🥫',name:'Can Knockdown',c1:'#ff9a3c',desc:'Throw balls to knock down the tower of cans.',help:'Drag the ball and let go where you want to throw it! 3 balls.'},
+ {id:'popcorn',icon:'🍿',name:'Popcorn Catch',c1:'#ff8fc7',desc:'Slide the bucket to catch falling popcorn.',help:'Drag left and right to move the bucket. Candy is worth 3!'},
+ {id:'striker',icon:'🔔',name:'High Striker',c1:'#7fe0c4',desc:'Swing the hammer to ring the bell!',help:'Tap when the power meter is near the top to ring the bell. 3 swings.'},
  {id:'duck',icon:'🦆',name:'Duck Pond',c1:'#ffcf4d',desc:'Pick a duck to win a surprise prize. Uses 1 duck token.',help:'Tap any duck to see how many tickets it has on the bottom!'},
- {id:'wheel',icon:'🎡',name:'Ferris Wheel',c1:'#b48cff',desc:'Take a relaxing ride to the very top.',help:'Sit back and enjoy the ride!'}
+ {id:'wheel',icon:'🎡',name:'Ferris Wheel',c1:'#b48cff',desc:'Take a relaxing ride to the very top.',help:'Sit back and enjoy the ride!'},
+ {id:'carousel',icon:'🎠',name:'Carousel',c1:'#ffcf4d',desc:'Ride the merry-go-round with your buddies.',help:'Wheee! Enjoy the music and the ride.'}
 ];
-const PRIZES=[['balloon','🎈','Balloon',5],['lolly','🍭','Giant lollipop',8],['teddy','🧸','Teddy bear',10],['yoyo','🪀','Yo-yo',12],['puppy','🐶','Plush puppy',15],['kite','🪁','Kite',20],['hat','🎩','Magic hat',25],['robot','🤖','Toy robot',30],['unicorn','🦄','Unicorn plush',40],['dragon','🐉','Dragon plush',50],['crown','👑','Royal crown',60],['trophy','🏆','Golden trophy',100]].map(([id,icon,name,price])=>({id,icon,name,price}));
+const PRIZES=[['balloon','🎈','Balloon',5],['bow','🎀','Big bow',6],['popcorn','🍿','Popcorn bucket',7],['lolly','🍭','Giant lollipop',8],['cupcake','🧁','Cupcake',9],['teddy','🧸','Teddy bear',10],['yoyo','🪀','Yo-yo',12],['paint','🎨','Paint set',14],['puppy','🐶','Plush puppy',15],['skates','🛼','Roller skates',18],['kite','🪁','Kite',20],['panda','🐼','Panda plush',22],['hat','🎩','Magic hat',25],['giraffe','🦒','Giraffe plush',28],['robot','🤖','Toy robot',30],['rocket','🚀','Toy rocket',35],['shark','🦈','Shark plush',38],['unicorn','🦄','Unicorn plush',40],['octopus','🐙','Octopus plush',45],['dragon','🐉','Dragon plush',50],['crown','👑','Royal crown',60],['minicarousel','🎠','Mini carousel',70],['trophy','🏆','Golden trophy',100],['diamond','💎','Giant diamond',150]].map(([id,icon,name,price])=>({id,icon,name,price}));
 const SAVE_KEY='superEmiliaCarnival';
 const RING_HIT=5.5; // how close (in % of the stage width) the ring must land to a bottle
 
 // ---------- pure game logic (also used by the tests) ----------
 // tickets won for a score in each game
-function ticketsFor(game,score){if(game==='ring')return score*3+(score>=5?5:0);if(game==='whack'||game==='balloon')return Math.floor(score/2);if(game==='duck')return score;return 0}
+const SCORED=['ring','whack','balloon','cans','popcorn','striker'],RIDES=['wheel','carousel'];
+function ticketsFor(game,score){if(game==='ring')return score*3+(score>=5?5:0);if(game==='cans')return score*2+(score>=6?6:0);if(game==='whack'||game==='balloon'||game==='popcorn')return Math.floor(score/2);if(game==='duck'||game==='striker')return score;return 0}
+// can knockdown: 6 cans in a tower. A ball knocks over cans near where it lands, and cans fall when a can under them falls.
+const CANS=[{x:42,y:57,r:0},{x:50,y:57,r:0},{x:58,y:57,r:0},{x:46,y:45,r:1,on:[0,1]},{x:54,y:45,r:1,on:[1,2]},{x:50,y:33,r:2,on:[3,4]}];
+function knockCans(down,hx,hy){const out=down.slice();CANS.forEach((c,i)=>{if(!out[i]&&Math.abs(c.x-hx)<=6.5&&Math.abs(c.y-hy)<=8)out[i]=true});let moved=true;while(moved){moved=false;CANS.forEach((c,i)=>{if(!out[i]&&c.on&&c.on.some(j=>out[j])){out[i]=true;moved=true}})}return out}
+// high striker: how hard the swing was (0 to 100) gives points; 90 or more rings the bell
+function strikerPoints(power){return power>=90?5:power>=75?3:power>=50?2:1}
 // where the bottles are at time t: they slide left and right together
 function bottleXs(t,level=1){const off=10*Math.sin(t*(0.45+0.1*level));return[22,36,50,64,78].map(x=>x+off)}
 // which bottle a ring lands on (index), or -1 for a miss
@@ -170,12 +202,12 @@ function ringLands(x,bottles,taken=[]){let best=-1,d=RING_HIT;bottles.forEach((b
 // what a duck has on the bottom: mostly small numbers, sometimes a big one
 function duckPrize(rand=Math.random){const r=rand();return r<.4?2:r<.7?3:r<.88?5:r<.97?8:15}
 // applies a finished game; returns the tickets won and whether it was a new best
-function finishGame(save,game,score){const t=ticketsFor(game,score);save.tickets+=t;save.total+=t;save.plays++;const better=game!=='duck'&&game!=='wheel'&&score>(save.best[game]||0);if(better)save.best[game]=score;if(game!=='duck'&&game!=='wheel')save.ducks++;if(game==='duck')save.ducks=Math.max(0,save.ducks-1);if(game==='wheel')save.rides++;return{tickets:t,better}}
+function finishGame(save,game,score){const t=ticketsFor(game,score);save.tickets+=t;save.total+=t;save.plays++;const better=SCORED.includes(game)&&score>(save.best[game]||0);if(better)save.best[game]=score;if(SCORED.includes(game))save.ducks++;if(game==='duck')save.ducks=Math.max(0,save.ducks-1);if(RIDES.includes(game))save.rides++;return{tickets:t,better}}
 function buyPrize(save,id){const p=PRIZES.find(x=>x.id===id);if(!p||save.prizes.includes(id)||save.tickets<p.price)return false;save.tickets-=p.price;save.prizes.push(id);return true}
 function defaultSave(){return{tickets:0,total:0,plays:0,ducks:1,rides:0,best:{},prizes:[],sound:true}}
 function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:null};
  s.tickets=num(raw.tickets)??0;s.total=Math.max(num(raw.total)??0,s.tickets);s.plays=num(raw.plays)??0;s.ducks=Math.min(num(raw.ducks)??1,99);s.rides=num(raw.rides)??0;
- if(raw.best&&typeof raw.best==='object')for(const g of ['ring','whack','balloon']){const b=num(raw.best[g]);if(b)s.best[g]=Math.min(b,999)}
+ if(raw.best&&typeof raw.best==='object')for(const g of SCORED){const b=num(raw.best[g]);if(b)s.best[g]=Math.min(b,999)}
  if(Array.isArray(raw.prizes))s.prizes=[...new Set(raw.prizes.filter(id=>PRIZES.some(p=>p.id===id)))];s.sound=raw.sound!==false;return s}
 function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
 
@@ -190,7 +222,7 @@ let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classLi
 function renderTop(){$('#tix').textContent='🎟️ '+S.tickets;$('#ducks').textContent='🦆 '+S.ducks;$('#prizeTix').textContent='🎟️ '+S.tickets;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
 function renderMidway(){renderTop();const box=$('#booths');box.innerHTML='';
  const card=(g,best,onClick,cls='')=>{const b=document.createElement('button');b.type='button';b.className='booth '+cls;b.style.setProperty('--c1',g.c1);b.innerHTML='<span class="tent"></span><span class="bi" aria-hidden="true"></span><span class="bn"></span><span class="bd"></span><span class="bb"></span>';b.querySelector('.bi').textContent=g.icon;b.querySelector('.bn').textContent=g.name;b.querySelector('.bd').textContent=g.desc;b.querySelector('.bb').textContent=best;b.onclick=onClick;box.append(b)};
- for(const g of GAMES){const best=g.id==='duck'?'You have '+S.ducks+' duck token'+(S.ducks===1?'':'s'):g.id==='wheel'?(S.rides?'Rides: '+S.rides:'All aboard!'):(S.best[g.id]?'Best: '+S.best[g.id]:'Not played yet');card(g,best,()=>start(g.id))}
+ for(const g of GAMES){const best=g.id==='duck'?'You have '+S.ducks+' duck token'+(S.ducks===1?'':'s'):RIDES.includes(g.id)?'All aboard!':(S.best[g.id]?'Best: '+S.best[g.id]:'Not played yet');card(g,best,()=>start(g.id))}
  card({icon:'🎁',name:'Prize booth',c1:'#ffcf4d',desc:'Trade your tickets for prizes!'},S.prizes.length+' of '+PRIZES.length+' prizes',openPrizes,'prize');
  const mp=$('#myPrizes');mp.innerHTML='';if(!S.prizes.length){const n=document.createElement('span');n.className='none';n.textContent='No prizes yet. Win tickets and visit the prize booth!';mp.append(n)}else for(const p of PRIZES)if(S.prizes.includes(p.id)){const s=document.createElement('span');s.textContent=p.icon;s.title=p.name;mp.append(s)}}
 function show(screen){$('#midway').hidden=screen!=='midway';$('#game').hidden=screen!=='game'}
@@ -203,14 +235,14 @@ function hud(items){let h=stage().querySelector('.hud');if(!h){h=document.create
 function say(t){let s=stage().querySelector('.say');if(!s){s=document.createElement('div');s.className='say';stage().append(s)}s.textContent=t}
 function start(id){cancelAnimationFrame(raf);const g=GAMES.find(x=>x.id===id);if(id==='duck'&&S.ducks<1){notify('You need a 🦆 duck token. Finish any other game to get one!');return}
  show('game');$('#gameTitle').textContent=g.icon+' '+g.name;$('#gameHelp').textContent=g.help;stage().innerHTML='';stage().onpointerdown=stage().onpointermove=stage().onpointerup=null;G={id,t:0,score:0,over:false};
- ({ring:startRing,whack:startWhack,balloon:startBalloon,duck:startDuck,wheel:startWheel})[id]();last=performance.now();raf=requestAnimationFrame(loop)}
+ ({ring:startRing,whack:startWhack,balloon:startBalloon,duck:startDuck,wheel:startWheel,cans:startCans,popcorn:startPopcorn,striker:startStriker,carousel:startCarousel})[id]();last=performance.now();raf=requestAnimationFrame(loop)}
 function loop(now){const dt=Math.min(.05,(now-last)/1000||0);last=now;if(G&&!G.over&&!document.querySelector('dialog[open]')){G.t+=dt;G.step&&G.step(dt)}raf=requestAnimationFrame(loop)}
 function end(){if(!G||G.over)return;G.over=true;const id=G.id,r=finishGame(S,id,G.score);save();renderTop();sfx.win();
  const g=GAMES.find(x=>x.id===id);$('#resultBig').textContent=r.tickets>=10?'🎉':g.icon;
- $('#resultTitle').textContent=id==='wheel'?'What a view!':id==='duck'?'Your duck had '+G.score+'!':r.tickets?'You won tickets!':'Nice try!';
- $('#resultTix').textContent='+'+r.tickets+' 🎟️';$('#resultTix').hidden=id==='wheel';
- $('#resultText').textContent=id==='ring'?'You ringed '+G.score+' of 5 bottles.'+(G.score>=5?' A perfect game: +5 bonus!':''):id==='whack'?'You bonked '+G.score+' points of buddies!':id==='balloon'?'You popped '+G.score+' points of balloons!':id==='duck'?'Pick another duck with your next duck token.':'You could see the whole carnival from the top!';
- if(r.better)$('#resultText').textContent+=' 🏆 New best!';if(id!=='duck'&&id!=='wheel')$('#resultText').textContent+=' You also got a 🦆 duck token.';
+ $('#resultTitle').textContent=id==='wheel'?'What a view!':id==='carousel'?'Wheee! What a ride!':id==='duck'?'Your duck had '+G.score+'!':r.tickets?'You won tickets!':'Nice try!';
+ $('#resultTix').textContent='+'+r.tickets+' 🎟️';$('#resultTix').hidden=RIDES.includes(id);
+ $('#resultText').textContent=id==='ring'?'You ringed '+G.score+' of 5 bottles.'+(G.score>=5?' A perfect game: +5 bonus!':''):id==='whack'?'You bonked '+G.score+' points of buddies!':id==='balloon'?'You popped '+G.score+' points of balloons!':id==='cans'?'You knocked down '+G.score+' of 6 cans.'+(G.score>=6?' All of them: +6 bonus!':''):id==='popcorn'?'You caught '+G.score+' points of popcorn!':id==='striker'?'You scored '+G.score+' points'+(G.bells?' and rang the bell '+G.bells+' time'+(G.bells===1?'':'s')+'!':'.'):id==='duck'?'Pick another duck with your next duck token.':id==='carousel'?'Round and round you went!':'You could see the whole carnival from the top!';
+ if(r.better)$('#resultText').textContent+=' 🏆 New best!';if(SCORED.includes(id))$('#resultText').textContent+=' You also got a 🦆 duck token.';
  $('#againBtn').hidden=id==='duck'&&S.ducks<1;$('#resultDialog').showModal()}
 $('#againBtn').onclick=()=>{$('#resultDialog').close();start(G.id)};
 $('#midwayBtn').onclick=()=>{$('#resultDialog').close();goMidway()};
@@ -260,6 +292,44 @@ function startWheel(){const st=stage();st.style.background='linear-gradient(180d
  const RX=24,RY=24/0.625*(stage().clientHeight&&stage().clientWidth?stage().clientWidth/stage().clientHeight*0.625:1);let top=false;G.step=dt=>{const ang=G.t*.55;wheel.style.setProperty('--r',(ang*57.3)+'deg');carts.forEach((c,i)=>{const a=ang+i*Math.PI/4+Math.PI/2;c.style.left=(50+RX*Math.cos(a))+'%';c.style.top=(50+RY*Math.sin(a))+'%'});
   const myA=((ang+Math.PI/2)%(2*Math.PI));if(!top&&Math.abs(myA-3*Math.PI/2)<.15){top=true;say('Wow! You can see the whole carnival! 🎆');sfx.coin();for(let k=0;k<5;k++)setTimeout(()=>fx(20+Math.random()*60,15+Math.random()*20,'🎆'),k*200)}
   if(G.t>13)end()};say('Here we go! 🎡')}
+
+// ----- Can knockdown: drag the ball and let go to throw it -----
+function startCans(){const st=stage();st.style.background='linear-gradient(180deg,#ffe6b8 0 66%,#e9c79a 66%)';o('counter',50,64,'',40,4);
+ let down=[false,false,false,false,false,false],balls=3,flying=null;const cans=CANS.map(c=>o('can',c.x,c.y,'🥫'));
+ const ball=o('ball',50,88,'⚾');const aim=document.createElement('div');aim.className='aim';aim.hidden=true;st.append(aim);
+ const home={x:50,y:88};let grabbing=false;
+ st.onpointerdown=e=>{if(flying||balls<=0)return;grabbing=true;st.setPointerCapture(e.pointerId);const p=pct(e);aim.hidden=false;aim.style.left=p.x+'%';aim.style.top=p.y+'%'};
+ st.onpointermove=e=>{if(!grabbing)return;const p=pct(e);aim.style.left=p.x+'%';aim.style.top=p.y+'%'};
+ st.onpointerup=e=>{if(!grabbing)return;grabbing=false;aim.hidden=true;const p=pct(e);flying={x:p.x,y:Math.min(p.y,80),t:0};sfx.whoosh()};
+ G.step=dt=>{if(flying){flying.t+=dt;const k=Math.min(1,flying.t/.45);ball.style.left=(home.x+(flying.x-home.x)*k)+'%';ball.style.top=(home.y+(flying.y-home.y)*k-Math.sin(k*Math.PI)*12)+'%';ball.style.transform='translate(-50%,-50%) scale('+(1-k*.4)+') rotate('+(k*540)+'deg)';
+   if(k>=1){const before=down.filter(Boolean).length;down=knockCans(down,flying.x,flying.y);const now=down.filter(Boolean).length;cans.forEach((c,i)=>c.classList.toggle('down',down[i]));G.score=now;
+    if(now>before){sfx.hit();fx(flying.x,flying.y,'💥');say(now>=6?'You knocked them ALL down! 🎉':'Crash! '+(now-before)+' can'+(now-before===1?'':'s')+'!')}else{sfx.miss();say('Missed! Aim for the cans.')}
+    flying=null;balls--;if(balls<=0||now>=6){ball.remove();setTimeout(end,900)}else{ball.style.left=home.x+'%';ball.style.top=home.y+'%';ball.style.transform='translate(-50%,-50%)'}}}
+  hud(['Balls: '+balls,'Cans: '+G.score+' / 6'])};say('Knock down the cans! 🥫')}
+
+// ----- Popcorn catch: slide the bucket under falling popcorn -----
+function startPopcorn(){const st=stage();st.style.background='linear-gradient(180deg,#ffd1e6,#fff3e2)';let bx=50,spawn=0;const bucket=o('bucket',bx,86,'🪣');const pops=[];
+ const move=e=>{bx=Math.max(6,Math.min(94,pct(e).x));bucket.style.left=bx+'%'};st.onpointerdown=e=>{st.setPointerCapture(e.pointerId);move(e)};st.onpointermove=e=>{if(e.buttons||e.pointerType==='touch'||e.pointerType==='mouse')move(e)};
+ G.step=dt=>{spawn-=dt;const left=Math.max(0,20-G.t);if(spawn<=0&&left>0){const candy=Math.random()<.12,x=6+Math.random()*88;pops.push({el:o('kernel',x,-5,candy?'🍬':'🍿'),x,y:-5,v:22+Math.random()*10+G.t*1.1,candy});spawn=Math.max(.32,.65-G.t*.015)}
+  for(const k of pops){if(k.gone)continue;k.y+=k.v*dt;k.el.style.top=k.y+'%';if(k.y>=82&&k.y<=90&&Math.abs(k.x-bx)<=8){k.gone=true;G.score+=k.candy?3:1;sfx.pop();fx(k.x,80,k.candy?'+3 🍬':'+1');k.el.remove()}else if(k.y>104){k.gone=true;k.el.remove()}}
+  hud(['⏱️ '+Math.ceil(left),'Score: '+G.score]);if(left<=0&&!pops.some(k=>!k.gone))end()};say('Catch the popcorn! 🍿')}
+
+// ----- High striker: tap when the power meter is high -----
+function startStriker(){const st=stage();st.style.background='linear-gradient(180deg,#8fd0ff 0 70%,#7fcf6a 70%)';
+ o('tower',50,46,'',4,70);const bell=o('bell',50,9,'🔔');const puck=o('puck',50,80);const meter=o('power',72,50,'',null,60);const needle=document.createElement('i');meter.append(needle);const hammer=o('hammer',36,78,'🔨');
+ let swings=3,busy=false,power=0;G.bells=0;
+ const swing=()=>{if(busy||swings<=0)return;busy=true;const pw=Math.round(power);hammer.classList.add('swing');sfx.bonk();setTimeout(()=>hammer.classList.remove('swing'),200);
+  const top=80-(80-12)*pw/100;puck.style.top=top+'%';setTimeout(()=>{const pts=strikerPoints(pw);G.score+=pts;if(pts===5){G.bells++;bell.classList.remove('ring');void bell.offsetWidth;bell.classList.add('ring');sfx.win();say('DING DING! You rang the bell! 🔔');fx(50,12,'⭐')}else{say(pw>=75?'So strong! '+pw+'%':pw>=50?'Good swing! '+pw+'%':'Try again! '+pw+'%');sfx.hit()}
+   setTimeout(()=>{puck.style.top='80%';swings--;busy=false;if(swings<=0)setTimeout(end,500)},700)},500)};
+ st.onpointerdown=e=>{e.preventDefault();swing()};
+ G.step=dt=>{if(!busy){power=50+50*Math.sin(G.t*2.6);needle.style.bottom=power+'%'}hud(['Swings: '+swings,'Points: '+G.score])};say('Tap when the meter is high! 💪')}
+
+// ----- Carousel: a fun ride -----
+function startCarousel(){const st=stage();st.style.background='linear-gradient(180deg,#b9a6ff,#ffd1e6 60%,#7fcf6a 60%)';
+ o('top',50,22,'',64,16);o('base',50,74,'',70,14);const poles=[];const horses=['🐎','🦄','🐎','🦄','🐎','🦄'].map((h,i)=>{const pole=o('',50,50,'',null,null);pole.style.cssText+='width:.6cqw;height:40%;background:#ffcf4d';poles.push(pole);return o('horse',50,50,h)});
+ const riders=['🐱','🐶','🐰','🐻','🐼','🦊'].map(r=>o('',50,50,r));riders.forEach(r=>r.style.fontSize='4cqw');
+ G.step=dt=>{horses.forEach((h,i)=>{const a=G.t*1.1+i*Math.PI/3,x=50+30*Math.cos(a),depth=Math.sin(a),y=60+6*depth+Math.sin(G.t*4+i)*3;h.style.left=x+'%';h.style.top=y+'%';h.style.zIndex=Math.round(depth*10)+20;h.style.transform='translate(-50%,-50%) scaleX('+(Math.cos(a+Math.PI/2)>0?-1:1)+') scale('+(0.8+0.25*(depth+1)/2)+')';poles[i].style.left=x+'%';poles[i].style.top=(y-14)+'%';poles[i].style.zIndex=h.style.zIndex-1;riders[i].style.left=x+'%';riders[i].style.top=(y-7)+'%';riders[i].style.zIndex=Number(h.style.zIndex)+1});
+  if(Math.random()<dt*3)fx(20+Math.random()*60,30+Math.random()*20,['🎵','🎶'][Math.floor(Math.random()*2)]);if(Math.random()<dt*2)tone([523,587,659,784,880][Math.floor(Math.random()*5)],.18,'triangle',.03);if(G.t>12)end()};say('Round and round! 🎠')}
 
 // ----- Prize booth -----
 function openPrizes(){renderPrizes();$('#prizeDialog').showModal()}

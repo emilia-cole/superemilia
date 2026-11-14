@@ -432,9 +432,9 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
    <div class="game-body">
     <span class="tag coral">New · Carnival</span>
     <h2>Buddy Carnival</h2>
-    <p id="carnivalAbout">Play ring toss, whack-a-mole, balloon pop, and the duck pond to win tickets, ride the ferris wheel, and trade tickets for prizes.</p>
+    <p id="carnivalAbout">Play ring toss, whack-a-mole, can knockdown, popcorn catch, and more to win tickets, ride the ferris wheel and carousel, and trade tickets for prizes.</p>
     <ul class="progress" id="carnivalProgress" aria-label="Your saved Buddy Carnival progress">
-     <li class="flag">5 games · 12 prizes to win</li>
+     <li class="flag">9 games · 24 prizes to win</li>
     </ul>
     <span class="play" aria-hidden="true">Play now →</span>
    </div>
@@ -557,10 +557,10 @@ function count(v){var n=Math.floor(Number(v));return isFinite(n)&&n>0?n:0}
 (function(){
  // Buddy Carnival progress
  var save=readSave('superEmiliaCarnival');if(!save)return;
- var plays=count(save.plays),tix=count(save.tickets),ids=['balloon','lolly','teddy','yoyo','puppy','kite','hat','robot','unicorn','dragon','crown','trophy'],prizes=0,seen={};
+ var plays=count(save.plays),tix=count(save.tickets),ids=['balloon','bow','popcorn','lolly','cupcake','teddy','yoyo','paint','puppy','skates','kite','panda','hat','giraffe','robot','rocket','shark','unicorn','octopus','dragon','crown','minicarousel','trophy','diamond'],prizes=0,seen={};
  if(Array.isArray(save.prizes))save.prizes.forEach(function(id){if(ids.indexOf(id)>=0&&!seen[id]){seen[id]=1;prizes++}});
  if(!plays)return;
- showProgress('carnivalProgress','#playCarnival .play',[['coin','🎟️ '+tix.toLocaleString('en-US')+' tickets'],['flag','🎪 '+plays+' game'+(plays===1?'':'s')],['crown','🧸 '+prizes+' / 12 prizes']],'Keep playing →');
+ showProgress('carnivalProgress','#playCarnival .play',[['coin','🎟️ '+tix.toLocaleString('en-US')+' tickets'],['flag','🎪 '+plays+' game'+(plays===1?'':'s')],['crown','🧸 '+prizes+' / 24 prizes']],'Keep playing →');
 })();
 </script>
 <script>
@@ -587,7 +587,7 @@ var PRIZE_GAMES=[
  {id:'potion',name:'Magic Potion Lab',icon:'🧪',href:'/potion/',key:'superEmiliaPotion',stats:function(s){var f=Array.isArray(s.found)?s.found.filter(function(id,i,a){return typeof id==='string'&&a.indexOf(id)===i}):[];return{found:f.length,orders:num(s.orders),unicorn:f.indexOf('unicorn')>=0?1:0}},
   prizes:[['🧪','First Potion','Discover your first potion',function(t){return[t.found,1]}],['📖','Potion Collector','Discover 10 potions',function(t){return[t.found,10]}],['🧚','Happy Customer','Make a potion for a customer',function(t){return[t.orders,1]}],['🦄','Unicorn Maker','Discover the Unicorn Potion',function(t){return[t.unicorn,1]}],['🧙','Master Wizard','Discover all 23 potions',function(t){return[t.found,23]}]]},
  {id:'carnival',name:'Buddy Carnival',icon:'🎪',href:'/carnival/',key:'superEmiliaCarnival',stats:function(s){var b=s.best&&typeof s.best==='object'?s.best:{},p=Array.isArray(s.prizes)?s.prizes.filter(function(id,i,a){return typeof id==='string'&&a.indexOf(id)===i}):[];return{plays:num(s.plays),ring:num(b.ring),total:num(s.total),prizes:p.length,trophy:p.indexOf('trophy')>=0?1:0}},
-  prizes:[['🎪','First Game','Play a carnival game',function(t){return[t.plays,1]}],['🎯','Ring Master','Ring all 5 bottles in Ring Toss',function(t){return[t.ring,5]}],['🎟️','Ticket Collector','Win 200 tickets',function(t){return[t.total,200]}],['🧸','Prize Winner','Get 6 prizes from the prize booth',function(t){return[t.prizes,6]}],['🏆','Carnival Champion','Get the Golden trophy prize',function(t){return[t.trophy,1]}]]},
+  prizes:[['🎪','First Game','Play a carnival game',function(t){return[t.plays,1]}],['🎯','Ring Master','Ring all 5 bottles in Ring Toss',function(t){return[t.ring,5]}],['🎟️','Ticket Collector','Win 200 tickets',function(t){return[t.total,200]}],['🧸','Prize Winner','Get 10 prizes from the prize booth',function(t){return[t.prizes,10]}],['🏆','Carnival Champion','Get the Golden trophy prize',function(t){return[t.trophy,1]}]]},
  {id:'race',name:'Buddy Kart Racing',icon:'🏎️',href:'/race/',key:'superEmiliaRace',stats:function(s){var b=s.best&&typeof s.best==='object'?s.best:{},ids=['candy','beach','jungle','snow','space','rainbow'],top=0,wins=0;ids.forEach(function(id){var v=num(b[id]);if(v>=1&&v<=3)top++;if(v===1)wins++});return{races:num(s.races),top:top,wins:wins,rainbow:num(b.rainbow)>=1&&num(b.rainbow)<=3?1:0}},
   prizes:[['🏁','First Race','Finish a race',function(t){return[t.races,1]}],['🥇','Winner','Win 1st place on any track',function(t){return[t.wins,1]}],['🏆','Trophy Hunter','Get trophies on 3 tracks',function(t){return[t.top,3]}],['🌈','Rainbow Racer','Finish top 3 on Rainbow Road',function(t){return[t.rainbow,1]}],['👑','Racing Legend','Win 1st place on all 6 tracks',function(t){return[t.wins,6]}]]}
 ];
