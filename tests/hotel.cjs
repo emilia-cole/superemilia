@@ -39,4 +39,20 @@ test('Saves keep the hotel and ignore broken or unknown data',()=>{
  const bad=load({superEmiliaHotel:'{oops'});assert(bad('loadSave().rooms.length===3'));
  const weird=load({superEmiliaHotel:JSON.stringify({rooms:Array(20).fill('plain'),day:-1,today:50})});assert(weird("(()=>{const s=loadSave();return s.rooms.length===8&&s.day===1&&s.today===3})()"));
 });
+test('A room gets messy when a guest leaves, and the checklist says what to do first, next and last',()=>{
+ const run=load();run("var s=defaultSave();var rooms=s.rooms.map(t=>({theme:t,guest:null,ready:true}));var g=makeGuest(1,s,()=>.3);checkIn(rooms,0,g);checkOut(s,rooms,0)");
+ assert(run('rooms[0].ready===false&&rooms[0].jobs.length===4'));assert(!run('checkIn(rooms,0,makeGuest(1,s))'),'nobody can stay in a messy room');
+ for(let k=0;k<50;k++){const day=1+k%8,list=run(`makeChecklist(${day}).map(j=>j.id)`);assert.equal(list[0],'bed','first, make the bed');assert(['mint','lamp','flowers'].includes(list[list.length-1]),'a finishing touch is last');assert.equal(list[list.length-2],'snacks');assert.equal(list.length,day>=4?5:4);assert.equal(new Set(list).size,list.length)}
+ run("var jobs=[{id:'bed',done:false},{id:'sweep',done:false},{id:'snacks',done:false},{id:'mint',done:false}]");
+ let r=run("doJob(jobs,'table')");assert(!r.ok&&r.reason==='later'&&r.next==='bed','snacks have to wait until the bed is made');
+ assert.equal(run("doJob(jobs,'window').reason"),'fine','things not on the list are already tidy');
+ assert(run("doJob(jobs,'bed').ok&&doJob(jobs,'floor').ok&&doJob(jobs,'table').ok"));r=run("doJob(jobs,'pillow')");assert(r.ok&&r.done);assert.equal(run("doJob(jobs,'bed').reason"),'finished');
+ assert(run("Object.values(JOBS).every(j=>THINGS.some(t=>t.id===j.thing))"),'every job has a thing to tap in the room');
+});
+test('Check-in asks you to type the guest name for the key card',()=>{
+ const run=load();
+ assert(run("nameMatches('mittens',{name:'Mittens'})&&nameMatches(' MITTENS ',{name:'Mittens'})&&!nameMatches('mitten',{name:'Mittens'})"));
+ assert.equal(run("nameToType({name:'Princess Sparkle'})"),'Sparkle','long VIP names only need the last word');assert(run("nameMatches('leo',{name:'King Leo'})"));
+ assert(run('GUESTS.concat(VIPS).every(g=>nameToType(g).length<=8)'),'every name to type is short');
+});
 console.log(checks+' hotel checks passed.');
