@@ -6,9 +6,9 @@ Play at **https://superemilia.com/world/**. The site is hosted on GitHub Pages.
 
 ## The game menu
 
-**https://superemilia.com** opens a game menu with eight games: Super Emilia World, Mystery Egg Bakery (`/bakery/`), Memory Match (`/memory/`), Buddy Garden (`/garden/`), Dress-Up Studio (`/studio/`), Pet Vet Clinic (`/vet/`), Buddy Kart Racing (`/race/`), and Fishing Friends (`/fish/`). Each card shows the player's saved progress (read from the same browser save the game uses) and changes its button to keep playing once there is progress. Inside the game, **← All games** in the footer returns to the menu. Because the menu and every game share the superemilia.com address, saved progress carries over automatically.
+**https://superemilia.com** opens a game menu with nine games: Super Emilia World, Mystery Egg Bakery (`/bakery/`), Memory Match (`/memory/`), Buddy Garden (`/garden/`), Dress-Up Studio (`/studio/`), Pet Vet Clinic (`/vet/`), Buddy Kart Racing (`/race/`), Fishing Friends (`/fish/`), and Buddy Hotel (`/hotel/`). Each card shows the player's saved progress (read from the same browser save the game uses) and changes its button to keep playing once there is progress. Inside the game, **← All games** in the footer returns to the menu. Because the menu and every game share the superemilia.com address, saved progress carries over automatically.
 
-The menu also has a **🏆 Prize Room**: every game has 4 or 5 prizes (39 in all, counting the grand prize), worked out from each game's own save. Examples are finishing your first level, hatching an egg, finding a garden buddy, helping a rare pet, and winning 1st place in a race. Winning a prize in all 8 games gives the 🌟 **Super Emilia Superstar** grand prize. Prizes won since the last visit are marked NEW. The prize rules live in the second `<script>` in `public/index.html`.
+The menu also has a **🏆 Prize Room**: every game has 4 or 5 prizes (44 in all, counting the grand prize), worked out from each game's own save. Examples are finishing your first level, hatching an egg, finding a garden buddy, helping a rare pet, and winning 1st place in a race. Winning a prize in all 9 games gives the 🌟 **Super Emilia Superstar** grand prize. Prizes won since the last visit are marked NEW. The prize rules live in the second `<script>` in `public/index.html`.
 
 On page load, the cover artwork appears for five seconds before fading into the ready screen. Phones use the square cover and wider screens use the landscape cover. **Skip intro** or Escape dismisses it early. Gameplay waits for the player to start.
 
@@ -35,6 +35,10 @@ On page load, the cover artwork appears for five seconds before fading into the 
 ## Fishing Friends
 
 **https://superemilia.com/fish/** is a fishing game. Tap **Cast**, wait for the bobber to dip and the ❗ to show, tap **Reel!**, then keep tapping to fill the green bar before the fish pulls away (the space bar works too). Reeling is meant to be gentle: about 3 taps a second lands any fish, from a 5-tap minnow to a legendary fish in about 25 taps. Six spots (Lily Pond, Rushing River, Misty Lake, Sunny Ocean, Icy Sea, and Magic Lagoon) each have common, uncommon, rare, and legendary fish, 32 in all (including a Baby Shark at Lily Pond and a Shark in the ocean), plus hidden treasure. Coins unlock new spots and buy stronger rods, golden bait (more rare fish), and aquarium decorations. Every new kind of fish swims in your aquarium, and the fish book records how many you caught and the biggest. Progress is saved under `superEmiliaFish`.
+
+## Buddy Hotel
+
+**https://superemilia.com/hotel/** is a hotel game. Buddy guests wait at the front desk; tap an empty room to check one in (or tap a guest first to choose who). Each guest asks for things from the supply shelf, like cookies, a pillow, or a teddy: tap the item, then tap their room. Serving quickly adds a heart, and waiting too long (the ring around the bubble runs out) costs one. Guests leave after 2 to 4 wishes and pay more when they are happy, with extra for getting the room theme they wished for and for VIP guests. New wishes arrive on later days. Coins build up to 8 rooms, buy themes (Cozy, Ocean, Garden, Candy, Space, Jungle, Castle) to paint any room with, and buy a golden bell, pillow mints, and a pool. Progress is saved under `superEmiliaHotel`.
 
 ## Controls
 
@@ -179,11 +183,11 @@ The page includes Open Graph and large Twitter card metadata with original wide 
 
 ## Make changes
 
-The menu is `public/index.html`; the games are `public/world/index.html`, `public/bakery/index.html`, `public/memory/index.html`, `public/garden/index.html`, `public/studio/index.html`, `public/vet/index.html`, `public/race/index.html`, and `public/fish/index.html`. Neither has dependencies or a build step. Run `python3 -m http.server --directory public` and open http://localhost:8000 to try both; asset links start with `/assets/`, so opening the files directly from disk shows the game without its cover art.
+The menu is `public/index.html`; the games are `public/world/index.html`, `public/bakery/index.html`, `public/memory/index.html`, `public/garden/index.html`, `public/studio/index.html`, `public/vet/index.html`, `public/race/index.html`, `public/fish/index.html`, and `public/hotel/index.html`. Neither has dependencies or a build step. Run `python3 -m http.server --directory public` and open http://localhost:8000 to try both; asset links start with `/assets/`, so opening the files directly from disk shows the game without its cover art.
 
 To add another game, put it in its own folder under `public/` (for example `public/new-game/index.html`) and add a card linking to it in `public/index.html`.
 
-Push changes to `main` to publish automatically. The **Deploy game to GitHub Pages** workflow checks every page's script, runs `node tests/game.cjs`, `node tests/bakery.cjs`, `node tests/memory.cjs`, `node tests/garden.cjs`, `node tests/studio.cjs`, `node tests/vet.cjs`, `node tests/race.cjs`, and `node tests/fish.cjs`, uploads only the `public` folder, and deploys to the `github-pages` environment.
+Push changes to `main` to publish automatically. The **Deploy game to GitHub Pages** workflow checks every page's script, runs `node tests/game.cjs`, `node tests/bakery.cjs`, `node tests/memory.cjs`, `node tests/garden.cjs`, `node tests/studio.cjs`, `node tests/vet.cjs`, `node tests/race.cjs`, `node tests/fish.cjs`, and `node tests/hotel.cjs`, uploads only the `public` folder, and deploys to the `github-pages` environment.
 
 ## Hosting and domain
 

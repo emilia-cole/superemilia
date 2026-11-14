@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fde9d9">
+<meta name="author" content="Emilia">
+<meta name="description" content="Run a hotel for buddies! Check guests into rooms, bring them snacks, pillows, and toys, decorate rooms with fun themes, and keep everyone happy. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/hotel/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/hotel/">
+<meta property="og:title" content="Buddy Hotel · A Super Emilia Game">
+<meta property="og:description" content="Run a hotel for buddies! Check guests into rooms, bring them snacks, pillows, and toys, decorate rooms with fun themes, and keep everyone happy. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Buddy Hotel</title>
+<style>
+/* Layout: top bar, the lobby (front desk with waiting guests), the hotel (a grid of rooms), then the supply shelf of things guests ask for. Dialogs for the start and end of a day, the shop and the guest book. */
+:root{
+ color-scheme:light;
+ --bg:#fde9d9; --bg-2:#f3e6ff; --paper:#fffdf9; --line:#efd9c6; --ink:#43291f; --soft:#86695b;
+ --brick:#d9735a; --brick-deep:#b45540; --gold:#ffc83d; --mint:#5fd3a5; --plum:#8b5cf6;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--brick-deep);outline-offset:2px}
+.app{max-width:980px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--brick-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.coins{color:#a06b00;border-color:#f2d98a;background:#fff8dc}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:9px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;display:flex;align-items:center}
+.tip b{color:var(--ink)}
+/* lobby */
+.lobby{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#fff4e6,#ffe7cf);border:3px solid #fff;box-shadow:0 5px 0 #e9c9ab;border-radius:22px;padding:10px 14px}
+.desk{display:grid;justify-items:center;font-size:12px;font-weight:900;color:var(--soft);line-height:1.1;text-align:center}
+.desk span{font-size:34px}
+.queue{display:flex;gap:10px;flex:1;min-height:76px;align-items:center;overflow-x:auto;padding:4px 2px}
+.guest{position:relative;display:grid;justify-items:center;gap:2px;min-width:74px;padding:6px 8px;border-radius:16px;background:#fff;box-shadow:0 4px 0 var(--line)}
+.guest .gi{font-size:34px;line-height:1}
+.guest .gw{font-size:11px;font-weight:800;color:var(--soft);white-space:nowrap}
+.guest.sel{border-color:var(--brick);box-shadow:0 0 0 3px var(--brick)}
+.guest.vip{background:#fff8dc;border-color:var(--gold)}
+.guest .crown{position:absolute;top:-10px;left:-4px;font-size:18px}
+.queue .none{color:var(--soft);font-weight:700;font-size:14px}
+.prog{font-weight:900;font-size:14px;white-space:nowrap;text-align:right}
+/* rooms */
+.hotel{background:linear-gradient(180deg,#e9876d,#d9735a);border-radius:26px;padding:12px;border:4px solid #fff;box-shadow:0 8px 0 #b9654f}
+.roof{display:flex;justify-content:center;align-items:center;gap:8px;color:#fff;font-weight:900;font-size:18px;margin:-2px 0 10px;letter-spacing:1px;text-shadow:0 2px 0 #0003}
+.rooms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.room{position:relative;aspect-ratio:1.05;border-radius:18px;padding:0;border:3px solid #fff;overflow:visible;display:grid;place-items:center;background:var(--rbg,#fff3e2);box-shadow:inset 0 -14px 0 var(--rfloor,#e9d3b8)}
+.room .rn{position:absolute;top:5px;left:8px;font-size:11px;font-weight:900;color:#0007}
+.room .rt{position:absolute;bottom:4px;right:7px;font-size:20px;opacity:.85}
+.room .who{font-size:clamp(36px,7vw,52px);line-height:1;transition:transform .3s}
+.room .bubble{position:absolute;top:-12px;right:-10px;width:52px;height:52px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:26px;box-shadow:0 3px 0 #0002;z-index:2}
+.room .bubble svg{position:absolute;inset:-4px;width:60px;height:60px;transform:rotate(-90deg)}
+.room .hearts{position:absolute;bottom:4px;left:6px;font-size:11px;letter-spacing:-1px}
+.room.empty .who{font-size:15px;font-weight:900;color:#0006}
+.room.locked{background:#ffffff33;border-style:dashed;box-shadow:none;color:#fff;font-weight:900;font-size:13px;text-align:center;line-height:1.3}
+.room.locked big{font-size:24px;display:block}
+.room.target{box-shadow:0 0 0 4px var(--gold),inset 0 -14px 0 var(--rfloor,#e9d3b8);animation:pulse 1s ease-in-out infinite}
+.room.happy .who{animation:jump .5s ease 2}
+.room.wiggle .who{animation:wiggle .4s ease}
+.float{position:absolute;z-index:5;font-weight:900;font-size:18px;color:#7a5200;text-shadow:0 2px 0 #fff;pointer-events:none;animation:rise 1.2s ease-out forwards;white-space:nowrap;left:50%;top:30%}
+/* supply shelf */
+.shelf{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:10px 12px;display:grid;gap:8px}
+.shelf h2{margin:0;font-size:15px;color:var(--soft)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px}
+.item{display:grid;justify-items:center;gap:1px;padding:8px 4px 6px;border-radius:16px;background:#fff;box-shadow:0 4px 0 var(--line)}
+.item .ii{font-size:30px;line-height:1.1}
+.item .in{font-size:11px;font-weight:800}
+.item.sel{border-color:var(--brick);box-shadow:0 0 0 3px var(--brick);background:#fff1ea}
+.item.glow{border-color:var(--gold);box-shadow:0 0 0 4px #ffc83d99}
+.primary{background:var(--brick);border-color:var(--brick-deep);color:#fff;box-shadow:0 4px 0 var(--brick-deep);font-size:17px;padding:11px 20px}
+/* dialogs */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(540px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #43291f55}
+dialog::backdrop{background:#43291f66;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg.center{justify-items:center;text-align:center}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.dlg .big{font-size:64px;line-height:1}
+.bigstars{font-size:40px;letter-spacing:6px;color:#eadbd0}
+.bigstars b{color:var(--gold)}
+.newthing{display:flex;gap:10px;align-items:center;background:#fff8dc;border:2px solid #f2d98a;border-radius:16px;padding:10px 12px;text-align:left;width:100%}
+.newthing span:first-child{font-size:34px}
+.tabs{display:flex;gap:6px}.tabs button{flex:1}
+.tabs button[aria-selected="true"]{background:var(--brick);border-color:var(--brick-deep);color:#fff}
+.list{display:grid;gap:8px;max-height:min(60dvh,480px);overflow:auto;padding:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.card{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;padding:10px;border-radius:16px;border:2px solid var(--line);background:#fff}
+.card .ic{font-size:30px}
+.card .nm{font-weight:900;font-size:15px}
+.card .ds{font-size:12px;color:var(--soft);font-weight:700;line-height:1.3}
+.card.owned{background:#effcf5;border-color:#bfe8d4}
+.paint{display:grid;gap:6px;padding:10px;border-radius:16px;border:2px solid var(--line);background:#fff}
+.paint .pn{font-weight:900}
+.swatches{display:flex;gap:6px;flex-wrap:wrap}
+.swatches button{padding:6px 8px;font-size:20px;border-radius:12px;background:var(--sbg)}
+.swatches button[aria-pressed="true"]{box-shadow:0 0 0 3px var(--brick)}
+.book{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-height:min(60dvh,500px);overflow:auto}
+.entry{display:grid;justify-items:center;gap:1px;padding:10px 4px 8px;border-radius:14px;background:#fff;border:2px solid var(--line);text-align:center}
+.entry .ic{font-size:30px;line-height:1.1}
+.entry .nm{font-size:11.5px;font-weight:900}
+.entry .ct{font-size:11px;font-weight:700;color:var(--soft)}
+.entry.unknown{background:#f8f2ee;border-style:dashed;color:#b8a59a}
+.entry.unknown .ic{opacity:.35;filter:grayscale(1)}
+.entry.vip{border-color:var(--gold);background:#fffbea}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+@keyframes jump{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,0)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-50px)}}
+@media (max-width:640px){.rooms{grid-template-columns:repeat(2,minmax(0,1fr))}.title strong{font-size:17px}.book{grid-template-columns:repeat(3,minmax(0,1fr))}.room{aspect-ratio:1.3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Buddy Hotel</strong></div>
+  <span class="chip" id="dayChip">Day 1</span>
+  <span class="chip coins" id="coins" aria-label="Coins">🪙 0</span>
+ </div>
+ <div class="tools">
+  <button type="button" id="shopBtn">🛒 Shop</button>
+  <button type="button" id="bookBtn">📖 Guest book</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <p class="tip" id="tip" role="status">🛎️ A guest is waiting! Tap an empty room to check them in.</p>
+ <section class="lobby" aria-label="Lobby">
+  <div class="desk"><span aria-hidden="true">🛎️</span>Front<br>desk</div>
+  <div class="queue" id="queue"></div>
+  <div class="prog" id="prog">0 / 4<br>guests</div>
+ </section>
+ <section class="hotel" aria-label="Hotel rooms">
+  <div class="roof"><span aria-hidden="true">⭐</span>BUDDY HOTEL<span aria-hidden="true">⭐</span></div>
+  <div class="rooms" id="rooms"></div>
+ </section>
+ <section class="shelf" aria-label="Supply shelf">
+  <h2>🧺 Supply shelf: tap something, then tap the room that asked for it</h2>
+  <div class="items" id="items"></div>
+ </section>
+</div>
+
+<dialog id="dayDialog" aria-labelledby="dayTitle"><div class="dlg center">
+ <div class="big" id="dayBig" aria-hidden="true">🏨</div>
+ <h2 id="dayTitle">Welcome!</h2>
+ <p id="dayText"></p>
+ <div class="bigstars" id="dayStars" aria-hidden="true" hidden></div>
+ <div class="newthing" id="dayNew" hidden></div>
+ <button type="button" class="primary" id="dayBtn">Open the hotel!</button>
+</div></dialog>
+<dialog id="shopDialog" aria-labelledby="shopTitle"><div class="dlg">
+ <header><h2 id="shopTitle">🛒 Hotel shop</h2><span class="chip coins" id="shopCoins">🪙 0</span><button type="button" id="shopClose" aria-label="Close the shop">✕</button></header>
+ <div class="tabs" role="tablist"><button type="button" role="tab" data-tab="rooms" aria-selected="true">🎨 Rooms</button><button type="button" role="tab" data-tab="extras" aria-selected="false">⭐ Extras</button></div>
+ <div class="list" id="shopList"></div>
+</div></dialog>
+<dialog id="bookDialog" aria-labelledby="bookTitle"><div class="dlg">
+ <header><h2 id="bookTitle">📖 Guest book</h2><button type="button" id="bookClose" aria-label="Close the guest book">✕</button></header>
+ <p id="bookSub"></p><div class="book" id="book"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+// Things guests ask for. New ones show up on later days.
+const ITEMS=[
+ {id:'cookie',icon:'🍪',name:'Cookies',day:1,say:'Yum, cookies!'},{id:'pillow',icon:'🛏️',name:'Pillow',day:1,say:'So fluffy!'},{id:'teddy',icon:'🧸',name:'Teddy',day:1,say:'A cuddle buddy!'},
+ {id:'game',icon:'🎮',name:'Games',day:2,say:'Game time!'},{id:'bath',icon:'🛁',name:'Bubble bath',day:3,say:'Bubbles!'},{id:'music',icon:'🎵',name:'Music',day:4,say:'La la la!'},
+ {id:'cocoa',icon:'☕',name:'Cocoa',day:5,say:'Warm and cozy!'},{id:'flowers',icon:'💐',name:'Flowers',day:6,say:'They smell nice!'},{id:'pizza',icon:'🍕',name:'Pizza',day:7,say:'Pizza party!'}
+];
+// Room themes. Buy a theme once, then use it on any room. Guests who get the room they wished for tip extra.
+const THEMES=[
+ {id:'plain',icon:'🏠',name:'Plain',price:0,bg:'#fff3e2',floor:'#e9d3b8'},{id:'cozy',icon:'🔥',name:'Cozy',price:20,bg:'#ffe1c7',floor:'#c98e5c'},
+ {id:'ocean',icon:'🌊',name:'Ocean',price:30,bg:'#cfeeff',floor:'#f2dfb0'},{id:'garden',icon:'🌷',name:'Garden',price:30,bg:'#dff5d0',floor:'#9fd67a'},
+ {id:'candy',icon:'🍭',name:'Candy',price:40,bg:'#ffd9ec',floor:'#ff9ac6'},{id:'space',icon:'🚀',name:'Space',price:45,bg:'#cfc8f5',floor:'#4b4380'},
+ {id:'jungle',icon:'🌴',name:'Jungle',price:50,bg:'#c9efc0',floor:'#5f9e45'},{id:'castle',icon:'🏰',name:'Castle',price:80,bg:'#efe2ff',floor:'#b39ad9'}
+];
+const GUESTS=[['🐱','Mittens'],['🐶','Biscuit'],['🐰','Clover'],['🐻','Honey'],['🐼','Bamboo'],['🦊','Rusty'],['🐸','Lily'],['🐷','Truffle'],['🐨','Kiwi'],['🐹','Peanut'],['🐧','Pebble'],['🦔','Prickles'],['🐮','Daisy'],['🐵','Banana']].map(([icon,name])=>({icon,name}));
+const VIPS=[['🦄','Princess Sparkle'],['🐉','Sir Ember'],['👽','Captain Zip'],['🦁','King Leo']].map(([icon,name])=>({icon,name,vip:true}));
+const UPGRADES=[{id:'bell',icon:'🛎️',name:'Golden bell',price:50,desc:'Guests wait 30% longer before getting grumpy.'},{id:'mints',icon:'🍬',name:'Pillow mints',price:70,desc:'Every guest starts a little happier.'},{id:'pool',icon:'🏊',name:'Swimming pool',price:150,desc:'Every guest pays +5 coins when they check out.'}];
+const START_ROOMS=3,MAX_ROOMS=8,PATIENCE=22;
+const SAVE_KEY='superEmiliaHotel';
+
+// ---------- pure game logic (also used by the tests) ----------
+const item=id=>ITEMS.find(i=>i.id===id),theme=id=>THEMES.find(t=>t.id===id)||THEMES[0];
+function goalFor(day){return Math.min(3+day,10)}
+function itemsOn(day){return ITEMS.filter(i=>i.day<=day)}
+function roomPrice(owned){return[40,60,90,130,180][owned-START_ROOMS]??Infinity}
+function patienceFor(save){return PATIENCE*(save.upgrades.includes('bell')?1.3:1)}
+// a new guest: who they are, how many things they will ask for, and which room theme they would love
+function makeGuest(day,save,rand=Math.random){const vip=day>=3&&rand()<.1,list=vip?VIPS:GUESTS,who=list[Math.floor(rand()*list.length)];
+ const owned=THEMES.filter(t=>t.id!=='plain'&&save.themes.includes(t.id)),pool=owned.length&&rand()<.65?owned:THEMES.filter(t=>t.id!=='plain');
+ return{...who,wish:pool[Math.floor(rand()*pool.length)].id,wants:Math.min(2+Math.floor(rand()*(day>3?3:2)),4),served:0,happy:save.upgrades.includes('mints')?4:3,match:false,request:null,wait:2+rand()*2}}
+function newRequest(g,day,rand=Math.random,save){const list=itemsOn(day);let it=list[Math.floor(rand()*list.length)];if(g.request&&list.length>1&&it.id===g.request.item)it=list[(list.indexOf(it)+1)%list.length];const p=save?patienceFor(save):PATIENCE;g.request={item:it.id,left:p,max:p};return g.request}
+function checkIn(rooms,i,g){const r=rooms[i];if(!r||r.guest)return false;r.guest=g;g.match=r.theme===g.wish;if(g.match)g.happy=Math.min(5,g.happy+1);return true}
+// gives a guest something. Right thing: +1 heart if fast. Wrong thing: no change, try again.
+function serve(rooms,i,itemId){const g=rooms[i]&&rooms[i].guest;if(!g||!g.request)return{ok:false,reason:'nothing'};if(g.request.item!==itemId)return{ok:false,reason:'wrong'};
+ const fast=g.request.left>g.request.max/2;if(fast)g.happy=Math.min(5,g.happy+1);g.served++;g.request=null;g.wait=1.5+((g.served*7)%3);return{ok:true,fast,done:g.served>=g.wants}}
+// time passes: requests count down; when one runs out the guest gets grumpier and asks for something else. Returns events.
+function tickRooms(rooms,dt,day,save,rand=Math.random){const ev=[];rooms.forEach((r,i)=>{const g=r.guest;if(!g||g.served>=g.wants)return;
+ if(!g.request){g.wait-=dt;if(g.wait<=0){newRequest(g,day,rand,save);ev.push({type:'ask',room:i})}return}
+ g.request.left-=dt;if(g.request.left<=0){g.happy=Math.max(0,g.happy-1);newRequest(g,day,rand,save);ev.push({type:'grumpy',room:i})}});return ev}
+function payFor(g,save){return 5+3*g.served+2*g.happy+(g.match?5:0)+(g.vip?15:0)+(save.upgrades.includes('pool')?5:0)}
+// a guest checks out: pay, count them for today, add to the guest book
+function checkOut(save,rooms,i){const g=rooms[i].guest,coins=payFor(g,save);rooms[i].guest=null;save.coins+=coins;save.guests++;save.today++;save.todayHappy+=g.happy;save.stayed[g.name]=(save.stayed[g.name]||0)+1;return{coins,happy:g.happy,dayDone:save.today>=goalFor(save.day)}}
+function dayStars(save){const avg=save.todayHappy/Math.max(1,save.today);return avg>=4.2?3:avg>=3?2:1}
+function nextDay(save){save.day++;save.today=0;save.todayHappy=0}
+function buyRoom(save){const p=roomPrice(save.rooms.length);if(save.rooms.length>=MAX_ROOMS||save.coins<p)return false;save.coins-=p;save.rooms.push('plain');return true}
+function buyTheme(save,id){const t=THEMES.find(x=>x.id===id);if(!t||t.price===0||save.themes.includes(id)||save.coins<t.price)return false;save.coins-=t.price;save.themes.push(id);return true}
+function paintRoom(save,i,id){if(i<0||i>=save.rooms.length||!(id==='plain'||save.themes.includes(id)))return false;save.rooms[i]=id;return true}
+function buyUpgrade(save,id){const u=UPGRADES.find(x=>x.id===id);if(!u||save.upgrades.includes(id)||save.coins<u.price)return false;save.coins-=u.price;save.upgrades.push(id);return true}
+function defaultSave(){return{day:1,today:0,todayHappy:0,coins:0,guests:0,stayed:{},rooms:Array(START_ROOMS).fill('plain'),themes:[],upgrades:[],sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=(v,min)=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=min?n:null};
+ s.day=num(raw.day,1)??1;s.coins=num(raw.coins,0)??0;s.guests=num(raw.guests,0)??0;s.today=Math.min(num(raw.today,0)??0,goalFor(s.day)-1);s.todayHappy=Math.min(num(raw.todayHappy,0)??0,s.today*5);
+ if(raw.stayed&&typeof raw.stayed==='object')for(const g of GUESTS.concat(VIPS)){const n=num(raw.stayed[g.name],1);if(n)s.stayed[g.name]=n}
+ if(Array.isArray(raw.themes))s.themes=[...new Set(raw.themes.filter(id=>THEMES.some(t=>t.id===id&&t.price>0)))];
+ if(Array.isArray(raw.rooms)){const n=Math.min(Math.max(raw.rooms.length,START_ROOMS),MAX_ROOMS);s.rooms=[];for(let i=0;i<n;i++){const id=raw.rooms[i];s.rooms.push(id==='plain'||s.themes.includes(id)?id:'plain')}}
+ if(Array.isArray(raw.upgrades))s.upgrades=[...new Set(raw.upgrades.filter(id=>UPGRADES.some(u=>u.id===id)))];
+ s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+let S=loadSave(),rooms=[],queue=[],arrived=0,selGuest=null,selItem=null,arriveT=0,running=false,audio=null,raf=0,last=0,shopTab='rooms',paintSel=0;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.25,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={ding:()=>[1320,1760].forEach((f,i)=>setTimeout(()=>tone(f,.12,'triangle',.04),i*90)),pick:()=>tone(760,.05,'triangle'),ok:()=>[660,880].forEach((f,i)=>setTimeout(()=>tone(f,.09,'triangle'),i*70)),no:()=>tone(220,.14,'sawtooth',.03),ask:()=>tone(990,.06,'sine',.03),grumpy:()=>tone(260,.2,'square',.03),pay:()=>[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.13),i*80)),buy:()=>tone(990,.12,'square',.03)};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2000)}
+function setTip(html){$('#tip').innerHTML=html}
+function hearts(n){return'❤️'.repeat(n)+'🤍'.repeat(5-n)}
+function buildRooms(){rooms=S.rooms.map((t,i)=>({theme:t,guest:rooms[i]?rooms[i].guest:null}))}
+function renderTop(){$('#coins').textContent='🪙 '+S.coins;$('#shopCoins').textContent='🪙 '+S.coins;$('#dayChip').textContent='Day '+S.day;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off');$('#prog').innerHTML=S.today+' / '+goalFor(S.day)+'<br>guests'}
+function renderQueue(){const box=$('#queue');box.innerHTML='';if(!queue.length){const n=document.createElement('span');n.className='none';n.textContent=arrived>=goalFor(S.day)?'No more guests today.':'Waiting for the next guest…';box.append(n);return}
+ queue.forEach((g,k)=>{const b=document.createElement('button');b.type='button';b.className='guest'+(selGuest===g?' sel':'')+(g.vip?' vip':'');b.innerHTML=(g.vip?'<span class="crown" aria-hidden="true">👑</span>':'')+'<span class="gi" aria-hidden="true"></span><span class="gw"></span>';b.querySelector('.gi').textContent=g.icon;b.querySelector('.gw').textContent='Wants '+theme(g.wish).icon;
+  b.setAttribute('aria-label',g.name+(g.vip?', a VIP guest':'')+', would love a '+theme(g.wish).name+' room');b.onclick=()=>{selGuest=selGuest===g?null:g;selItem=null;sfx.pick();renderAll();if(selGuest)setTip('🛎️ <b>'+g.name+'</b> would love a '+theme(g.wish).icon+' '+theme(g.wish).name+' room. Tap an empty room!')};box.append(b)})}
+function ring(left,max){const r=26,c=2*Math.PI*r,frac=Math.max(0,left/max),col=frac>.5?'#5fd3a5':frac>.25?'#ffc83d':'#ff6b6b';return'<svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="'+r+'" fill="none" stroke="#0001" stroke-width="5"/><circle cx="30" cy="30" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+(c*frac)+' '+c+'"/></svg>'}
+function renderRooms(){const box=$('#rooms');if(box.children.length!==MAX_ROOMS){box.innerHTML='';for(let i=0;i<MAX_ROOMS;i++){const b=document.createElement('button');b.type='button';b.onclick=()=>tapRoom(i);box.append(b)}}
+ for(let i=0;i<MAX_ROOMS;i++){const b=box.children[i];if(i>=rooms.length){const first=i===rooms.length,price=roomPrice(rooms.length);b.className='room locked';b.disabled=!first;b.style.removeProperty('--rbg');b.innerHTML=first?'<span><big aria-hidden="true">＋</big>New room<br>🪙 '+price+'</span>':'<span aria-hidden="true">🔒</span>';b.setAttribute('aria-label',first?'Build a new room for '+price+' coins':'More rooms later');continue}
+  b.disabled=false;const r=rooms[i],t=theme(r.theme),g=r.guest;b.style.setProperty('--rbg',t.bg);b.style.setProperty('--rfloor',t.floor);
+  const wantsHere=selItem&&g&&g.request&&g.request.item===selItem,empty=!g;b.className='room'+(empty?' empty':'')+((selGuest&&empty)||wantsHere?' target':'');
+  let html='<span class="rn">'+(i+1)+'</span>'+(t.id!=='plain'?'<span class="rt" aria-hidden="true">'+t.icon+'</span>':'');
+  if(empty)html+='<span class="who">'+(queue.length?'Tap to check in':'Empty')+'</span>';
+  else{html+='<span class="who" aria-hidden="true">'+g.icon+'</span><span class="hearts" aria-hidden="true">'+hearts(g.happy)+'</span>';if(g.request)html+='<span class="bubble" aria-hidden="true">'+ring(g.request.left,g.request.max)+item(g.request.item).icon+'</span>'}
+  if(b.dataset.h!==html){b.innerHTML=html;b.dataset.h=html}
+  b.setAttribute('aria-label','Room '+(i+1)+(t.id!=='plain'?', '+t.name+' theme':'')+(empty?', empty':', '+g.name+', '+g.happy+' hearts'+(g.request?', wants '+item(g.request.item).name:'')))}}
+function renderItems(glow){const box=$('#items');box.innerHTML='';for(const it of itemsOn(S.day)){const b=document.createElement('button');b.type='button';b.className='item'+(selItem===it.id?' sel':'')+(glow===it.id?' glow':'');b.setAttribute('aria-pressed',selItem===it.id);b.setAttribute('aria-label',it.name);b.innerHTML='<span class="ii" aria-hidden="true"></span><span class="in"></span>';b.firstChild.textContent=it.icon;b.lastChild.textContent=it.name;
+ b.onclick=()=>{selItem=selItem===it.id?null:it.id;selGuest=null;sfx.pick();renderAll();if(selItem){const who=rooms.findIndex(r=>r.guest&&r.guest.request&&r.guest.request.item===it.id);setTip(who>=0?'Now tap <b>room '+(who+1)+'</b> to give the '+it.icon+'!':'Nobody is asking for '+it.icon+' right now. Look at the bubbles on the rooms!')}};box.append(b)}}
+function renderAll(glow){renderTop();renderQueue();renderRooms();renderItems(glow)}
+function floatText(i,text){const b=$('#rooms').children[i];if(!b)return;const f=document.createElement('div');f.className='float';f.textContent=text;b.append(f);setTimeout(()=>f.remove(),1200)}
+function anim(i,cls){const b=$('#rooms').children[i];b.classList.remove(cls);void b.offsetWidth;b.classList.add(cls);setTimeout(()=>b.classList.remove(cls),900)}
+function tapRoom(i){if(!running)return;
+ if(i>=rooms.length){if(buyRoom(S)){save();sfx.buy();buildRooms();notify('A new room! 🎉');renderAll()}else{sfx.no();notify('A new room costs 🪙 '+roomPrice(S.rooms.length))}return}
+ const r=rooms[i];
+ if(!r.guest){const g=selGuest||queue[0];if(!g){notify('No guests waiting right now.');return}queue.splice(queue.indexOf(g),1);checkIn(rooms,i,g);selGuest=null;sfx.ding();
+  setTip(g.match?'🎉 <b>'+g.name+'</b> loves the '+theme(r.theme).name+' room! Watch the bubble to see what they want.':'Watch the bubble on room '+(i+1)+' to see what <b>'+g.name+'</b> wants.');if(g.match)floatText(i,'💖 Dream room!');renderAll();return}
+ if(!selItem){if(r.guest.request){setTip('Pick the '+item(r.guest.request.item).icon+' from the supply shelf, then tap this room.');renderAll(r.guest.request.item)}return}
+ const res=serve(rooms,i,selItem);if(!res.ok){sfx.no();anim(i,'wiggle');if(res.reason==='wrong'){setTip(r.guest.icon+' says: That is not what I asked for! I want '+item(r.guest.request.item).icon+'.');renderAll(r.guest.request.item)}return}
+ sfx.ok();floatText(i,item(selItem).say+(res.fast?' ❤️':''));anim(i,'happy');selItem=null;
+ if(res.done){const k=i;setTimeout(()=>{const g=rooms[k].guest,out=checkOut(S,rooms,k);save();sfx.pay();floatText(k,'+'+out.coins+' 🪙 Bye!');setTip(g.name+' checked out '+hearts(out.happy)+' and paid 🪙 '+out.coins+'!');renderAll();if(out.dayDone)setTimeout(endDay,900)},900)}
+ setTip('Great service! 🌟');renderAll()}
+function frame(now){const dt=Math.min(.1,(now-last)/1000||0);last=now;if(running){
+ arriveT-=dt;if(arriveT<=0&&queue.length<3&&arrived<goalFor(S.day)&&arrived-S.today<rooms.length+2){queue.push(makeGuest(S.day,S));arrived++;arriveT=rooms.every(r=>r.guest)?9:5+Math.random()*3;sfx.ding();renderQueue();renderRooms();if(arrived===1&&S.day===1&&S.guests===0)setTip('🛎️ A guest is waiting! Tap an empty room to check them in.')}
+ const ev=tickRooms(rooms,dt,S.day,S);for(const e of ev){if(e.type==='ask'){sfx.ask();if(S.guests===0&&S.today===0)setTip('💭 Room '+(e.room+1)+' wants something! Tap the '+item(rooms[e.room].guest.request.item).icon+' on the shelf, then tap the room.')}else{sfx.grumpy();anim(e.room,'wiggle');floatText(e.room,'Hmph! 😤')}}
+ renderRooms();if(ev.length)renderTop()}raf=requestAnimationFrame(frame)}
+function startDay(){buildRooms();rooms.forEach(r=>r.guest=null);queue=[];arrived=0;selGuest=null;selItem=null;arriveT=.8;running=true;renderAll()}
+function endDay(){running=false;const goal=goalFor(S.day),stars=dayStars(S),bonus=5+S.day*3;S.coins+=bonus;const done=S.day;nextDay(S);save();renderTop();
+ $('#dayBig').textContent='🌙';$('#dayTitle').textContent='Day '+done+' done!';$('#dayText').textContent=goal+' happy guests stayed at your hotel. Bonus: 🪙 '+bonus+'!';$('#dayStars').hidden=false;$('#dayStars').innerHTML='<b>'+'★'.repeat(stars)+'</b>'+'★'.repeat(3-stars);
+ const fresh=ITEMS.find(x=>x.day===S.day),nw=$('#dayNew');if(fresh){nw.hidden=false;nw.innerHTML='<span aria-hidden="true">'+fresh.icon+'</span><span><b>New tomorrow:</b> guests will ask for '+fresh.name.toLowerCase()+'!</span>'}else nw.hidden=true;
+ $('#dayBtn').textContent='Start day '+S.day+' →';$('#dayDialog').showModal()}
+$('#dayBtn').onclick=()=>{$('#dayDialog').close();startDay()};
+$('#dayDialog').addEventListener('cancel',e=>{e.preventDefault();$('#dayDialog').close();startDay()});
+// shop
+function renderShop(){renderTop();document.querySelectorAll('.tabs [data-tab]').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===shopTab));const box=$('#shopList');box.innerHTML='';
+ const card=(icon,name,desc,own,label,can,fn)=>{const d=document.createElement('div');d.className='card'+(own?' owned':'');d.innerHTML='<span class="ic" aria-hidden="true"></span><span><span class="nm"></span><br><span class="ds"></span></span>';d.querySelector('.ic').textContent=icon;d.querySelector('.nm').textContent=name;d.querySelector('.ds').textContent=desc;const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=!can;b.onclick=()=>{if(fn()){save();sfx.buy();buildRooms();renderShop();renderAll()}};d.append(b);box.append(d)};
+ if(shopTab==='rooms'){
+  if(S.rooms.length<MAX_ROOMS){const p=roomPrice(S.rooms.length);card('🚪','New room','You have '+S.rooms.length+' of '+MAX_ROOMS+' rooms.',false,'🪙 '+p,S.coins>=p,()=>buyRoom(S))}
+  const pt=document.createElement('div');pt.className='paint';const t=document.createElement('div');t.className='pn';t.textContent='🎨 Decorate a room';pt.append(t);
+  const pick=document.createElement('div');pick.className='swatches';S.rooms.forEach((th,i)=>{const b=document.createElement('button');b.type='button';b.textContent=(i+1)+' '+theme(th).icon;b.style.setProperty('--sbg',theme(th).bg);b.style.fontSize='15px';b.setAttribute('aria-pressed',paintSel===i);b.setAttribute('aria-label','Room '+(i+1)+', '+theme(th).name);b.onclick=()=>{paintSel=i;renderShop()};pick.append(b)});pt.append(pick);
+  const hint=document.createElement('div');hint.className='ds';hint.style.cssText='font-size:12.5px;color:var(--soft);font-weight:700';hint.textContent='Pick a room above, then tap a theme for it:';pt.append(hint);
+  const sw=document.createElement('div');sw.className='swatches';for(const th of THEMES){const own=th.price===0||S.themes.includes(th.id),b=document.createElement('button');b.type='button';b.style.setProperty('--sbg',th.bg);b.innerHTML=th.icon+'<span style="font-size:12px;font-weight:800"> '+th.name+(own?'':' 🪙'+th.price)+'</span>';b.setAttribute('aria-pressed',S.rooms[paintSel]===th.id);b.setAttribute('aria-label',th.name+(own?'':', costs '+th.price+' coins'));
+   b.disabled=!own&&S.coins<th.price;b.onclick=()=>{if(!own&&!buyTheme(S,th.id))return;paintRoom(S,paintSel,th.id);save();sfx.buy();notify('Room '+(paintSel+1)+' is now '+th.icon+' '+th.name+'!');buildRooms();renderShop();renderAll()};sw.append(b)}pt.append(sw);box.append(pt)}
+ else for(const u of UPGRADES){const own=S.upgrades.includes(u.id);card(u.icon,u.name,u.desc,own,own?'✓ Yours':'🪙 '+u.price,!own&&S.coins>=u.price,()=>buyUpgrade(S,u.id))}}
+document.querySelectorAll('.tabs [data-tab]').forEach(t=>t.onclick=()=>{shopTab=t.dataset.tab;renderShop()});
+$('#shopBtn').onclick=()=>{renderShop();$('#shopDialog').showModal()};$('#shopClose').onclick=()=>$('#shopDialog').close();
+$('#bookBtn').onclick=()=>{const box=$('#book');box.innerHTML='';let met=0;for(const g of GUESTS.concat(VIPS)){const n=S.stayed[g.name]||0;if(n)met++;const d=document.createElement('div');d.className='entry'+(n?'':' unknown')+(g.vip?' vip':'');d.innerHTML='<span class="ic" aria-hidden="true"></span><span class="nm"></span><span class="ct"></span>';d.children[0].textContent=n?g.icon:'❔';d.children[1].textContent=n?g.name:g.vip?'VIP ???':'???';d.children[2].textContent=n?'Stayed '+n+'×':g.vip?'Very special guest':'Not met yet';box.append(d)}
+ $('#bookSub').textContent=S.guests+' guests checked out · '+met+' of '+(GUESTS.length+VIPS.length)+' buddies met';$('#bookDialog').showModal()};
+$('#bookClose').onclick=()=>$('#bookDialog').close();
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+document.querySelectorAll('#shopDialog,#bookDialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
+buildRooms();renderAll();
+if(S.guests===0&&S.today===0){$('#dayTitle').textContent='Welcome to Buddy Hotel!';$('#dayText').textContent='Buddy guests are on their way! Check them into rooms, then bring them what they ask for before they get grumpy. Happy guests pay more!'}
+else{$('#dayTitle').textContent='Day '+S.day;$('#dayText').textContent='Welcome back! Guests are on their way.'}
+$('#dayDialog').showModal();last=performance.now();raf=requestAnimationFrame(frame);
+window.__hotel={get S(){return S},get rooms(){return rooms},get queue(){return queue},tapRoom,startDay,renderAll,pickItem:id=>{selItem=id}};
+}
+</script>
+</body>
+</html>
