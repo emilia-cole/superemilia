@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eaf4ff">
+<meta name="author" content="Emilia">
+<meta name="description" content="Build a tiny world inside a snow globe, then grab it and shake it to make it snow. Collect snowflakes for new scenes, magic snow, and item packs. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/globe/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/globe/">
+<meta property="og:title" content="Snow Globe Maker · A Super Emilia Game">
+<meta property="og:description" content="Build a tiny world inside a snow globe, then grab it and shake it to make it snow. Collect snowflakes for new scenes, magic snow, and item packs. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Snow Globe Maker</title>
+<style>
+/* Layout: top bar, a tool row, a tip line, then the workbench (the globe on the left, the tray of things to drag in on the right), and the style picker (scene, snow, base) below. */
+:root{
+ color-scheme:light;
+ --bg:#eaf4ff; --bg-2:#f6eeff; --paper:#fff; --line:#d6e2f2; --ink:#24314a; --soft:#64738c;
+ --ice:#4aa3df; --ice-deep:#2c7bb3;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--ice-deep);outline-offset:2px}
+.app{max-width:1000px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ice-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.flakes{color:#2c7bb3;border-color:#bcdcf5;background:#eef7ff}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.keep{background:var(--ice);border-color:var(--ice-deep);color:#fff;box-shadow:0 4px 0 var(--ice-deep);margin-left:auto}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+/* workbench */
+.bench{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #d3dff0;background:radial-gradient(circle at 36% 40%,#ffffff 0 30%,transparent 60%),linear-gradient(180deg,#f3f8ff 0 78%,#e6d3bd 78%);container-type:inline-size;touch-action:none}
+.tray{position:absolute;left:72%;right:1.2%;top:2.5%;bottom:2.5%;background:#ffffffdd;border-radius:2cqw;box-shadow:0 .6cqw 0 #0001;overflow:hidden}
+.tray h4{margin:1.2cqw 0 0;text-align:center;font-size:1.7cqw;color:var(--soft)}
+.p{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;-webkit-user-select:none;user-select:none}
+.thing{font-size:4.6cqw;cursor:grab;touch-action:none;z-index:6;filter:drop-shadow(0 .3cqw 0 #0002)}
+.thing.drag{cursor:grabbing;z-index:50;transform:translate(-50%,-50%) scale(1.2)}
+.thing.back{transition:left .3s ease,top .3s ease}
+.lock{font-size:1.6cqw;font-weight:900;color:var(--soft);text-align:center;line-height:1.3;cursor:pointer;z-index:6;background:#f3f7fc;border-radius:1.2cqw;padding:.8cqw 1cqw;border:.2cqw dashed #c6d4e6}
+/* the globe: glass ball, scene, hill, things inside, snow on top, and the base */
+.globe{position:absolute;left:36%;top:42%;width:46cqw;height:46cqw;transform:translate(-50%,-50%);z-index:3}
+.globe.hot .glass{box-shadow:0 0 0 1cqw #ffc83d,inset 0 0 3cqw #fff}
+.glass{position:absolute;inset:0;border-radius:50%;overflow:hidden;box-shadow:0 0 0 .5cqw #ffffffcc,inset 0 0 3cqw #fff,0 1.4cqw 3cqw #0002;container-type:inline-size}
+.glass:after{content:"";position:absolute;left:14%;top:8%;width:34%;height:22%;border-radius:50%;background:radial-gradient(ellipse,#ffffffb0,transparent 70%);transform:rotate(-30deg);pointer-events:none;z-index:9}
+.scene{position:absolute;inset:0}
+.hill{position:absolute;left:-10%;right:-10%;bottom:-18%;height:46%;border-radius:50%}
+.inside{position:absolute;transform:translate(-50%,-50%);line-height:1;filter:drop-shadow(0 .6cqw 0 #0002)}
+.glass .inside{cursor:grab;touch-action:none;z-index:4}
+.glass .inside.drag{cursor:grabbing;z-index:8}
+.snow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:7}
+.base{position:absolute;left:50%;top:94%;width:68%;height:22%;transform:translateX(-50%);border-radius:1.4cqw 1.4cqw 3cqw 3cqw;box-shadow:inset 0 -1.2cqw 0 #0003,0 1cqw 0 #0002;cursor:grab;touch-action:none;z-index:2;display:grid;place-items:center;font-size:1.8cqw;font-weight:900;color:#ffffffcc;text-shadow:0 .2cqw 0 #0003}
+.base:before{content:"";position:absolute;left:8%;right:8%;top:-10%;height:28%;border-radius:50%;background:inherit;filter:brightness(1.15)}
+.base.drag{cursor:grabbing}
+.fx{position:absolute;transform:translate(-50%,-50%);font-size:3cqw;font-weight:900;pointer-events:none;animation:rise 1.1s ease-out forwards;z-index:60;color:#2c7bb3;text-shadow:0 .2cqw 0 #fff}
+/* style picker */
+.styles{display:grid;gap:10px;background:var(--paper);border:2px solid var(--line);border-radius:20px;padding:12px}
+.srow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.srow b{width:70px;font-size:14px}
+.opt{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:12px;font-size:13px}
+.opt i{width:22px;height:22px;border-radius:50%;display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1.5px #0002}
+.opt.on{border-color:var(--ice);box-shadow:0 0 0 3px #4aa3df33;background:#eef7ff}
+.opt.locked{color:var(--soft)}
+/* dialogs */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(600px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #24314a55}
+dialog::backdrop{background:#24314a66;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.shelf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-height:min(64dvh,560px);overflow:auto;padding:6px;background:linear-gradient(transparent 86%,#c9a27a 86% 90%,transparent 90%) 0 0/100% 210px}
+.mini{position:relative;aspect-ratio:1/1.12;cursor:pointer;border:none;background:none;padding:0;container-type:inline-size}
+.mini .mg{position:absolute;left:8%;top:0;width:84%;aspect-ratio:1;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1.4cqw #ffffffcc,inset 0 0 5cqw #fff;container-type:inline-size}
+.mini .mb{position:absolute;left:18%;right:18%;bottom:0;height:22%;border-radius:4cqw 4cqw 8cqw 8cqw;box-shadow:inset 0 -3cqw 0 #0003}
+.packs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pack{display:grid;gap:4px;justify-items:center;padding:12px 6px;border-radius:16px;border:2px solid var(--line);text-align:center}
+.pack .ic{font-size:26px;letter-spacing:2px}
+.pack.own{background:#f0faf3;border-color:#c5e8cf}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:70;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-220%) scale(1.1)}}
+@media (max-width:640px){.title strong{font-size:17px}.shelf{grid-template-columns:repeat(2,minmax(0,1fr))}.packs{grid-template-columns:1fr}.srow b{width:100%}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Snow Globe Maker</strong></div>
+  <span class="chip" id="shelfChip" aria-label="Snow globes on your shelf">🔮 0</span>
+  <span class="chip flakes" id="flakes" aria-label="Snowflakes">❄️ 0</span>
+ </div>
+ <div class="tools">
+  <button type="button" id="shelfBtn">🖼️ Shelf</button>
+  <button type="button" id="packsBtn">🎁 Item packs</button>
+  <button type="button" id="clearBtn">🧹 Empty the globe</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+  <button type="button" class="keep" id="keepBtn">🖼️ Put it on the shelf</button>
+ </div>
+ <p class="tip" id="tip" role="status"></p>
+ <section class="bench" id="bench" aria-label="Your snow globe workbench"></section>
+ <div class="styles" id="styles"></div>
+</div>
+
+<dialog id="shelfDialog" aria-labelledby="shelfTitle"><div class="dlg">
+ <header><h2 id="shelfTitle">🖼️ Your snow globe shelf</h2><button type="button" id="shelfClose" aria-label="Close the shelf">✕</button></header>
+ <p id="shelfSub"></p><div class="shelf" id="shelf"></div>
+</div></dialog>
+<dialog id="packsDialog" aria-labelledby="packsTitle"><div class="dlg">
+ <header><h2 id="packsTitle">🎁 Item packs</h2><span class="chip flakes" id="packsFlakes">❄️ 0</span><button type="button" id="packsClose" aria-label="Close item packs">✕</button></header>
+ <p>Shake your snow globe to collect snowflakes ❄️, then trade them for new things to put inside!</p>
+ <div class="packs" id="packs"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+// things to put in the globe: [emoji, size in % of the globe]
+const PACKS=[
+ {id:'winter',name:'Winter Village',price:0,items:[['🏠',20],['🌲',22],['⛄',18],['🦌',16],['🐧',13],['⭐',10]]},
+ {id:'castle',name:'Fairy-Tale Castle',price:40,items:[['🏰',28],['👑',10],['🐉',20],['🦄',17]]},
+ {id:'space',name:'Outer Space',price:50,items:[['🚀',20],['🪐',18],['👽',13],['🌙',14]]},
+ {id:'candy',name:'Candy Land',price:50,items:[['🍭',16],['🧁',14],['🍬',10],['🎂',18]]},
+ {id:'farm',name:'Snowy Farm',price:60,items:[['🐄',17],['🐑',14],['🚜',18],['🌻',14]]},
+ {id:'party',name:'Holiday Party',price:70,items:[['🎄',24],['🎁',13],['🔔',11],['🧸',14]]}];
+const SCENES=[
+ {id:'day',name:'Snowy day',price:0,bg:'linear-gradient(180deg,#a9dcff,#e9f6ff)',hill:'#ffffff',dot:'#a9dcff'},
+ {id:'night',name:'Starry night',price:0,bg:'radial-gradient(circle at 30% 25%,#fff 0 .4%,transparent .6%),radial-gradient(circle at 70% 18%,#fff 0 .4%,transparent .6%),radial-gradient(circle at 55% 35%,#fff 0 .3%,transparent .5%),radial-gradient(circle at 20% 45%,#fff 0 .3%,transparent .5%),radial-gradient(circle at 82% 40%,#fff 0 .35%,transparent .55%),linear-gradient(180deg,#0b1a44,#2b3f7a)',hill:'#e8eefc',dot:'#1b2c5e'},
+ {id:'sunset',name:'Sunset',price:30,bg:'linear-gradient(180deg,#ff8a8a,#ffc58a 55%,#ffe8b0)',hill:'#fff4ec',dot:'#ff9f7a'},
+ {id:'ocean',name:'Under the sea',price:50,bg:'radial-gradient(circle at 25% 60%,#ffffff55 0 1.2%,transparent 1.5%),radial-gradient(circle at 70% 40%,#ffffff55 0 1%,transparent 1.3%),linear-gradient(180deg,#5fd0ef,#1b78b0)',hill:'#f3dfa6',dot:'#2b9fd0'},
+ {id:'space',name:'Outer space',price:60,bg:'radial-gradient(circle at 20% 30%,#fff 0 .4%,transparent .6%),radial-gradient(circle at 75% 22%,#fff 0 .5%,transparent .7%),radial-gradient(circle at 60% 50%,#ffd 0 .3%,transparent .5%),radial-gradient(circle at 35% 15%,#fff 0 .3%,transparent .5%),radial-gradient(circle at 50% 40%,#5b2c91,#12002b 75%)',hill:'#c9c9d6',dot:'#3a1a6b'},
+ {id:'aurora',name:'Northern lights',price:80,bg:'linear-gradient(170deg,transparent 30%,#4cf2b088 40%,transparent 50%),linear-gradient(190deg,transparent 35%,#b06bff66 45%,transparent 55%),linear-gradient(180deg,#071433,#16345c)',hill:'#eef6ff',dot:'#2bd68f'}];
+const SNOWS=[{id:'white',name:'White',price:0,dot:'#ffffff'},{id:'pink',name:'Pink',price:20,dot:'#ff9ccc'},{id:'gold',name:'Gold glitter',price:40,dot:'#ffd447'},{id:'rainbow',name:'Rainbow',price:60,dot:'conic-gradient(#ff5a5f,#ffd447,#4cc38a,#5aa9ff,#a66bff,#ff5a5f)'}];
+const BASES=[{id:'wood',name:'Wood',price:0,c:'#b9824f'},{id:'red',name:'Red',price:15,c:'#e2565c'},{id:'blue',name:'Blue',price:15,c:'#4a8fe0'},{id:'purple',name:'Purple',price:15,c:'#9a63e0'},{id:'gold',name:'Gold',price:30,c:'#e6b632'}];
+const MAX_ITEMS=24,MAX_SHELF=30,SHAKE_CAP=12;
+const SAVE_KEY='superEmiliaGlobe';
+
+// ---------- pure game logic (also used by the tests) ----------
+const byId=(list,id)=>list.find(x=>x.id===id);
+function owns(save,kind,id){const list={pack:PACKS,scene:SCENES,snow:SNOWS,base:BASES}[kind],it=list&&byId(list,id);return!!it&&(it.price===0||save.owned.includes(kind+':'+id))}
+const itemSize=e=>{for(const p of PACKS)for(const [ic,s] of p.items)if(ic===e)return s;return 0};
+const ownedItems=save=>PACKS.filter(p=>owns(save,'pack',p.id)).flatMap(p=>p.items);
+// a spot inside the glass (in % of the globe): not too close to the edge
+const inGlobe=(x,y)=>Math.hypot(x-50,y-50)<=43;
+function newGlobe(){return{scene:'day',snow:'white',base:'wood',items:[]}}
+function addItem(g,e,x,y){if(!itemSize(e)||g.items.length>=MAX_ITEMS||!inGlobe(x,y))return false;g.items.push({e,x:Math.round(x*10)/10,y:Math.round(y*10)/10});return true}
+// shaking: every 25 points of movement (in % of the bench) earns a snowflake, up to SHAKE_CAP per shake
+const shakeReward=dist=>Math.min(SHAKE_CAP,Math.floor(dist/25));
+function buy(save,kind,id){const list={pack:PACKS,scene:SCENES,snow:SNOWS,base:BASES}[kind],it=list&&byId(list,id);if(!it||owns(save,kind,id)||save.flakes<it.price)return false;save.flakes-=it.price;save.owned.push(kind+':'+id);return true}
+// putting a globe on the shelf gives 10 snowflakes; the newest MAX_SHELF are kept
+function shelve(save,g){if(!g.items.length)return 0;save.shelf.unshift(JSON.parse(JSON.stringify(g)));save.shelf=save.shelf.slice(0,MAX_SHELF);save.made++;save.flakes+=10;return 10}
+// the inside of a globe as HTML (sizes in cqw of the glass)
+function globeInside(g){const sc=byId(SCENES,g.scene)||SCENES[0];let h='<div class="scene" style="background:'+sc.bg+'"></div><div class="hill" style="background:'+sc.hill+'"></div>';
+ g.items.slice().sort((a,b)=>a.y-b.y).forEach(it=>{h+='<div class="inside" data-i="'+g.items.indexOf(it)+'" style="left:'+it.x+'%;top:'+it.y+'%;font-size:'+itemSize(it.e)*(0.75+it.y/200)+'cqw">'+it.e+'</div>'});return h}
+function cleanGlobe(raw){if(!raw||typeof raw!=='object')return null;const g=newGlobe();if(byId(SCENES,raw.scene))g.scene=raw.scene;if(byId(SNOWS,raw.snow))g.snow=raw.snow;if(byId(BASES,raw.base))g.base=raw.base;
+ if(Array.isArray(raw.items))g.items=raw.items.filter(it=>it&&itemSize(it.e)&&Number.isFinite(it.x)&&Number.isFinite(it.y)&&inGlobe(it.x,it.y)).slice(0,MAX_ITEMS).map(it=>({e:it.e,x:it.x,y:it.y}));return g}
+function defaultSave(){return{flakes:0,shakes:0,made:0,owned:[],shelf:[],current:newGlobe(),sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0};
+ s.flakes=num(raw.flakes);s.shakes=num(raw.shakes);s.made=num(raw.made);
+ if(Array.isArray(raw.owned))s.owned=[...new Set(raw.owned.filter(k=>{if(typeof k!=='string')return false;const [kind,id]=k.split(':'),list={pack:PACKS,scene:SCENES,snow:SNOWS,base:BASES}[kind],it=list&&byId(list,id);return it&&it.price>0}))];
+ if(Array.isArray(raw.shelf))s.shelf=raw.shelf.map(cleanGlobe).filter(g=>g&&g.items.length).slice(0,MAX_SHELF);
+ const cur=cleanGlobe(raw.current);if(cur){if(!owns(s,'scene',cur.scene))cur.scene='day';if(!owns(s,'snow',cur.snow))cur.snow='white';if(!owns(s,'base',cur.base))cur.base='wood';s.current=cur}
+ s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s),bench=$('#bench');
+let S=loadSave(),G=S.current,audio=null,cv=null,cx=null,flakes=[],shakeOff={x:0,y:0},shaking=false,last=performance.now();
+const HOME={x:36,y:42};
+function save(){S.current=G;try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05,end=1.25){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*end,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={plop:()=>tone(620,.07,'triangle'),swish:()=>tone(1400+Math.random()*900,.05,'sine',.018,.6),chime:()=>[1318,1568,2093].forEach((f,i)=>setTimeout(()=>tone(f,.15,'sine',.04,1),i*90)),coin:()=>[988,1318].forEach((f,i)=>setTimeout(()=>tone(f,.08,'triangle',.03),i*70)),nope:()=>tone(220,.14,'sawtooth',.03,.9)};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function setTip(h){$('#tip').innerHTML=h}
+function pct(e){const b=bench.getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function globePct(e){const b=$('.glass').getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function el(cls,x,y,html,parent=bench){const d=document.createElement('div');d.className=cls;if(x!=null){d.style.left=x+'%';d.style.top=y+'%'}if(html!=null)d.innerHTML=html;parent.append(d);return d}
+function fx(x,y,t){const d=el('fx',x,y);d.textContent=t;setTimeout(()=>d.remove(),1100)}
+function renderTop(){$('#flakes').textContent='❄️ '+S.flakes;$('#packsFlakes').textContent='❄️ '+S.flakes;$('#shelfChip').textContent='🔮 '+S.shelf.length;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
+// ----- the bench -----
+function build(){bench.innerHTML='';const gl=el('globe');gl.id='globe';gl.style.left=HOME.x+'%';gl.style.top=HOME.y+'%';
+ gl.innerHTML='<div class="base" id="base" role="button" aria-label="The base. Grab it and shake the globe!">SHAKE ME!</div><div class="glass" id="glass" aria-label="Inside the snow globe"></div>';$('#base').style.background=byId(BASES,G.base).c;
+ drawInside();
+ // the tray of things you own
+ const tray=el('tray');const h=document.createElement('h4');h.textContent='Drag things in!';tray.append(h);
+ const items=ownedItems(S);items.forEach(([e],j)=>{const x=78+(j%3)*7,y=12+Math.floor(j/3)*12.5;const d=el('p thing',x,y,e);d.setAttribute('aria-label','Drag the '+e+' into the snow globe');trayDrag(d,e,x,y)});
+ const lockedLeft=PACKS.filter(p=>!owns(S,'pack',p.id)).length;if(lockedLeft){const y=Math.min(90,12+Math.ceil(items.length/3)*12.5);const l=el('p lock',85,y,'🎁 '+lockedLeft+' more pack'+(lockedLeft===1?'':'s')+'<br>to unlock');l.onclick=openPacks}
+ bindShake();renderTop();renderStyles()}
+function drawInside(){const gl=$('#glass');gl.innerHTML=globeInside(G);cv=document.createElement('canvas');cv.className='snow';gl.append(cv);cx=cv.getContext('2d');resizeSnow();
+ gl.querySelectorAll('.inside').forEach(d=>innerDrag(d,Number(d.dataset.i)))}
+function resizeSnow(){if(!cv)return;const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.max(10,r.width*dpr);cv.height=Math.max(10,r.height*dpr);cx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',resizeSnow);
+// drag from the tray into the glass
+function trayDrag(d,e,hx,hy){let off=null;
+ d.addEventListener('pointerdown',ev=>{ev.preventDefault();d.setPointerCapture(ev.pointerId);const p=pct(ev);off={dx:p.x-hx,dy:p.y-hy};d.classList.add('drag');d.classList.remove('back')});
+ d.addEventListener('pointermove',ev=>{if(!off)return;const p=pct(ev);d.style.left=(p.x-off.dx)+'%';d.style.top=(p.y-off.dy)+'%';const gp=globePct(ev);$('#globe').classList.toggle('hot',inGlobe(gp.x,gp.y))});
+ const end=ev=>{if(!off)return;off=null;d.classList.remove('drag');$('#globe').classList.remove('hot');const gp=globePct(ev);
+  if(ev.type!=='pointercancel'&&inGlobe(gp.x,gp.y)){if(addItem(G,e,gp.x,gp.y)){sfx.plop();save();drawInside();setTip(G.items.length===1?'✨ Nice! Add more things, then <b>grab the base and shake</b> the globe back and forth to make it snow!':'✨ Lovely! <b>Shake the globe</b> to see the snow.')}else notify(G.items.length>=MAX_ITEMS?'The globe is full! Drag something out first.':'Drop it inside the glass ball!')}
+  else if(ev.type!=='pointercancel'&&gp.x>0&&gp.x<100&&gp.y>0&&gp.y<100)notify('Drop it a little more inside the glass!');
+  d.classList.add('back');d.style.left=hx+'%';d.style.top=hy+'%'};
+ d.addEventListener('pointerup',end);d.addEventListener('pointercancel',end)}
+// move things inside the glass, or drag them out to take them away
+function innerDrag(d,i){let on=false;
+ d.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();d.setPointerCapture(ev.pointerId);on=true;d.classList.add('drag')});
+ d.addEventListener('pointermove',ev=>{if(!on)return;const gp=globePct(ev);d.style.left=gp.x+'%';d.style.top=gp.y+'%';d.style.opacity=inGlobe(gp.x,gp.y)?1:.4});
+ const end=ev=>{if(!on)return;on=false;d.classList.remove('drag');const gp=globePct(ev),it=G.items[i];if(!it)return;
+  if(inGlobe(gp.x,gp.y)){it.x=Math.round(gp.x*10)/10;it.y=Math.round(gp.y*10)/10}else{G.items.splice(i,1);tone(400,.08,'triangle',.03);notify('Taken out of the globe')}save();drawInside()};
+ d.addEventListener('pointerup',end);d.addEventListener('pointercancel',end)}
+// shaking: grab the base and move it back and forth; the globe wobbles, the snow flies, and you earn snowflakes
+function bindShake(){const base=$('#base'),gl=$('#globe');let start=null,lastP=null,dist=0,earned=0;
+ base.addEventListener('pointerdown',e=>{e.preventDefault();base.setPointerCapture(e.pointerId);start=pct(e);lastP=start;dist=0;earned=0;shaking=true;base.classList.add('drag')});
+ base.addEventListener('pointermove',e=>{if(!start)return;const p=pct(e),d=Math.hypot(p.x-lastP.x,p.y-lastP.y);dist+=d;lastP=p;
+  shakeOff.x=Math.max(-7,Math.min(7,p.x-start.x));shakeOff.y=Math.max(-6,Math.min(6,p.y-start.y));gl.style.left=(HOME.x+shakeOff.x)+'%';gl.style.top=(HOME.y+shakeOff.y)+'%';gl.style.transform='translate(-50%,-50%) rotate('+(shakeOff.x*1.2)+'deg)';
+  if(d>.8){stir(Math.min(1,d/6));if(Math.random()<.35)sfx.swish()}
+  const r=shakeReward(dist);if(r>earned){S.flakes+=r-earned;earned=r;fx(HOME.x+shakeOff.x,14,'❄️ +1');renderTop()}});
+ const end=()=>{if(!start)return;start=null;shaking=false;base.classList.remove('drag');gl.style.transition='left .4s cubic-bezier(.3,1.6,.5,1),top .4s cubic-bezier(.3,1.6,.5,1),transform .4s cubic-bezier(.3,1.6,.5,1)';gl.style.left=HOME.x+'%';gl.style.top=HOME.y+'%';gl.style.transform='translate(-50%,-50%)';setTimeout(()=>{gl.style.transition=''},420);
+  if(dist>10){S.shakes++;save();if(earned)setTip('❄️ Whoosh! You earned '+earned+' snowflake'+(earned===1?'':'s')+'. Spend them on <b>🎁 Item packs</b>, new scenes and magic snow!');}};
+ base.addEventListener('pointerup',end);base.addEventListener('pointercancel',end)}
+// ----- snow -----
+function initFlakes(){flakes=Array.from({length:170},()=>{const a=Math.random()*Math.PI,r=.5*Math.sqrt(Math.random());return{x:.5+Math.cos(a)*r*.9,y:.82+Math.random()*.12,vx:0,vy:0,rest:true,s:.6+Math.random()*1.2,h:Math.random()*360,tw:Math.random()*6,fs:.025+Math.random()*.07}})}
+function stir(power){for(const f of flakes){if(Math.random()<.5*power+.08){f.rest=false;f.vy=-(.08+Math.random()*.75)*power-.03;f.vx=(Math.random()-.5)*.7*power+shakeOff.x*.01}}}
+function floor(x){const dx=x-.5;return .5+Math.sqrt(Math.max(0,.46*.46-dx*dx))-.03}
+function snowLoop(now){const dt=Math.min(.05,(now-last)/1000);last=now;requestAnimationFrame(snowLoop);if(!cv||!cv.isConnected)return;const w=cv.clientWidth,h=cv.clientHeight;cx.clearRect(0,0,w,h);const kind=G.snow;
+ for(const f of flakes){if(!f.rest){f.vy+=.55*dt;if(f.vy<0)f.vy*=(1-1.6*dt);f.vy=Math.min(f.vy,f.fs);f.vx*=(1-1.5*dt);f.x+=(f.vx+Math.sin(now/(500+f.fs*9000)+f.tw)*.012)*dt*3;f.y+=f.vy*dt*3;
+   // bounce off the inside of the glass
+   const dx=f.x-.5,dy=f.y-.5,d=Math.hypot(dx,dy);if(d>.46){const nx=dx/d,ny=dy/d,dot=f.vx*nx+f.vy*ny;f.x=.5+nx*.46;f.y=.5+ny*.46;if(dot>0){f.vx-=1.5*dot*nx;f.vy-=1.5*dot*ny}}if(f.y>=floor(f.x)&&f.vy>0){f.y=floor(f.x)-Math.random()*.06;f.rest=true}}
+  let col='#fff';if(kind==='pink')col='#ffb3d6';else if(kind==='gold')col=(Math.sin(now/200+f.tw)>.3)?'#fff6b0':'#ffcc33';else if(kind==='rainbow')col='hsl('+((f.h+now/20)%360)+' 90% 70%)';
+  cx.fillStyle=col;cx.beginPath();cx.arc(f.x*w,f.y*h,f.s*w/220,0,7);cx.fill()}}
+// ----- style picker: scene, snow, base -----
+function renderStyles(){const box=$('#styles');box.innerHTML='';
+ const row=(label,kind,list,cur,swatch,set)=>{const r=document.createElement('div');r.className='srow';const b=document.createElement('b');b.textContent=label;r.append(b);
+  list.forEach(it=>{const own=owns(S,kind,it.id),o=document.createElement('button');o.type='button';o.className='opt'+(cur===it.id?' on':'')+(own?'':' locked');o.innerHTML='<i style="background:'+swatch(it)+'"></i><span></span>';o.querySelector('span').textContent=own?it.name:it.name+' 🔒 ❄️'+it.price;
+   o.setAttribute('aria-pressed',cur===it.id);o.onclick=()=>{if(!own){if(buy(S,kind,it.id)){sfx.coin();notify(it.name+' unlocked!')}else{sfx.nope();notify('You need '+(it.price-S.flakes)+' more snowflakes. Shake the globe to get more!');return}}set(it.id);sfx.plop();save();if(kind==='base')$('#base').style.background=it.c;else drawInside();renderStyles();renderTop()};r.append(o)});box.append(r)};
+ row('🌄 Scene','scene',SCENES,G.scene,it=>it.dot,id=>{G.scene=id});row('❄️ Snow','snow',SNOWS,G.snow,it=>it.dot,id=>{G.snow=id});row('🟫 Base','base',BASES,G.base,it=>it.c,id=>{G.base=id})}
+// ----- shelf and packs -----
+function miniHTML(g){return'<div class="mg">'+globeInside(g)+'</div><div class="mb" style="background:'+byId(BASES,g.base).c+'"></div>'}
+$('#shelfBtn').onclick=()=>{const sh=$('#shelf');sh.innerHTML='';if(!S.shelf.length)sh.innerHTML='<p style="grid-column:1/-1;text-align:center">Your shelf is empty. Make a snow globe and tap Put it on the shelf!</p>';
+ S.shelf.forEach((g,i)=>{const b=document.createElement('button');b.type='button';b.className='mini';b.innerHTML=miniHTML(g);b.setAttribute('aria-label','Snow globe '+(i+1)+'. Open it to play with it again.');b.onclick=()=>{G=cleanGlobe(g);save();$('#shelfDialog').close();build();stir(1);setTip('🔮 Here it is again! Shake it, or change it and put it on the shelf as a new globe.')};sh.append(b)});
+ $('#shelfSub').textContent=S.shelf.length+' snow globe'+(S.shelf.length===1?'':'s')+' on your shelf · '+S.shakes+' shakes. Tap one to take it down and play with it.';$('#shelfDialog').showModal()};
+$('#shelfClose').onclick=()=>$('#shelfDialog').close();
+function openPacks(){renderTop();const box=$('#packs');box.innerHTML='';PACKS.forEach(p=>{const own=owns(S,'pack',p.id),d=document.createElement('div');d.className='pack'+(own?' own':'');d.innerHTML='<span class="ic" aria-hidden="true">'+p.items.map(i=>i[0]).join('')+'</span><b></b>';d.querySelector('b').textContent=p.name;
+  const b=document.createElement('button');b.type='button';if(own){b.textContent='✓ Yours';b.disabled=true}else{b.textContent='❄️ '+p.price;b.disabled=S.flakes<p.price;b.setAttribute('aria-label','Unlock '+p.name+' for '+p.price+' snowflakes');b.onclick=()=>{if(buy(S,'pack',p.id)){save();sfx.chime();notify(p.name+' unlocked! '+p.items.map(i=>i[0]).join(''));openPacks();build()}}}d.append(b);box.append(d)});$('#packsDialog').showModal()}
+$('#packsBtn').onclick=openPacks;$('#packsClose').onclick=()=>$('#packsDialog').close();
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
+$('#keepBtn').onclick=()=>{const got=shelve(S,G);if(!got){notify('Put something in the globe first!');return}save();renderTop();sfx.chime();notify('On the shelf! +10 snowflakes ❄️');setTip('🖼️ Your snow globe is on the <b>shelf</b>! Keep changing this one, or empty it and make a brand new one.')};
+$('#clearBtn').onclick=()=>{if(!G.items.length)return;G.items=[];save();drawInside();sfx.plop();setTip('🧹 An empty globe! Drag things in from the tray.')};
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+initFlakes();build();requestAnimationFrame(snowLoop);
+setTip(G.items.length?'🔮 Welcome back! <b>Grab the base and shake</b> to make it snow.':'🔮 Make your own snow globe! <b>Drag things</b> from the tray into the glass ball, then <b>grab the base and shake it</b> back and forth to make it snow.');
+window.__globe={get S(){return S},get G(){return G},build,HOME};
+}
+</script>
+</body>
+</html>
