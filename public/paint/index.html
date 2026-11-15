@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fdf0ff">
+<meta name="author" content="Emilia">
+<meta name="description" content="Color in big pictures with paint, glitter, rainbow paint, and stickers, then hang them in your own art gallery. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/paint/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/paint/">
+<meta property="og:title" content="Rainbow Painter · A Super Emilia Game">
+<meta property="og:description" content="Color in big pictures with paint, glitter, rainbow paint, and stickers, then hang them in your own art gallery. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Rainbow Painter</title>
+<style>
+/* Layout: top bar, a tool row, a tip line, then the studio: the picture on the left and the paint and sticker box on the right (below on phones). */
+:root{
+ color-scheme:light;
+ --bg:#fdf0ff; --bg-2:#e8f4ff; --paper:#fff; --line:#ead9f2; --ink:#33284a; --soft:#75688c;
+ --grape:#9b5de5; --grape-deep:#6d34b8;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--grape-deep);outline-offset:2px}
+.app{max-width:1060px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--grape-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px;background:linear-gradient(90deg,#ff5a5f,#ff9f43,#e0b400,#34c759,#3b82f6,#a855f7);-webkit-background-clip:text;background-clip:text;color:transparent}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools .on{background:#fff6c7;border-color:#f2d250;box-shadow:0 0 0 3px #ffd93d55}
+.hang{background:var(--grape);border-color:var(--grape-deep);color:#fff;box-shadow:0 4px 0 var(--grape-deep);margin-left:auto}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+.studio{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:12px;align-items:start}
+.canvas{background:#fff;border-radius:22px;border:6px solid #fff;box-shadow:0 0 0 3px #e3c9f0,0 10px 0 #dcc6e8;overflow:hidden;touch-action:none}
+.canvas svg{display:block;width:100%;height:auto;cursor:crosshair}
+svg .region{stroke:#2e2440;stroke-width:3;stroke-linejoin:round;transition:fill .15s}
+svg .ink{stroke:#2e2440;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+svg .glit{pointer-events:none;stroke:none}
+svg .sticker{font-size:40px;cursor:grab;dominant-baseline:central;text-anchor:middle}
+svg .sticker.drag{cursor:grabbing;opacity:.85}
+.box{background:var(--paper);border:2px solid var(--line);border-radius:20px;padding:12px;display:grid;gap:10px}
+.box h3{margin:0;font-size:14px;letter-spacing:.3px;color:var(--soft)}
+.swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.sw{aspect-ratio:1;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line);padding:0}
+.sw.on{box-shadow:0 0 0 4px var(--grape-deep);transform:scale(1.08)}
+.stickers{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.st{font-size:26px;line-height:1;padding:5px 0;border-radius:12px;border:2px solid transparent;background:#faf6fd;cursor:grab;touch-action:none}
+.st.locked{font-size:16px;opacity:.5;cursor:not-allowed}
+.floating{position:fixed;z-index:60;font-size:44px;line-height:1;transform:translate(-50%,-50%);pointer-events:none}
+.fx{position:fixed;z-index:55;transform:translate(-50%,-50%);font-size:34px;pointer-events:none;animation:rise 1.2s ease-out forwards}
+/* dialogs */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(640px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #33284a55}
+dialog::backdrop{background:#33284a66;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg.center{justify-items:center;text-align:center}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.primary{background:var(--grape);border-color:var(--grape-deep);color:#fff;box-shadow:0 4px 0 var(--grape-deep);font-size:17px;padding:11px 20px}
+.frame{background:#fff;padding:8px;border-radius:6px;border:7px solid #c9935a;box-shadow:inset 0 0 0 2px #a8743f,0 6px 14px #0002}
+.frame svg{display:block;width:100%;height:auto}
+.wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-height:min(64dvh,560px);overflow:auto;padding:4px}
+.pics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-height:min(64dvh,560px);overflow:auto;padding:4px}
+.pic{display:grid;gap:4px;justify-items:center;padding:8px;border-radius:16px;border:2px solid var(--line);background:#fff;text-align:center;font-weight:900;font-size:13.5px}
+.pic svg{width:100%;height:auto;display:block;border-radius:8px;border:1px solid var(--line)}
+.pic.locked{opacity:.55;cursor:not-allowed}
+.pic.here{border-color:var(--grape);box-shadow:0 0 0 2px #9b5de544}
+.pic small{color:var(--soft);font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:70;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-260%) scale(1.15)}}
+@media (max-width:760px){.studio{grid-template-columns:1fr}.swatches{grid-template-columns:repeat(8,1fr)}.stickers{grid-template-columns:repeat(8,1fr)}.title strong{font-size:17px}.wall,.pics{grid-template-columns:repeat(2,minmax(0,1fr))}.hang{margin-left:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Rainbow Painter</strong></div>
+  <span class="chip" id="hungChip" aria-label="Paintings in your gallery">🖼️ 0</span>
+ </div>
+ <div class="tools">
+  <button type="button" id="picsBtn">🎨 Pictures</button>
+  <button type="button" id="galleryBtn">🖼️ Gallery</button>
+  <button type="button" id="glitterBtn" aria-pressed="false">✨ Glitter</button>
+  <button type="button" id="undoBtn">↩️ Undo</button>
+  <button type="button" id="clearBtn">🧽 Start over</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+  <button type="button" class="hang" id="hangBtn">🖼️ Hang it up!</button>
+ </div>
+ <p class="tip" id="tip" role="status"></p>
+ <div class="studio">
+  <div class="canvas" id="canvas"></div>
+  <div class="box">
+   <h3>🎨 Paint</h3><div class="swatches" id="swatches"></div>
+   <h3>🦋 Stickers <span style="font-weight:700">(drag them on)</span></h3><div class="stickers" id="stickers"></div>
+  </div>
+ </div>
+</div>
+
+<dialog id="hungDialog" aria-labelledby="hungTitle"><div class="dlg center">
+ <h2 id="hungTitle">🖼️ Hung in your gallery!</h2>
+ <div class="frame" id="hungFrame" style="width:min(340px,80vw)"></div>
+ <p id="hungText"></p>
+ <button type="button" class="primary" id="hungOk">Paint another! 🎨</button>
+</div></dialog>
+<dialog id="galleryDialog" aria-labelledby="galleryTitle"><div class="dlg">
+ <header><h2 id="galleryTitle">🖼️ Your art gallery</h2><button type="button" id="galleryClose" aria-label="Close the gallery">✕</button></header>
+ <p id="gallerySub"></p><div class="wall" id="wall"></div>
+</div></dialog>
+<dialog id="picsDialog" aria-labelledby="picsTitle"><div class="dlg">
+ <header><h2 id="picsTitle">🎨 Pick a picture</h2><button type="button" id="picsClose" aria-label="Close pictures">✕</button></header>
+ <p>Every painting you hang in the gallery unlocks a new picture and 2 new stickers!</p>
+ <div class="pics" id="pics"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- drawing helpers (each picture is 400 x 300) ----------
+const band=(cx,cy,R,r)=>`M${cx-R} ${cy} A${R} ${R} 0 0 1 ${cx+R} ${cy} L${cx+r} ${cy} A${r} ${r} 0 0 0 ${cx-r} ${cy} Z`;
+const cloud=(x,y,s)=>`M${x} ${y} a${20*s} ${20*s} 0 0 1 ${8*s} ${-32*s} a${26*s} ${26*s} 0 0 1 ${46*s} ${-10*s} a${20*s} ${20*s} 0 0 1 ${32*s} ${18*s} a${16*s} ${16*s} 0 0 1 ${-6*s} ${24*s} Z`;
+const star=(cx,cy,R,r,n=5)=>{const pts=[];for(let i=0;i<n*2;i++){const a=-Math.PI/2+i*Math.PI/n,d=i%2?r:R;pts.push((cx+d*Math.cos(a)).toFixed(1)+','+(cy+d*Math.sin(a)).toFixed(1))}return pts.join(' ')};
+// a shape: [tag, attributes, ink?] — ink shapes are black outlines you do not paint
+const R=(x,y,w,h)=>['rect',`x="${x}" y="${y}" width="${w}" height="${h}" rx="2"`],C=(cx,cy,r)=>['circle',`cx="${cx}" cy="${cy}" r="${r}"`],
+ E=(cx,cy,rx,ry,rot=0)=>['ellipse',`cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"`+(rot?` transform="rotate(${rot} ${cx} ${cy})"`:'')],P=d=>['path',`d="${d}"`],G=pts=>['polygon',`points="${pts}"`],
+ INK=d=>['path',`d="${d}" fill="none"`,true],DOT=(cx,cy,r)=>['circle',`cx="${cx}" cy="${cy}" r="${r}" fill="#2e2440"`,true],SKY=()=>['rect','x="0" y="0" width="400" height="300"'];
+const PICTURES=[
+ {id:'rainbow',name:'Rainbow Day',icon:'🌈',shapes:[SKY(),P('M0 235 Q100 205 200 230 T400 225 V300 H0 Z'),C(70,65,34),P(band(220,240,165,140)),P(band(220,240,140,115)),P(band(220,240,115,90)),P(band(220,240,90,65)),P(band(220,240,65,40)),P(cloud(30,262,1.3)),P(cloud(300,262,1.3)),P(cloud(160,70,.8))]},
+ {id:'butterfly',name:'Butterfly',icon:'🦋',shapes:[SKY(),P('M0 255 Q200 230 400 255 V300 H0 Z'),C(350,50,26),E(150,108,62,48,-25),E(250,108,62,48,25),E(163,188,42,34,20),E(237,188,42,34,-20),C(145,103,17),C(255,103,17),C(165,192,12),C(235,192,12),E(200,150,12,62),C(200,82,16),INK('M194 70 Q180 42 168 38'),INK('M206 70 Q220 42 232 38')]},
+ {id:'house',name:'My House',icon:'🏡',shapes:[SKY(),C(340,55,30),P(cloud(40,90,1)),P('M0 222 H400 V300 H0 Z'),R(222,85,22,45),R(110,140,150,110),G('95,145 185,72 275,145'),R(166,190,40,60),R(124,160,32,32),R(214,160,32,32),DOT(198,222,3),G('170,250 202,250 218,300 154,300'),R(310,170,20,60),C(320,148,40)]},
+ {id:'fish',name:'Fishy Friend',icon:'🐠',shapes:[SKY(),P('M0 255 Q100 240 200 255 T400 250 V300 H0 Z'),P('M60 255 Q40 210 65 180 Q85 150 60 120 L72 118 Q98 152 78 182 Q55 212 75 255 Z'),P('M330 255 Q310 220 335 195 Q355 170 335 150 L347 148 Q370 172 348 197 Q325 222 345 255 Z'),G('118,150 66,108 66,192'),E(178,150,72,46),P('M168 108 Q192 76 218 110 Z'),P('M150 108 Q130 150 150 192 L166 194 Q146 150 166 106 Z'),C(216,138,11),DOT(219,138,5),C(268,108,8),C(284,84,6),C(294,62,4),G(star(250,268,18,8))]},
+ {id:'cat',name:'Kitty Cat',icon:'🐱',shapes:[SKY(),R(0,240,400,60),P('M245 232 Q320 232 315 172 Q312 150 325 150 Q340 152 335 175 Q330 252 245 250 Z'),E(200,212,66,50),G('148,98 160,40 196,82'),G('252,98 240,40 204,82'),G('160,86 165,56 185,79'),G('240,86 235,56 215,79'),C(200,116,56),E(180,108,11,14),E(220,108,11,14),['ellipse','cx="180" cy="110" rx="4" ry="8" fill="#2e2440"',true],['ellipse','cx="220" cy="110" rx="4" ry="8" fill="#2e2440"',true],G('193,128 207,128 200,137'),INK('M150 135 L184 138 M150 148 L184 143 M250 135 L216 138 M250 148 L216 143'),INK('M200 137 Q196 147 188 145 M200 137 Q204 147 212 145'),C(88,256,26),P('M63 252 Q88 236 113 252 Q88 268 63 252 Z')]},
+ {id:'flower',name:'Flower Pot',icon:'🌷',shapes:[SKY(),R(280,30,90,80),INK('M325 30 V110 M280 70 H370'),R(0,248,400,52),R(196,118,8,92),E(174,176,26,10,-30),E(226,166,26,10,30),C(231,100,22),C(216,127,22),C(184,127,22),C(169,100,22),C(184,73,22),C(216,73,22),C(200,100,18),G('152,216 248,216 234,274 166,274'),R(140,196,120,22)]},
+ {id:'rocket',name:'Rocket Trip',icon:'🚀',shapes:[SKY(),E(80,82,64,14,-15),C(80,82,36),G(star(330,60,15,6)),G(star(362,170,10,4)),G(star(52,222,13,5)),C(330,252,26),P('M184 244 Q200 300 216 244 Z'),G('172,198 140,250 176,240'),G('228,198 260,250 224,240'),R(170,120,60,124),P('M170 121 Q200 48 230 121 Z'),R(170,208,60,12),C(200,160,16)]},
+ {id:'icecream',name:'Ice Cream',icon:'🍦',shapes:[SKY(),R(0,258,400,42),C(70,70,22),C(330,60,16),C(352,210,20),G('160,172 240,172 200,282'),INK('M175 186 L205 246 M196 180 L222 216 M225 186 L195 246 M204 180 L178 216'),C(200,152,38),P('M168 168 Q172 196 184 186 Q190 205 202 188 Q214 204 220 186 Q232 196 234 166 Z'),C(200,106,31),C(200,68,25),C(205,38,9),INK('M205 29 Q210 16 222 12')]},
+ {id:'castle',name:'Castle',icon:'🏰',shapes:[SKY(),R(0,240,400,60),P('M60 252 Q200 272 340 252 L340 268 Q200 290 60 268 Z'),R(175,95,50,62),R(110,150,180,95),R(70,110,50,135),R(280,110,50,135),G('62,112 95,55 128,112'),G('272,112 305,55 338,112'),G('168,97 200,50 232,97'),P('M180 245 V206 Q200 182 220 206 V245 Z'),R(85,140,20,28),R(295,140,20,28),C(200,122,10),INK('M95 55 V28 M305 55 V28'),G('95,28 122,35 95,42'),G('305,28 332,35 305,42')]},
+ {id:'balloon',name:'Hot Air Balloon',icon:'🎈',shapes:[SKY(),P('M0 300 V250 Q90 195 180 250 V300 Z'),P('M150 300 V255 Q270 190 400 245 V300 Z'),P(cloud(26,92,1)),P(cloud(300,74,.9)),G('160,160 240,160 216,200 184,200'),C(200,102,72),E(200,102,30,72),R(184,224,32,26),INK('M187 200 L190 224 M213 200 L210 224'),INK('M298 150 q8 -8 16 0 q8 -8 16 0 M330 120 q6 -6 12 0 q6 -6 12 0')]}];
+const COLORS=[{id:'red',c:'#ff5a5f'},{id:'orange',c:'#ff9f43'},{id:'yellow',c:'#ffd93d'},{id:'lime',c:'#a3e635'},{id:'green',c:'#34c759'},{id:'teal',c:'#2dd4bf'},{id:'sky',c:'#7dd3fc'},{id:'blue',c:'#3b82f6'},{id:'purple',c:'#a855f7'},{id:'pink',c:'#ff8fc7'},{id:'brown',c:'#a5682a'},{id:'white',c:'#ffffff'},{id:'gray',c:'#9ca3af'},{id:'black',c:'#3a3347'},{id:'rainbow',c:'rainbow'}];
+const STICKERS=['⭐','💖','🌈','🦋','🌸','☀️','🐱','🍭','✨','🎈','🦄','🐶','🍓','🌙','👑','🐠','🍦','🚀','🌻','🐞','💎','🎀'];
+const START_PICS=4,START_STICKERS=10,MAX_STICKERS=30;
+const SAVE_KEY='superEmiliaPaint';
+
+// ---------- pure game logic (also used by the tests) ----------
+const pic=id=>PICTURES.find(p=>p.id===id);
+const regionCount=p=>p.shapes.filter(s=>!s[2]).length;
+const picturesOpen=hung=>PICTURES.slice(0,Math.min(PICTURES.length,START_PICS+hung));
+const stickersOpen=hung=>STICKERS.slice(0,Math.min(STICKERS.length,START_STICKERS+2*hung));
+function blankPainting(id){return{pic:id,fills:Array(regionCount(pic(id))).fill(null),stickers:[]}}
+// fill one part: c is a color index, g is glitter; returns true when it changed
+function fillRegion(pt,i,c,g){if(i<0||i>=pt.fills.length||!COLORS[c])return false;const old=pt.fills[i];if(old&&old.c===c&&!!old.g===!!g)return false;pt.fills[i]={c,g:!!g};return true}
+const isDone=pt=>pt.fills.length>0&&pt.fills.every(f=>f);
+const isEmpty=pt=>pt.fills.every(f=>!f)&&!pt.stickers.length;
+function addSticker(pt,e,x,y){if(pt.stickers.length>=MAX_STICKERS)return false;pt.stickers.push({e,x:Math.round(x),y:Math.round(y)});return true}
+// hang the painting: it goes in the gallery, and unlocks a new picture and 2 stickers
+function hangPainting(save){const pt=save.current;if(isEmpty(pt))return null;const before={pics:picturesOpen(save.hung).length,st:stickersOpen(save.hung).length};
+ save.gallery.unshift(JSON.parse(JSON.stringify(pt)));save.gallery=save.gallery.slice(0,60);save.hung++;if(isDone(pt)&&!save.finished.includes(pt.pic))save.finished.push(pt.pic);
+ if(pt.fills.some(f=>f&&COLORS[f.c].id==='rainbow'))save.rainbow++;save.stickersUsed+=pt.stickers.length;
+ const newPic=picturesOpen(save.hung).length>before.pics?picturesOpen(save.hung).slice(-1)[0].id:null,newStickers=stickersOpen(save.hung).slice(before.st);save.current=blankPainting(pt.pic);return{newPic,newStickers,done:isDone(pt)}}
+// the picture as SVG text (also used for gallery frames); uid keeps gradient names apart
+function svgMarkup(pt,uid='a'){const p=pic(pt.pic);let k=0,out=`<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${p.name}"><defs><linearGradient id="rb-${uid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5a5f"/><stop offset=".2" stop-color="#ff9f43"/><stop offset=".4" stop-color="#ffd93d"/><stop offset=".6" stop-color="#34c759"/><stop offset=".8" stop-color="#3b82f6"/><stop offset="1" stop-color="#a855f7"/></linearGradient><pattern id="sp-${uid}" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="4" cy="5" r="1.8" fill="#fff"/><circle cx="15" cy="14" r="1.3" fill="#fff"/><path d="M15 2 l1.4 3.6 3.6 1.4 -3.6 1.4 -1.4 3.6 -1.4 -3.6 -3.6 -1.4 3.6 -1.4z" fill="#fff"/><circle cx="6" cy="18" r="1.6" fill="#ffc83d"/><circle cx="19" cy="20" r="1.2" fill="#ff8fc7"/><path d="M5 9 l.9 2.2 2.2 .9 -2.2 .9 -.9 2.2 -.9 -2.2 -2.2 -.9 2.2 -.9z" fill="#ffc83d"/></pattern></defs><g class="regions">`;
+ for(const [tag,attrs,ink] of p.shapes){if(ink){out+=`<${tag} ${attrs} class="ink"/>`;continue}const f=pt.fills[k],fill=!f?'#ffffff':COLORS[f.c].c==='rainbow'?`url(#rb-${uid})`:COLORS[f.c].c;
+  out+=`<${tag} ${attrs} class="region" data-i="${k}" fill="${fill}"/>`;if(f&&f.g)out+=`<${tag} ${attrs} class="glit" fill="url(#sp-${uid})"/>`;k++}
+ out+='</g><g class="stickers">'+pt.stickers.map((s,j)=>`<text class="sticker" data-s="${j}" x="${s.x}" y="${s.y}">${s.e}</text>`).join('')+'</g></svg>';return out}
+function defaultSave(){return{hung:0,finished:[],rainbow:0,stickersUsed:0,gallery:[],current:blankPainting('rainbow'),sound:true}}
+function cleanPainting(raw){if(!raw||!pic(raw.pic))return null;const pt=blankPainting(raw.pic);if(Array.isArray(raw.fills))pt.fills=pt.fills.map((_,i)=>{const f=raw.fills[i];return f&&Number.isInteger(f.c)&&COLORS[f.c]?{c:f.c,g:!!f.g}:null});
+ if(Array.isArray(raw.stickers))pt.stickers=raw.stickers.filter(s=>s&&STICKERS.includes(s.e)&&Number.isFinite(s.x)&&Number.isFinite(s.y)).slice(0,MAX_STICKERS).map(s=>({e:s.e,x:Math.max(0,Math.min(400,Math.round(s.x))),y:Math.max(0,Math.min(300,Math.round(s.y)))}));return pt}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0};
+ s.hung=num(raw.hung);s.rainbow=num(raw.rainbow);s.stickersUsed=num(raw.stickersUsed);if(Array.isArray(raw.finished))s.finished=[...new Set(raw.finished.filter(id=>pic(id)))];
+ if(Array.isArray(raw.gallery))s.gallery=raw.gallery.map(cleanPainting).filter(Boolean).slice(0,60);const cur=cleanPainting(raw.current);if(cur&&picturesOpen(s.hung).some(p=>p.id===cur.pic))s.current=cur;
+ s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s);
+let S=loadSave(),color=2,glitter=false,undo=[],painting=false,audio=null,cheered=false,svg=null;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.25,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={splat:()=>tone(380+Math.random()*260,.07,'triangle',.04),pick:()=>tone(900,.05,'sine',.04),stick:()=>tone(1100,.06,'square',.03),yay:()=>[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.12,'triangle'),i*90))};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function setTip(h){$('#tip').innerHTML=h}
+function fx(x,y,t){const d=document.createElement('div');d.className='fx';d.textContent=t;d.style.left=x+'px';d.style.top=y+'px';document.body.append(d);setTimeout(()=>d.remove(),1200)}
+function remember(){undo.push(JSON.stringify(S.current));if(undo.length>40)undo.shift()}
+function toSvg(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse())}
+// draw the canvas
+function draw(){$('#canvas').innerHTML=svgMarkup(S.current,'main');svg=$('#canvas svg');bindStickers();renderTop()}
+function redrawRegions(){const tmp=document.createElement('div');tmp.innerHTML=svgMarkup(S.current,'main');svg.querySelector('.regions').replaceWith(tmp.querySelector('.regions'))}
+function redrawStickers(){const tmp=document.createElement('div');tmp.innerHTML=svgMarkup(S.current,'main');svg.querySelector('.stickers').replaceWith(tmp.querySelector('.stickers'));bindStickers()}
+function renderTop(){$('#hungChip').textContent='🖼️ '+S.hung;$('#glitterBtn').classList.toggle('on',glitter);$('#glitterBtn').setAttribute('aria-pressed',glitter);$('#undoBtn').disabled=!undo.length;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
+function paintAt(target,e){const r=target&&target.closest&&target.closest('.region');if(!r||!svg.contains(r))return;const i=Number(r.dataset.i);if(fillRegion(S.current,i,color,glitter)){sfx.splat();redrawRegions();save();checkDone(e)}}
+function checkDone(e){if(isDone(S.current)&&!cheered){cheered=true;sfx.yay();['🌟','🎉','🌈'].forEach((t,j)=>setTimeout(()=>fx(e.clientX+(j-1)*40,e.clientY,t),j*120));setTip('🌟 You colored every part! Add some stickers, or tap <b>🖼️ Hang it up!</b> to put it in your gallery.')}else if(!isDone(S.current))cheered=false}
+$('#canvas').addEventListener('pointerdown',e=>{if(e.target.closest('.sticker'))return;e.preventDefault();remember();painting=true;paintAt(e.target,e);renderTop()});
+window.addEventListener('pointermove',e=>{if(!painting)return;paintAt(document.elementFromPoint(e.clientX,e.clientY),e)});
+window.addEventListener('pointerup',()=>{painting=false});window.addEventListener('pointercancel',()=>{painting=false});
+// stickers already on the picture: drag to move, drag off the picture to remove
+function bindStickers(){svg.querySelectorAll('.sticker').forEach(t=>{const j=Number(t.dataset.s);let on=false;
+ t.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();remember();on=true;t.setPointerCapture(e.pointerId);t.classList.add('drag')});
+ t.addEventListener('pointermove',e=>{if(!on)return;const p=toSvg(e);t.setAttribute('x',p.x);t.setAttribute('y',p.y)});
+ const end=e=>{if(!on)return;on=false;t.classList.remove('drag');const p=toSvg(e),st=S.current.stickers[j];if(!st)return;
+  if(p.x<-10||p.x>410||p.y<-10||p.y>310){S.current.stickers.splice(j,1);tone(400,.08,'triangle',.03);notify('Sticker taken off')}else{st.x=Math.round(Math.max(0,Math.min(400,p.x)));st.y=Math.round(Math.max(0,Math.min(300,p.y)))}
+  save();redrawStickers();renderTop()};t.addEventListener('pointerup',end);t.addEventListener('pointercancel',end)})}
+// palette
+function renderSwatches(){const box=$('#swatches');box.innerHTML='';COLORS.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.className='sw'+(i===color?' on':'');b.style.background=c.c==='rainbow'?'conic-gradient(#ff5a5f,#ff9f43,#ffd93d,#34c759,#3b82f6,#a855f7,#ff5a5f)':c.c;b.setAttribute('aria-label',c.id+' paint');b.setAttribute('aria-pressed',i===color);
+ b.onclick=()=>{color=i;sfx.pick();renderSwatches();if(c.id==='rainbow')setTip('🌈 Magic rainbow paint! Tap any part of the picture.')};box.append(b)})}
+// sticker box: drag a sticker onto the picture
+function renderStickerBox(){const box=$('#stickers');box.innerHTML='';const open=stickersOpen(S.hung);STICKERS.forEach((e,i)=>{const b=document.createElement('button');b.type='button';
+ if(i>=open.length){b.className='st locked';b.textContent='🔒';b.disabled=true;b.setAttribute('aria-label','Locked sticker. Hang more paintings to unlock it.');box.append(b);return}
+ b.className='st';b.textContent=e;b.setAttribute('aria-label','Drag the '+e+' sticker onto the picture');let fl=null;
+ b.addEventListener('pointerdown',ev=>{ev.preventDefault();b.setPointerCapture(ev.pointerId);fl=document.createElement('div');fl.className='floating';fl.textContent=e;fl.style.left=ev.clientX+'px';fl.style.top=ev.clientY+'px';document.body.append(fl)});
+ b.addEventListener('pointermove',ev=>{if(!fl)return;fl.style.left=ev.clientX+'px';fl.style.top=ev.clientY+'px'});
+ const end=ev=>{if(!fl)return;fl.remove();fl=null;if(ev.type==='pointercancel')return;const r=svg.getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom){if(Math.abs(ev.clientX-b.getBoundingClientRect().left)<60)setTip('🦋 <b>Hold and drag</b> a sticker onto the picture!');return}
+  remember();const p=toSvg(ev);if(addSticker(S.current,e,p.x,p.y)){sfx.stick();save();redrawStickers();renderTop()}else notify('That is a lot of stickers! Take some off first.')};
+ b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end);box.append(b)})}
+// buttons
+$('#glitterBtn').onclick=()=>{glitter=!glitter;sfx.pick();renderTop();setTip(glitter?'✨ Glitter is on! Everything you paint now sparkles.':'Glitter is off.')};
+$('#undoBtn').onclick=()=>{if(!undo.length)return;S.current=JSON.parse(undo.pop());save();draw();cheered=isDone(S.current)};
+$('#clearBtn').onclick=()=>{if(isEmpty(S.current))return;remember();S.current=blankPainting(S.current.pic);save();draw();cheered=false;setTip('🧽 A fresh page! (Changed your mind? Tap <b>↩️ Undo</b>.)')};
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+$('#hangBtn').onclick=()=>{const pt=JSON.parse(JSON.stringify(S.current)),r=hangPainting(S);if(!r){notify('Paint something first!');return}save();sfx.yay();undo=[];cheered=false;
+ $('#hungFrame').innerHTML=svgMarkup(pt,'hung');let t=r.done?'Every part colored. Beautiful! 🌟 ':'What a great painting! ';if(r.newPic)t+='New picture unlocked: '+pic(r.newPic).icon+' '+pic(r.newPic).name+'! ';if(r.newStickers.length)t+='New stickers: '+r.newStickers.join(' ')+'!';
+ $('#hungText').textContent=t;renderStickerBox();draw();$('#hungDialog').showModal()};
+$('#hungOk').onclick=()=>{$('#hungDialog').close();openPics()};
+function openPics(){const box=$('#pics');box.innerHTML='';const open=picturesOpen(S.hung);PICTURES.forEach((p,i)=>{const d=document.createElement('button');d.type='button';const ok=i<open.length;d.className='pic'+(ok?'':' locked')+(p.id===S.current.pic?' here':'');
+ d.innerHTML=svgMarkup(blankPainting(p.id),'p'+i)+'<span></span><small></small>';d.querySelector('span').textContent=(ok?p.icon+' ':'🔒 ')+p.name;d.querySelector('small').textContent=ok?(S.finished.includes(p.id)?'⭐ Finished':''):'Hang '+(i-open.length+1)+' more painting'+(i-open.length+1===1?'':'s');
+ if(!ok)d.disabled=true;else d.onclick=()=>{if(p.id!==S.current.pic){if(!isEmpty(S.current))remember();S.current=blankPainting(p.id);save();draw();cheered=false}$('#picsDialog').close();setTip('🎨 Pick a color and <b>tap or drag</b> over the picture to paint it!')};box.append(d)});$('#picsDialog').showModal()}
+$('#picsBtn').onclick=openPics;$('#picsClose').onclick=()=>$('#picsDialog').close();
+$('#galleryBtn').onclick=()=>{const w=$('#wall');w.innerHTML='';if(!S.gallery.length)w.innerHTML='<p style="grid-column:1/-1;text-align:center">Your gallery is empty. Paint a picture and tap Hang it up!</p>';S.gallery.forEach((pt,i)=>{const f=document.createElement('div');f.className='frame';f.innerHTML=svgMarkup(pt,'g'+i);w.append(f)});
+ $('#gallerySub').textContent=S.hung+' painting'+(S.hung===1?'':'s')+' hung · '+S.finished.length+' of '+PICTURES.length+' pictures finished';$('#galleryDialog').showModal()};
+$('#galleryClose').onclick=()=>$('#galleryDialog').close();
+document.querySelectorAll('#galleryDialog,#picsDialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close()}));
+renderSwatches();renderStickerBox();draw();
+setTip('🎨 Pick a color, then <b>tap or drag</b> over the picture to paint it! Turn on <b>✨ Glitter</b> for sparkles, and <b>drag stickers</b> onto your picture.');
+window.__paint={get S(){return S},draw,set color(v){color=v},set glitter(v){glitter=v}};
+}
+</script>
+</body>
+</html>
