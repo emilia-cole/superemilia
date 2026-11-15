@@ -21,8 +21,14 @@ test('Stars come from first-try answers, and every finished game brings a new mo
  let r=run("finishGame(s,'easy',10,10)");assert(r.stars===3&&r.newMon[1]==='Inky');assert(run("s.best.easy===3&&s.games===1&&s.correct===10&&s.monsters===2"));
  run("finishGame(s,'easy',6,10)");assert.equal(run('s.best.easy'),3,'best stars stay');for(let i=0;i<20;i++)run("finishGame(s,'hard',2,10)");assert(run('s.monsters===12&&s.best.hard===0'));assert.equal(run("finishGame(s,'hard',9,10).newMon"),null);
 });
+test('Times tables: one table at a time from 1 to 12, or mixed, with the table first',()=>{
+ const run=load();for(const t of [1,7,12])for(let i=0;i<200;i++){const p=run(`makeProblem('times',Math.random,${t})`);assert(p.op==='×'&&p.a===t&&p.b>=1&&p.b<=12&&p.answer===t*p.b);assert.equal(p.text,t+' × '+p.b+' = ?')}
+ const seen=new Set();for(let i=0;i<600;i++){const p=run("makeProblem('times')");seen.add(p.a);assert(p.a>=2&&p.a<=12)}assert.equal(seen.size,11);
+ for(let i=0;i<300;i++){run("var q=makeProblem('times',Math.random,9)");const c=run('choicesFor(q)');assert(c.length===4&&new Set(c).size===4&&c.includes(run('q.answer'))&&c.every(n=>n>=0))}
+ run('var s=defaultSave()');run("finishGame(s,'times',10,10,7)");run("finishGame(s,'times',8,10,0)");run("finishGame(s,'times',5,10,7)");assert(run("s.tables['7']===3&&s.tables.mix===2&&s.best.times===3"));
+});
 test('Saves keep progress and ignore broken data',()=>{
- const run=load({superEmiliaMath:JSON.stringify({best:{easy:3,medium:9,hard:-1,crazy:3},games:4,correct:37,monsters:99,sound:false})});run('var s=loadSave()');
- assert(run('s.best.easy===3&&s.best.medium===3&&s.best.hard===0&&s.games===4&&s.correct===37&&s.monsters===12&&s.sound===false'));assert(load({superEmiliaMath:'{oops'})('loadSave().monsters===1'));
+ const run=load({superEmiliaMath:JSON.stringify({best:{easy:3,medium:9,hard:-1,crazy:3},tables:{'7':3,'13':3,mix:9,'2':0},games:4,correct:37,monsters:99,sound:false})});run('var s=loadSave()');
+ assert(run('s.best.easy===3&&s.best.medium===3&&s.best.hard===0&&s.games===4&&s.correct===37&&s.monsters===12&&s.sound===false'));assert(run("s.tables['7']===3&&s.tables.mix===3&&!('13' in s.tables)&&!('2' in s.tables)"));assert(load({superEmiliaMath:'{oops'})('loadSave().monsters===1'));
 });
 console.log(checks+' math checks passed.');

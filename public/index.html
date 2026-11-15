@@ -635,9 +635,9 @@ footer{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-si
    <div class="game-body">
     <span class="tag lilac">New · Learning</span>
     <h2>Monster Munch Math</h2>
-    <p id="mathAbout">Hungry monsters hold up math problems. Drag the cookie with the right answer into their mouths to practice adding, taking away, and times tables, and collect 12 monster friends.</p>
+    <p id="mathAbout">Hungry monsters hold up math problems. Drag the cookie with the right answer into their mouths to practice adding, taking away, and times tables from 1 to 12, and collect 12 monster friends.</p>
     <ul class="progress" id="mathProgress" aria-label="Your saved Monster Munch Math progress">
-     <li class="flag">Easy · Medium · Hard</li>
+     <li class="flag">Easy · Medium · Hard · Times tables</li>
     </ul>
     <span class="play" aria-hidden="true">Play now →</span>
    </div>
@@ -858,8 +858,8 @@ var PRIZE_GAMES=[
   prizes:[['🍋','First Sale','Sell your first cup of lemonade',function(t){return[t.served,1]}],['😍','Perfect Cup','Make a cup exactly like the order',function(t){return[t.perfect,1]}],['☀️','Busy Stand','Sell 50 cups',function(t){return[t.served,50]}],['💰','Lemonade Tycoon','Earn 500 coins',function(t){return[t.total,500]}],['🌈','Fancy Stand','Get the rainbow stand',function(t){return[t.rainbow,1]}]]},
  {id:'party',name:'Birthday Party Planner',icon:'🎂',href:'/party/',key:'superEmiliaParty',stats:function(s){var o=Array.isArray(s.owned)?s.owned:[];return{parties:num(s.parties),perfect:Math.min(num(s.perfect),num(s.parties)),balloons:num(s.balloons),rainbow:o.indexOf('rainbow')>=0?1:0}},
   prizes:[['🎉','First Party','Throw your first surprise party',function(t){return[t.parties,1]}],['🌟','Perfect Party','Get all 6 wishes right',function(t){return[t.perfect,1]}],['🎈','Balloon Blower','Blow up 50 balloons',function(t){return[t.balloons,50]}],['🌈','Rainbow Cake','Get the rainbow cake flavor',function(t){return[t.rainbow,1]}],['🥳','Party Animal','Throw 20 parties',function(t){return[t.parties,20]}]]},
- {id:'math',name:'Monster Munch Math',icon:'👾',href:'/math/',key:'superEmiliaMath',stats:function(s){var b=s.best&&typeof s.best==='object'?s.best:{},three=0;['easy','medium','hard'].forEach(function(l){if(num(b[l])>=3)three++});return{games:num(s.games),right:num(s.correct),three:three,hard:num(b.hard)>=1?1:0,monsters:Math.min(12,num(s.monsters))}},
-  prizes:[['🍪','First Snack','Finish a game',function(t){return[t.games,1]}],['⭐','Math Star','Get 3 stars on any level',function(t){return[t.three>0?1:0,1]}],['🧠','Brain Power','Get 100 answers right',function(t){return[t.right,100]}],['🔴','Hard Hero','Win a star on Hard',function(t){return[t.hard,1]}],['👾','Monster Collector','Meet all 12 monsters',function(t){return[t.monsters,12]}]]},
+ {id:'math',name:'Monster Munch Math',icon:'👾',href:'/math/',key:'superEmiliaMath',stats:function(s){var b=s.best&&typeof s.best==='object'?s.best:{},three=0;['easy','medium','hard'].forEach(function(l){if(num(b[l])>=3)three++});var tb=s.tables&&typeof s.tables==='object'?s.tables:{},tt=0;for(var k in tb)if(num(tb[k])>=3)tt=1;return{games:num(s.games),right:num(s.correct),three:three,times:tt,monsters:Math.min(12,num(s.monsters))}},
+  prizes:[['🍪','First Snack','Finish a game',function(t){return[t.games,1]}],['⭐','Math Star','Get 3 stars on any level',function(t){return[t.three>0?1:0,1]}],['🧠','Brain Power','Get 100 answers right',function(t){return[t.right,100]}],['✖️','Times Table Champ','Get 3 stars on a times table',function(t){return[t.times,1]}],['👾','Monster Collector','Meet all 12 monsters',function(t){return[t.monsters,12]}]]},
  {id:'race',name:'Buddy Kart Racing',icon:'🏎️',href:'/race/',key:'superEmiliaRace',stats:function(s){var b=s.best&&typeof s.best==='object'?s.best:{},ids=['candy','beach','jungle','snow','space','rainbow'],top=0,wins=0;ids.forEach(function(id){var v=num(b[id]);if(v>=1&&v<=3)top++;if(v===1)wins++});return{races:num(s.races),top:top,wins:wins,rainbow:num(b.rainbow)>=1&&num(b.rainbow)<=3?1:0}},
   prizes:[['🏁','First Race','Finish a race',function(t){return[t.races,1]}],['🥇','Winner','Win 1st place on any track',function(t){return[t.wins,1]}],['🏆','Trophy Hunter','Get trophies on 3 tracks',function(t){return[t.top,3]}],['🌈','Rainbow Racer','Finish top 3 on Rainbow Road',function(t){return[t.rainbow,1]}],['👑','Racing Legend','Win 1st place on all 6 tracks',function(t){return[t.wins,6]}]]}
 ];

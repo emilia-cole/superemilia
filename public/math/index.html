@@ -40,7 +40,16 @@ button:focus-visible{outline:3px solid var(--grape-deep);outline-offset:2px}
 .hero{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:16px;display:grid;gap:14px}
 .hero h1{margin:0;font-size:26px;letter-spacing:-.5px}
 .hero p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
-.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.level.times{background:#f2f0ff;border-color:#b9b2ff}
+.tables{display:grid;gap:10px;background:#f7f6ff;border:2px solid #d8d4ff;border-radius:18px;padding:12px}
+.tables h3{margin:0;font-size:17px}
+.tablegrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.tbl{display:grid;gap:2px;justify-items:center;padding:10px 2px;border-radius:14px;border-color:#d8d4ff}
+.tbl b{font-size:20px}.tbl span{font-size:11px;letter-spacing:1px}
+.helper.groups{gap:1cqw;top:34%;flex-wrap:wrap;max-width:34cqw;justify-content:center;white-space:normal}
+.helper .box{display:grid;grid-template-columns:repeat(3,1.5cqw);gap:.3cqw;padding:.6cqw;border:.3cqw solid #b9b2ff;border-radius:1cqw;background:#fff}
+.helper .box i{width:1.5cqw;height:1.5cqw;border-radius:50%;background:#6c63ff}
 .level{display:grid;gap:6px;justify-items:center;text-align:center;padding:16px 10px;border-radius:20px;border:3px solid;font-size:15px;box-shadow:0 5px 0 #0001}
 .level .big{font-size:42px;line-height:1}
 .level b{font-size:21px}
@@ -101,7 +110,7 @@ dialog::backdrop{background:#2c2f4a66;backdrop-filter:blur(4px)}
 @keyframes hint{0%,100%{box-shadow:inset -.6cqw -.8cqw 0 #0002,0 0 0 0 #ffc83d}50%{box-shadow:inset -.6cqw -.8cqw 0 #0002,0 0 0 1.4cqw #ffc83d88}}
 @keyframes pop{0%{scale:0}70%{scale:1.15}100%{scale:1}}
 @keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-220%) scale(1.1)}}
-@media (max-width:640px){.levels{grid-template-columns:1fr}.parade{grid-template-columns:repeat(4,minmax(0,1fr))}.title strong{font-size:17px}.scene{aspect-ratio:4/3}}
+@media (max-width:640px){.levels{grid-template-columns:1fr 1fr}.tablegrid{grid-template-columns:repeat(4,minmax(0,1fr))}.parade{grid-template-columns:repeat(4,minmax(0,1fr))}.title strong{font-size:17px}.scene{aspect-ratio:4/3}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -119,6 +128,7 @@ dialog::backdrop{background:#2c2f4a66;backdrop-filter:blur(4px)}
    <h1>🍪 Feed the hungry monsters!</h1>
    <p>Each monster holds up a math problem. Drag the cookie with the right answer into its mouth. Pick a level:</p>
    <div class="levels" id="levels"></div>
+   <div class="tables" id="tables" hidden><h3>✖️ Which times table?</h3><div class="tablegrid" id="tableGrid"></div></div>
    <h3 style="margin:4px 0 0">👾 Your monster friends <span style="color:var(--soft);font-size:14px">(finish a game to meet a new one)</span></h3>
    <div class="parade" id="parade"></div>
   </div>
@@ -143,38 +153,42 @@ dialog::backdrop{background:#2c2f4a66;backdrop-filter:blur(4px)}
 <script>
 'use strict';
 // ---------- game data ----------
-const LEVELS=[{id:'easy',icon:'🟢',name:'Easy',about:'Add and take away up to 10, with apples to help you count'},{id:'medium',icon:'🟡',name:'Medium',about:'Add and take away up to 20'},{id:'hard',icon:'🔴',name:'Hard',about:'Add and take away up to 100, and times tables'}];
+const LEVELS=[{id:'easy',icon:'🟢',name:'Easy',about:'Add and take away up to 10, with apples to help you count'},{id:'medium',icon:'🟡',name:'Medium',about:'Add and take away up to 20'},{id:'hard',icon:'🔴',name:'Hard',about:'Add and take away up to 100, and some times tables'},{id:'times',icon:'✖️',name:'Times tables',about:'Pick a table from 1 to 12, or mix them all up'}];
+const TABLES=[1,2,3,4,5,6,7,8,9,10,11,12];
 const MONSTERS=[['👾','Blip'],['🐙','Inky'],['👽','Zorp'],['🐸','Gulp'],['🤖','Bolt'],['🦕','Chomp'],['👻','Boo'],['🐲','Puff'],['🦈','Finn'],['🐻','Grumbles'],['🦄','Sprinkle'],['🐉','Blaze']];
 const PER_GAME=10;
 const SAVE_KEY='superEmiliaMath';
 
 // ---------- pure game logic (also used by the tests) ----------
 const ri=(rand,a,b)=>a+Math.floor(rand()*(b-a+1));
-// one problem for a level: { text, answer, a, b, op }
-function makeProblem(level,rand=Math.random){let a,b,op;
+// one problem for a level: { text, answer, a, b, op }. For times tables, table is 1 to 12 (0 mixes 2 to 12) and comes first: 7 × 4
+function makeProblem(level,rand=Math.random,table=0){let a,b,op;
+ if(level==='times'){op='×';a=table||ri(rand,2,12);b=ri(rand,1,12);return{a,b,op,answer:a*b,text:a+' × '+b+' = ?'}}
  if(level==='easy'){if(rand()<.7){op='+';a=ri(rand,0,9);b=ri(rand,0,10-a)}else{op='−';a=ri(rand,1,10);b=ri(rand,0,a)}}
  else if(level==='medium'){if(rand()<.55){op='+';a=ri(rand,2,15);b=ri(rand,1,20-a)}else{op='−';a=ri(rand,6,20);b=ri(rand,1,a)}}
  else{const k=rand();if(k<.35){op='+';a=ri(rand,10,80);b=ri(rand,5,100-a)}else if(k<.7){op='−';a=ri(rand,20,100);b=ri(rand,5,a)}else{op='×';a=[2,3,4,5,10][ri(rand,0,4)];b=ri(rand,1,10);if(rand()<.5)[a,b]=[b,a]}}
  const answer=op==='+'?a+b:op==='−'?a-b:a*b;return{a,b,op,answer,text:a+' '+op+' '+b+' = ?'}}
 // four cookies: the answer and three close (but different, never below zero) numbers, in a mixed-up order
-function choicesFor(p,rand=Math.random){const set=new Set([p.answer]),spread=p.answer>=20?[1,2,10,3,5]:[1,2,3];let tries=0;
+function choicesFor(p,rand=Math.random){const set=new Set([p.answer]),spread=p.op==='×'?[p.a,p.a,1,2,p.b].filter(Boolean):p.answer>=20?[1,2,10,3,5]:[1,2,3];let tries=0;
  while(set.size<4&&tries<100){tries++;const d=spread[ri(rand,0,spread.length-1)]*(rand()<.5?-1:1),n=p.answer+d;if(n>=0)set.add(n)}
  for(let n=0;set.size<4;n++)set.add(n);return[...set].sort(()=>rand()-.5)}
 // stars for a game: first-try right answers out of 10
 const starsFor=right=>right>=10?3:right>=8?2:right>=5?1:0;
 // a finished game: best stars per level, totals, and a new monster friend for every finished game
-function finishGame(save,level,firstTry,totalRight){const stars=starsFor(firstTry);save.games++;save.correct+=totalRight;save.best[level]=Math.max(save.best[level]||0,stars);
+function finishGame(save,level,firstTry,totalRight,table=0){const stars=starsFor(firstTry);save.games++;save.correct+=totalRight;save.best[level]=Math.max(save.best[level]||0,stars);
+ if(level==='times'){const k=table?String(table):'mix';save.tables[k]=Math.max(save.tables[k]||0,stars)}
  let newMon=null;if(save.monsters<MONSTERS.length){save.monsters++;newMon=MONSTERS[save.monsters-1]}return{stars,newMon}}
-function defaultSave(){return{best:{easy:0,medium:0,hard:0},games:0,correct:0,monsters:1,sound:true}}
+function defaultSave(){return{best:{easy:0,medium:0,hard:0,times:0},tables:{},games:0,correct:0,monsters:1,sound:true}}
 function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0};
  s.games=num(raw.games);s.correct=num(raw.correct);s.monsters=Math.max(1,Math.min(MONSTERS.length,num(raw.monsters)));
- if(raw.best&&typeof raw.best==='object')for(const l of LEVELS)s.best[l.id]=Math.min(3,num(raw.best[l.id]));s.sound=raw.sound!==false;return s}
+ if(raw.best&&typeof raw.best==='object')for(const l of LEVELS)s.best[l.id]=Math.min(3,num(raw.best[l.id]));
+ if(raw.tables&&typeof raw.tables==='object')for(const k of [...TABLES.map(String),'mix']){const v=Math.min(3,num(raw.tables[k]));if(v)s.tables[k]=v}s.sound=raw.sound!==false;return s}
 function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
 
 // ---------- the game (only runs in a browser) ----------
 if(typeof document!=='undefined'){
 const $=s=>document.querySelector(s),scene=$('#scene');
-let S=loadSave(),level='easy',n=0,results=[],prob=null,tries=0,streak=0,firstTry=0,totalRight=0,mon=null,busy=false,audio=null;
+let S=loadSave(),table=0,level='easy',n=0,results=[],prob=null,tries=0,streak=0,firstTry=0,totalRight=0,mon=null,busy=false,audio=null;
 const MON={x:34,y:62};
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
 function tone(f=660,len=.1,type='sine',vol=.05,end=1.25){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*end,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
@@ -187,18 +201,22 @@ function fx(x,y,t){const d=el('fx',x,y);d.textContent=t;setTimeout(()=>d.remove(
 function renderTop(){$('#monChip').textContent=MONSTERS[0][0]+' '+S.monsters+' / '+MONSTERS.length;$('#rightChip').textContent='✅ '+S.correct;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
 // ----- home -----
 function showHome(){$('#homeView').hidden=false;$('#playView').hidden=true;renderTop();const box=$('#levels');box.innerHTML='';
- LEVELS.forEach(l=>{const b=document.createElement('button');b.type='button';b.className='level '+l.id;const st=S.best[l.id];b.innerHTML='<span class="big" aria-hidden="true">'+l.icon+'</span><b></b><small></small><span class="stars" aria-hidden="true">'+'⭐'.repeat(st)+'☆'.repeat(3-st)+'</span>';b.querySelector('b').textContent=l.name;b.querySelector('small').textContent=l.about;b.setAttribute('aria-label',l.name+'. '+l.about+'. Best: '+st+' of 3 stars.');b.onclick=()=>start(l.id);box.append(b)});
+ LEVELS.forEach(l=>{const b=document.createElement('button');b.type='button';b.className='level '+l.id;const st=S.best[l.id];b.innerHTML='<span class="big" aria-hidden="true">'+l.icon+'</span><b></b><small></small><span class="stars" aria-hidden="true">'+'⭐'.repeat(st)+'☆'.repeat(3-st)+'</span>';b.querySelector('b').textContent=l.name;b.querySelector('small').textContent=l.about;b.setAttribute('aria-label',l.name+'. '+l.about+'. Best: '+st+' of 3 stars.');b.onclick=()=>l.id==='times'?showTables():start(l.id);box.append(b)});$('#tables').hidden=true;
  const pr=$('#parade');pr.innerHTML='';MONSTERS.forEach(([ic,nm],i)=>{const d=document.createElement('div');const got=i<S.monsters;d.className='mon'+(got?'':' locked');d.innerHTML='<span aria-hidden="true">'+ic+'</span>';d.append(got?nm:'???');pr.append(d)})}
+function showTables(){const t=$('#tables'),g=$('#tableGrid');g.innerHTML='';[...TABLES,0].forEach(k=>{const b=document.createElement('button');b.type='button';b.className='tbl';const st=S.tables[k?String(k):'mix']||0;
+  b.innerHTML='<b></b><span aria-hidden="true">'+'⭐'.repeat(st)+'☆'.repeat(3-st)+'</span>';b.querySelector('b').textContent=k?k+'s':'🔀 Mix';b.setAttribute('aria-label',(k?'The '+k+' times table':'All the tables mixed up')+'. Best: '+st+' of 3 stars.');b.onclick=()=>{table=k;start('times')};g.append(b)});
+ t.hidden=false;sfx.pick();t.scrollIntoView({behavior:'smooth',block:'nearest'})}
 // ----- play -----
 function start(l){level=l;n=0;results=[];streak=0;firstTry=0;totalRight=0;const got=MONSTERS.slice(0,S.monsters);mon=got[Math.floor(Math.random()*got.length)];$('#homeView').hidden=true;$('#playView').hidden=false;sfx.pick();next()}
 function renderDots(){const d=$('#dots');d.innerHTML='';for(let i=0;i<PER_GAME;i++){const s=document.createElement('span');s.className='dot'+(i<results.length?(results[i]?' ok':' try'):i===n?' now':'');d.append(s)}}
-function next(){prob=makeProblem(level);tries=0;busy=false;renderDots();scene.innerHTML='';
+function next(){prob=makeProblem(level,Math.random,table);tries=0;busy=false;renderDots();scene.innerHTML='';
  const m=el('p monster',MON.x,MON.y,mon[0]);m.id='mon';m.setAttribute('aria-label',mon[1]+' the monster');
  const sg=document.createElement('div');sg.className='sign';sg.textContent=prob.text;sg.setAttribute('aria-label',prob.a+(prob.op==='+'?' plus ':prob.op==='−'?' minus ':' times ')+prob.b);scene.append(sg);
  if(level==='easy'&&(prob.a||prob.b)){const h=document.createElement('div');h.className='helper';h.setAttribute('aria-hidden','true');
   const ap=(k,ic,cls)=>Array.from({length:k},()=>'<span'+(cls?' class="'+cls+'"':'')+'>'+ic+'</span>').join('');
   if(prob.op==='+')h.innerHTML='<span class="grp">'+ap(prob.a,'🍎')+'</span><b>+</b><span class="grp">'+ap(prob.b,'🍏')+'</span>';
   else h.innerHTML='<span class="grp">'+ap(prob.a-prob.b,'🍎')+'<span class="gone">'+ap(prob.b,'🍎')+'</span></span><b>take away '+prob.b+'</b>';scene.append(h)}
+ if(level==='times'&&prob.a<=5&&prob.b<=6&&prob.a>0){const h=document.createElement('div');h.className='helper groups';h.setAttribute('aria-hidden','true');h.innerHTML=Array.from({length:prob.b},()=>'<span class="box">'+'<i></i>'.repeat(prob.a)+'</span>').join('');scene.append(h)}
  if(streak>=3)el('streak').textContent='🔥 '+streak+' in a row!';
  const pl=document.createElement('div');pl.className='plate';scene.append(pl);
  const spots=[[72,44],[86,44],[72,70],[86,70]];choicesFor(prob).forEach((v,i)=>cookie(v,spots[i][0],spots[i][1]));
@@ -218,10 +236,10 @@ function answer(c,v){const m=$('#mon');tries++;
  c.classList.add('back');c.style.left=c.dataset.homeX||c.style.left;c.remove();
  if(tries>=2){scene.querySelectorAll('.cookie').forEach(k=>{if(Number(k.dataset.v)===prob.answer)k.classList.add('hint')});setTip('💡 Here is a hint: the glowing cookie is the answer. '+hintText())}
  else setTip('🤢 Not that one! '+v+' is not the answer. '+hintText()+' Try again!')}
-function hintText(){const p=prob;if(p.op==='+')return p.a>=10&&p.b>=10?'Add the tens first, then the ones.':'Start at '+Math.max(p.a,p.b)+' and count up '+Math.min(p.a,p.b)+'.';if(p.op==='−')return 'Start at '+p.a+' and count back '+p.b+'.';return p.a+' groups of '+p.b+'. Count by '+p.b+'s!'}
-function finish(){const r=finishGame(S,level,firstTry,totalRight);save();renderTop();sfx.win();const L=LEVELS.find(l=>l.id===level);
+function hintText(){const p=prob;if(p.op==='+')return p.a>=10&&p.b>=10?'Add the tens first, then the ones.':'Start at '+Math.max(p.a,p.b)+' and count up '+Math.min(p.a,p.b)+'.';if(p.op==='−')return 'Start at '+p.a+' and count back '+p.b+'.';return level==='times'?'Count by '+p.a+'s, '+p.b+' time'+(p.b===1?'':'s')+(p.b>1?': '+[1,2,3].filter(k=>k<p.b).map(k=>k*p.a).join(', ')+', ...':'')+'.':p.a+' groups of '+p.b+'. Count by '+p.b+'s!'}
+function finish(){const r=finishGame(S,level,firstTry,totalRight,table);save();renderTop();sfx.win();const L=LEVELS.find(l=>l.id===level);
  $('#doneTitle').textContent=r.stars===3?'🏆 Perfect! You are a math star!':r.stars>=1?'🎉 Great job!':'🙂 Good try!';$('#doneStars').textContent='⭐'.repeat(r.stars)+'☆'.repeat(3-r.stars);
- $('#doneText').textContent='You got '+firstTry+' of '+PER_GAME+' right on the first try on '+L.name+'.'+(r.stars<3?' Get 10 on the first try for 3 stars!':'');
+ $('#doneText').textContent='You got '+firstTry+' of '+PER_GAME+' right on the first try on '+(level==='times'?(table?'the '+table+'s':'mixed times tables'):L.name)+'.'+(r.stars<3?' Get 10 on the first try for 3 stars!':'');
  $('#newMon').hidden=!r.newMon;if(r.newMon){$('#newMonIcon').textContent=r.newMon[0];$('#newMonText').textContent='A new monster friend: '+r.newMon[1]+'! You have '+S.monsters+' of '+MONSTERS.length+'.'}$('#doneDialog').showModal()}
 $('#againBtn').onclick=()=>{$('#doneDialog').close();start(level)};$('#levelsBtn').onclick=()=>{$('#doneDialog').close();showHome()};
 $('#doneDialog').addEventListener('cancel',e=>{e.preventDefault();$('#doneDialog').close();showHome()});
