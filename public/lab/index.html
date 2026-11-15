@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eafaf4">
+<meta name="author" content="Emilia">
+<meta name="description" content="Do hands-on science experiments: mix colors, make a volcano erupt, grow crystals, launch a bottle rocket, test magnets, and find out what sinks or floats. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/lab/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/lab/">
+<meta property="og:title" content="Science Lab · A Super Emilia Game">
+<meta property="og:description" content="Do hands-on science experiments: mix colors, make a volcano erupt, grow crystals, launch a bottle rocket, test magnets, and find out what sinks or floats. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Science Lab</title>
+<style>
+/* Layout: the lab home (six experiment cards) and an experiment screen (a tip line and one drawn scene with the tray of things to drag on the right). */
+:root{
+ color-scheme:light;
+ --bg:#eafaf4; --bg-2:#eef1ff; --paper:#fff; --line:#cfe7dc; --ink:#21362e; --soft:#5f7a6e;
+ --lab:#22a06b; --lab-deep:#147a50;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--lab-deep);outline-offset:2px}
+.app{max-width:1000px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--lab-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hero{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:16px;display:grid;gap:14px}
+.hero h1{margin:0;font-size:26px;letter-spacing:-.5px}
+.hero p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.exps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.exp{display:grid;gap:6px;justify-items:center;text-align:center;padding:16px 10px;border-radius:20px;border:3px solid var(--line);background:#fbfffd;box-shadow:0 5px 0 #0001}
+.exp .big{font-size:46px;line-height:1}
+.exp b{font-size:19px}
+.exp small{color:var(--soft);font-weight:700;line-height:1.35}
+.exp .prog{font-size:13px;font-weight:900;color:var(--lab-deep)}
+.exp.badge{border-color:#f2c94c;background:#fffbea}
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bar h2{margin:0 auto 0 0;font-size:20px}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+.scene{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #cfe2d8;background:linear-gradient(180deg,#f4fbff 0 72%,#cfd8e3 72% 74%,#e9eef4 74%);container-type:inline-size;touch-action:none}
+.scene canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:9}
+.tray{position:absolute;left:76%;right:1.2%;top:2.5%;bottom:2.5%;background:#ffffffdd;border-radius:2cqw;box-shadow:0 .6cqw 0 #0001}
+.p{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;-webkit-user-select:none;user-select:none}
+.grab{cursor:grab;touch-action:none;z-index:10;filter:drop-shadow(0 .3cqw 0 #0002)}
+.grab.drag{cursor:grabbing;z-index:40}
+.grab.back{transition:left .3s ease,top .3s ease}
+.emo{font-size:5cqw}
+.label{position:absolute;transform:translate(-50%,-50%);font-size:1.45cqw;font-weight:900;color:var(--soft);white-space:nowrap;pointer-events:none;z-index:3}
+.hot{filter:drop-shadow(0 0 1.4cqw #ffc83d)!important}
+/* glassware */
+.beaker{width:20cqw;height:24cqw;z-index:4}
+.beaker .glass{position:absolute;inset:0;border:.6cqw solid #ffffffee;border-top:none;border-radius:0 0 3cqw 3cqw;background:#ffffff66;overflow:hidden;box-shadow:inset .8cqw 0 0 #ffffff88,0 .6cqw 1.6cqw #0001}
+.beaker .rim{position:absolute;left:-1.2cqw;right:-1.2cqw;top:-.6cqw;height:1.2cqw;border-radius:1cqw;background:#ffffffee;box-shadow:0 .2cqw 0 #0001}
+.liquid{position:absolute;left:0;right:0;bottom:0;transition:height .4s,background .6s}
+.marks{position:absolute;left:12%;top:20%;bottom:15%;width:12%;background:repeating-linear-gradient(180deg,#9fb4c4 0 .25cqw,transparent .25cqw 3cqw);opacity:.6}
+.bottle{width:5cqw;height:7cqw;border-radius:1.2cqw 1.2cqw 1.6cqw 1.6cqw;box-shadow:inset -.6cqw 0 0 #0002}
+.bottle:before{content:"";position:absolute;left:30%;right:30%;top:-1.6cqw;height:1.8cqw;background:#444;border-radius:.4cqw}
+.drop{width:3.6cqw;height:3.6cqw;border-radius:50% 50% 50% 0;transform:translate(-50%,-50%) rotate(-45deg);box-shadow:inset -.4cqw -.4cqw 0 #0002}
+.meter{position:absolute;height:1.2cqw;background:#fff;border-radius:1cqw;overflow:hidden;box-shadow:0 0 0 .2cqw #0001;z-index:6}
+.meter i{display:block;height:100%;width:0;background:var(--lab);transition:width .1s}
+.volcano{width:38cqw;height:26cqw;z-index:3;pointer-events:none}
+.volcano .cone{position:absolute;inset:0;background:linear-gradient(90deg,#8a5a3c,#a8714b 50%,#7a4f34);clip-path:polygon(0 100%,40% 4%,60% 4%,100% 100%)}
+.volcano .crater{position:absolute;left:39%;right:39%;top:0;height:9%;background:#4a3022;border-radius:50%}
+.volcano .pile{position:absolute;left:43%;right:43%;top:-6%;height:10%;background:#fff;border-radius:50% 50% 20% 20%;transition:transform .3s}
+.jar{width:20cqw;height:26cqw;z-index:4}
+.jar .glass{position:absolute;inset:0;border:.6cqw solid #ffffffee;border-radius:2cqw 2cqw 3cqw 3cqw;background:#ffffff55;overflow:hidden;box-shadow:inset .8cqw 0 0 #ffffff88,0 .6cqw 1.6cqw #0001}
+.jar .lid{position:absolute;left:-1cqw;right:-1cqw;top:-2cqw;height:2.2cqw;border-radius:1cqw;background:#c9a06a}
+.jar .stick{position:absolute;left:-4cqw;right:-4cqw;top:-3.2cqw;height:1.2cqw;border-radius:1cqw;background:#9a6b3c;z-index:2}
+.jar .string{position:absolute;left:50%;top:-2cqw;width:.3cqw;height:78%;background:#7a6a5a;transform:translateX(-50%);z-index:2}
+.crys{position:absolute;transform:translate(-50%,-50%) rotate(45deg);box-shadow:inset -.3cqw -.3cqw 0 #0002,0 0 1cqw #fff8;animation:grow .6s ease-out}
+.salt{position:absolute;width:.6cqw;height:.6cqw;background:#fff;border-radius:.1cqw;box-shadow:0 0 0 .1cqw #0001}
+.pad{width:18cqw;height:3cqw;background:#8a96a8;border-radius:1cqw;z-index:3}
+.rocket{font-size:12cqw;z-index:5;transition:none}
+.pump{width:6cqw;height:13cqw;z-index:4;pointer-events:none}
+.pump .body{position:absolute;left:20%;right:20%;top:30%;bottom:0;background:#4aa3df;border-radius:1cqw;box-shadow:inset -.6cqw 0 0 #0002}
+.pump .base{position:absolute;left:-10%;right:-10%;bottom:-1cqw;height:1.4cqw;background:#2c7bb3;border-radius:1cqw}
+.handle{width:10cqw;height:2cqw;background:#555;border-radius:1cqw;cursor:grab;touch-action:none;z-index:12}
+.handle:after{content:"";position:absolute;left:46%;top:100%;width:8%;height:6cqw;background:#888}
+.gauge{width:4cqw;height:22cqw;background:#fff;border-radius:2cqw;box-shadow:0 0 0 .3cqw #0001;overflow:hidden;z-index:4}
+.gauge i{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,#3bb273,#ffd43b,#ef4444);transition:height .2s}
+.launch{z-index:12;background:#ef4444;color:#fff;border:.4cqw solid #b91c1c;border-radius:50%;width:12cqw;height:12cqw;font-size:2cqw;font-weight:900;box-shadow:0 .8cqw 0 #b91c1c;padding:0}
+.marker{position:absolute;left:4%;font-size:2cqw;font-weight:900;color:var(--soft);z-index:2;display:flex;gap:.6cqw;align-items:center}
+.marker span{font-size:4cqw}
+.bin{width:22cqw;height:14cqw;border-radius:1.6cqw;border:.5cqw dashed;display:grid;place-items:start center;padding-top:.8cqw;font-size:1.8cqw;font-weight:900;z-index:2;text-align:center}
+.bin.yes{background:#fff1f1;border-color:#ef4444;color:#b91c1c}
+.bin.no{background:#f2f5f9;border-color:#94a3b8;color:#475569}
+.obj{font-size:5cqw;z-index:6}
+.tank{width:42cqw;height:30cqw;z-index:3;pointer-events:none}
+.tank .glass{position:absolute;inset:0;border:.6cqw solid #ffffffee;border-top:none;border-radius:0 0 1.6cqw 1.6cqw;background:#ffffff55;overflow:hidden;box-shadow:0 .6cqw 1.6cqw #0001}
+.tank .water{position:absolute;left:0;right:0;bottom:0;height:78%;background:linear-gradient(180deg,#8fd6ffcc,#3a9be0cc)}
+.tank .water:before{content:"";position:absolute;left:0;right:0;top:-.6cqw;height:1.2cqw;background:radial-gradient(ellipse at 50% 100%,#c8ecff 0 60%,transparent 62%) 0 0/5cqw 100% repeat-x}
+.bob{animation:bob 1.6s ease-in-out infinite}
+.fx{position:absolute;transform:translate(-50%,-50%);font-size:3cqw;font-weight:900;pointer-events:none;animation:rise 1.3s ease-out forwards;z-index:60;color:var(--lab-deep);text-shadow:0 .2cqw 0 #fff;white-space:nowrap}
+.big-note{position:absolute;left:38%;top:16%;transform:translate(-50%,-50%);background:#fff;border-radius:2cqw;padding:1.2cqw 2.4cqw;font-size:3cqw;font-weight:900;z-index:30;box-shadow:0 .8cqw 0 #0001;text-align:center;animation:pop .4s ease-out;white-space:nowrap}
+/* notebook */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(640px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #21362e55}
+dialog::backdrop{background:#21362e66;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.book{display:grid;gap:12px;max-height:min(66dvh,600px);overflow:auto;padding:4px;background:repeating-linear-gradient(180deg,#fff 0 29px,#dbe8f5 29px 30px)}
+.page{display:grid;gap:6px;padding:10px 12px;border-radius:14px;background:#ffffffee;border:2px solid var(--line)}
+.page h3{margin:0;font-size:16px;display:flex;gap:8px;align-items:center}
+.page .row{display:flex;flex-wrap:wrap;gap:6px}
+.page .tag{padding:4px 8px;border-radius:999px;font-size:13px;font-weight:800;background:#f1f6f3;border:1.5px solid var(--line)}
+.page .sw{width:22px;height:22px;border-radius:50%;display:inline-block;border:2px solid #fff;box-shadow:0 0 0 1.5px #0002;vertical-align:middle}
+.page .fact{font-size:13px;color:var(--soft);font-weight:700;margin:0}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:70;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes bob{0%,100%{translate:0 0}50%{translate:0 -.8cqw}}
+@keyframes grow{from{scale:0}to{scale:1}}
+@keyframes pop{0%{scale:0}70%{scale:1.15}100%{scale:1}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-220%) scale(1.1)}}
+@media (max-width:700px){.exps{grid-template-columns:1fr 1fr}.title strong{font-size:17px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Science Lab</strong></div>
+  <span class="chip" id="badgeChip" aria-label="Science badges">🏅 0 / 6</span>
+  <button type="button" id="bookBtn">📓 Notebook</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <section id="homeView">
+  <div class="hero">
+   <h1>🧪 Welcome to your science lab!</h1>
+   <p>Pick an experiment. Everything you discover goes in your 📓 notebook, and you win a 🏅 badge for mastering each experiment.</p>
+   <div class="exps" id="exps"></div>
+  </div>
+ </section>
+ <section id="expView" hidden>
+  <div class="bar"><h2 id="expTitle"></h2><button type="button" id="againBtn">🔄 Start over</button><button type="button" id="labBtn">🏠 Lab</button></div>
+  <p class="tip" id="tip" role="status"></p>
+  <section class="scene" id="scene" aria-label="Experiment"></section>
+ </section>
+</div>
+<dialog id="bookDialog" aria-labelledby="bookTitle"><div class="dlg">
+ <header><h2 id="bookTitle">📓 My science notebook</h2><button type="button" id="bookClose" aria-label="Close the notebook">✕</button></header>
+ <div class="book" id="book"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+const PAINTS=[{id:'red',name:'Red',hex:'#ef3b3b'},{id:'yellow',name:'Yellow',hex:'#ffd21f'},{id:'blue',name:'Blue',hex:'#2f6fe0'},{id:'white',name:'White',hex:'#ffffff'}];
+// what you get when you stir paints together (by which paints are in the beaker)
+const MIXES=[
+ {id:'red',name:'Red',hex:'#ef3b3b',of:['red']},{id:'yellow',name:'Yellow',hex:'#ffd21f',of:['yellow']},{id:'blue',name:'Blue',hex:'#2f6fe0',of:['blue']},{id:'white',name:'White',hex:'#f6f6f6',of:['white']},
+ {id:'orange',name:'Orange',hex:'#ff8a1f',of:['red','yellow']},{id:'green',name:'Green',hex:'#2fb24c',of:['yellow','blue']},{id:'purple',name:'Purple',hex:'#8a3fd1',of:['red','blue']},
+ {id:'pink',name:'Pink',hex:'#ff8fc0',of:['red','white']},{id:'skyblue',name:'Sky blue',hex:'#8cc4ff',of:['blue','white']},{id:'cream',name:'Cream',hex:'#fff1a8',of:['yellow','white']},
+ {id:'brown',name:'Brown',hex:'#7a4a26',of:['red','yellow','blue']},{id:'lavender',name:'Lavender',hex:'#c8a6f2',of:['red','blue','white']},{id:'mint',name:'Mint',hex:'#9ce8b4',of:['yellow','blue','white']},{id:'peach',name:'Peach',hex:'#ffbf94',of:['red','yellow','white']},
+ {id:'tan',name:'Tan',hex:'#c9a37a',of:['red','yellow','blue','white']}];
+const LAVAS=[{id:'red',name:'Red',hex:'#ff4d3d'},{id:'green',name:'Green',hex:'#4cd964'},{id:'purple',name:'Purple',hex:'#b06bff'}];
+const ERUPTIONS=[{id:'small',name:'Small',icon:'💨'},{id:'medium',name:'Medium',icon:'🫧'},{id:'big',name:'Big',icon:'🌋'},{id:'mega',name:'MEGA',icon:'💥'}];
+const CRYSTALS=[{id:'clear',name:'Clear',hex:'#e8f4ff'},{id:'pink',name:'Pink',hex:'#ff9ccc'},{id:'blue',name:'Blue',hex:'#6fb6ff'},{id:'purple',name:'Purple',hex:'#b98cff'},{id:'green',name:'Green',hex:'#7be3a0'},{id:'gold',name:'Gold',hex:'#ffd447'}];
+const HEIGHTS=[{icon:'🏠',name:'Over a house',need:1},{icon:'🌳',name:'Over a tall tree',need:3},{icon:'🏢',name:'Past a skyscraper',need:5},{icon:'☁️',name:'Up to the clouds',need:7},{icon:'✈️',name:'Higher than a plane',need:9},{icon:'🌙',name:'To space! (pretend)',need:10}];
+const MAGNET_ITEMS=[{id:'clip',icon:'📎',name:'Paper clip',mag:true},{id:'bolt',icon:'🔩',name:'Bolt',mag:true},{id:'key',icon:'🔑',name:'Key',mag:true},{id:'scissors',icon:'✂️',name:'Scissors',mag:true},{id:'screw',icon:'🪛',name:'Screwdriver',mag:true},{id:'pin',icon:'🧷',name:'Safety pin',mag:true},
+ {id:'apple',icon:'🍎',name:'Apple',mag:false},{id:'pencil',icon:'✏️',name:'Pencil',mag:false},{id:'teddy',icon:'🧸',name:'Teddy bear',mag:false},{id:'feather',icon:'🪶',name:'Feather',mag:false},{id:'coin',icon:'🪙',name:'Penny',mag:false},{id:'sponge',icon:'🧽',name:'Sponge',mag:false}];
+const FLOAT_ITEMS=[{id:'rock',icon:'🪨',name:'Rock',floats:false},{id:'duck',icon:'🦆',name:'Rubber duck',floats:true},{id:'coin',icon:'🪙',name:'Coin',floats:false},{id:'apple',icon:'🍎',name:'Apple',floats:true},{id:'key',icon:'🔑',name:'Key',floats:false},{id:'wood',icon:'🪵',name:'Wood',floats:true},
+ {id:'ball',icon:'⚽',name:'Ball',floats:true},{id:'bolt',icon:'🔩',name:'Bolt',floats:false},{id:'lemon',icon:'🍋',name:'Lemon',floats:true},{id:'egg',icon:'🥚',name:'Egg',floats:false},{id:'leaf',icon:'🍃',name:'Leaf',floats:true},{id:'marble',icon:'🔮',name:'Marble',floats:false}];
+const EXPERIMENTS=[
+ {id:'color',icon:'🎨',name:'Color Mixing',about:'Mix paints to discover new colors',fact:'Red, yellow and blue are primary colors. Mixing two of them makes a secondary color, like orange, green or purple!'},
+ {id:'volcano',icon:'🌋',name:'Volcano',about:'Baking soda + vinegar = ERUPTION!',fact:'Baking soda and vinegar react and make a gas called carbon dioxide. The gas bubbles push the foam up and out!'},
+ {id:'crystal',icon:'💎',name:'Crystal Garden',about:'Grow sparkly crystals on a string',fact:'When salty water dries up, the salt comes back together in neat shapes called crystals.'},
+ {id:'rocket',icon:'🚀',name:'Bottle Rocket',about:'Pump up the pressure and launch',fact:'Pumping squeezes lots of air into the bottle. When it lets go, the air rushes out one way and pushes the rocket the other way!'},
+ {id:'magnet',icon:'🧲',name:'Magnets',about:'Find out what sticks to a magnet',fact:'Magnets pull on things made of iron and steel. Wood, plastic, paper and even pennies are not magnetic!'},
+ {id:'float',icon:'🌊',name:'Sink or Float',about:'Drop things in water and watch',fact:'Things float when they are lighter than the same amount of water. Heavy, solid things like rocks and keys sink.'}];
+const SAVE_KEY='superEmiliaLab';
+
+// ---------- pure game logic (also used by the tests) ----------
+const byId=(list,id)=>list.find(x=>x.id===id);
+// the color you get from a set of paints (order and amounts do not matter)
+function mixColor(paints){const set=[...new Set(paints)].sort().join(',');return MIXES.find(m=>[...m.of].sort().join(',')===set)||null}
+// eruption size: more baking soda makes a bigger eruption, and dish soap makes it foamier
+function eruptionType(soda,soap){if(soda<=0)return null;if(soda>=3&&soap)return'mega';if(soda>=3||(soda===2&&soap))return'big';if(soda===2||soap)return'medium';return'small'}
+// how high the rocket goes: the highest height whose pumps you reached (0 pumps: no launch)
+function rocketLevel(pumps){let lv=-1;HEIGHTS.forEach((h,i)=>{if(pumps>=h.need)lv=i});return lv}
+const addOnce=(list,id)=>{if(list.includes(id))return false;list.push(id);return true};
+// recording discoveries: each returns true when it is new
+const record={
+ color:(s,id)=>byId(MIXES,id)?addOnce(s.colors,id):false,
+ eruption:(s,type,lava)=>{if(!byId(ERUPTIONS,type))return false;const a=addOnce(s.eruptions,type),b=lava&&byId(LAVAS,lava)?addOnce(s.lavas,lava):false;s.runs++;return a||b},
+ crystal:(s,id)=>{if(!byId(CRYSTALS,id))return false;s.runs++;return addOnce(s.crystals,id)},
+ rocket:(s,lv)=>{if(lv<0)return false;s.runs++;const better=lv>s.rocketBest;if(better)s.rocketBest=lv;return better},
+ magnet:(s,id)=>{const it=byId(MAGNET_ITEMS,id);if(!it)return false;return addOnce(s.magnets,id)},
+ float:(s,id)=>{const it=byId(FLOAT_ITEMS,id);if(!it)return false;return addOnce(s.floats,id)}};
+// mastering an experiment wins its badge
+const BADGES={color:s=>s.colors.length>=10,volcano:s=>s.eruptions.includes('mega'),crystal:s=>s.crystals.length>=3,rocket:s=>s.rocketBest>=HEIGHTS.length-1,magnet:s=>s.magnets.length>=MAGNET_ITEMS.length,float:s=>s.floats.length>=FLOAT_ITEMS.length};
+const badges=s=>EXPERIMENTS.filter(e=>BADGES[e.id](s)).map(e=>e.id);
+function progressText(s,id){return{color:s.colors.length+' / '+MIXES.length+' colors',volcano:s.eruptions.length+' / '+ERUPTIONS.length+' eruptions',crystal:s.crystals.length+' / '+CRYSTALS.length+' crystals',rocket:s.rocketBest<0?'No launches yet':'Best: '+HEIGHTS[s.rocketBest].icon+' '+HEIGHTS[s.rocketBest].name,magnet:s.magnets.length+' / '+MAGNET_ITEMS.length+' things tested',float:s.floats.length+' / '+FLOAT_ITEMS.length+' things tested'}[id]}
+function pickRound(list,n,rand=Math.random){return[...list].sort(()=>rand()-.5).slice(0,n)}
+function defaultSave(){return{colors:[],eruptions:[],lavas:[],crystals:[],rocketBest:-1,magnets:[],floats:[],runs:0,sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const ids=(arr,list)=>Array.isArray(arr)?[...new Set(arr.filter(id=>byId(list,id)))]:[];
+ s.colors=ids(raw.colors,MIXES);s.eruptions=ids(raw.eruptions,ERUPTIONS);s.lavas=ids(raw.lavas,LAVAS);s.crystals=ids(raw.crystals,CRYSTALS);s.magnets=ids(raw.magnets,MAGNET_ITEMS);s.floats=ids(raw.floats,FLOAT_ITEMS);
+ const rb=Math.floor(Number(raw.rocketBest));s.rocketBest=Number.isFinite(rb)?Math.max(-1,Math.min(HEIGHTS.length-1,rb)):-1;const r=Math.floor(Number(raw.runs));s.runs=Number.isFinite(r)&&r>0?r:0;s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s),scene=$('#scene');
+let S=loadSave(),exp=null,audio=null,raf=0,cleanup=[];
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05,end=1.25){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*end,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+function noise(len=.6,vol=.06,f=800){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();const n=audio.sampleRate*len,buf=audio.createBuffer(1,n,audio.sampleRate),d=buf.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const src=audio.createBufferSource(),fl=audio.createBiquadFilter(),g=audio.createGain();src.buffer=buf;fl.type='lowpass';fl.frequency.value=f;g.gain.value=vol;src.connect(fl).connect(g).connect(audio.destination);src.start()}catch(e){}}
+const sfx={plop:()=>tone(560,.07,'triangle'),drip:()=>tone(1300,.06,'sine',.04,.6),stir:()=>tone(300+Math.random()*200,.04,'triangle',.015),wow:()=>[784,988,1318,1568].forEach((f,i)=>setTimeout(()=>tone(f,.12,'triangle',.05,1),i*90)),nope:()=>tone(220,.14,'sawtooth',.03,.9),boom:()=>noise(1.2,.12,600),fizz:()=>noise(.5,.04,3000),pump:()=>tone(300,.12,'sine',.05,1.8),click:()=>tone(1500,.04,'square',.03),splash:()=>noise(.4,.08,1500),clink:()=>tone(1700,.06,'square',.03,.8)};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2400)}
+function setTip(h){$('#tip').innerHTML=h}
+function pct(e){const b=scene.getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function el(cls,x,y,html,parent=scene){const d=document.createElement('div');d.className=cls;if(x!=null){d.style.left=x+'%';d.style.top=y+'%'}if(html!=null)d.innerHTML=html;parent.append(d);return d}
+function label(x,y,t){const d=el('label',x,y);d.textContent=t;return d}
+function fx(x,y,t){const d=el('fx',x,y);d.textContent=t;setTimeout(()=>d.remove(),1300)}
+function note(t,ms=2200){scene.querySelectorAll('.big-note').forEach(n=>n.remove());const n=el('big-note');n.textContent=t;setTimeout(()=>n.remove(),ms)}
+const near=(q,c,dx,dy)=>Math.abs(q.x-c.x)<=dx&&Math.abs(q.y-c.y)<=dy;
+function draggable(d,home,{start,onMove,onDrop,onEnd}){let off=null;
+ d.addEventListener('pointerdown',e=>{if(start&&!start())return;e.preventDefault();d.setPointerCapture(e.pointerId);const p=pct(e);off={dx:p.x-parseFloat(d.style.left),dy:p.y-parseFloat(d.style.top)};d.classList.add('drag');d.classList.remove('back')});
+ d.addEventListener('pointermove',e=>{if(!off)return;const p=pct(e),q={x:p.x-off.dx,y:p.y-off.dy};d.style.left=q.x+'%';d.style.top=q.y+'%';if(onMove)onMove(q,p)});
+ const end=e=>{if(!off)return;off=null;d.classList.remove('drag');const p=pct(e),q={x:parseFloat(d.style.left),y:parseFloat(d.style.top)};if(onEnd)onEnd();if(e.type!=='pointercancel'&&onDrop&&onDrop(q,p))return;d.classList.add('back');const h=home();d.style.left=h.x+'%';d.style.top=h.y+'%'};
+ d.addEventListener('pointerup',end);d.addEventListener('pointercancel',end)}
+// a tray thing dropped on a target; target() returns {x,y,dx,dy,el}
+function dropper(cls,x,y,html,aria,target,act,moving){const d=el('p grab '+cls,x,y,html);d.setAttribute('aria-label',aria);
+ draggable(d,()=>({x,y}),{onMove:(q,p)=>{const t=target();const on=near(q,t,t.dx,t.dy)||near(p,t,t.dx,t.dy);if(t.el)t.el.classList.toggle('hot',on);if(moving)moving(q,p,on)},onEnd:()=>{const t=target();if(t.el)t.el.classList.remove('hot')},
+  onDrop:(q,p)=>{const t=target();if(near(q,t,t.dx,t.dy)||near(p,t,t.dx,t.dy))return act(q,p)===true;return false}});return d}
+// stirring: move the spoon around inside a container; calls done() once the meter is full
+function stirrer(x,y,target,need,meterAt,done){const m=el('meter');Object.assign(m.style,{left:meterAt.x+'%',top:meterAt.y+'%',width:'16%'});m.innerHTML='<i></i>';let amount=0,last=null,fin=false;
+ dropper('emo',x,y,'🥄','Drag the spoon around inside to stir',target,()=>{},(q,p,on)=>{if(!on||fin){last=null;return}if(last){amount+=Math.hypot(q.x-last.x,q.y-last.y);if(Math.random()<.3)sfx.stir()}last=q;m.querySelector('i').style.width=Math.min(100,amount/need*100)+'%';if(amount>=need){fin=true;done()}});
+ return{reset:()=>{amount=0;fin=false;m.querySelector('i').style.width='0%'}}}
+function renderTop(){$('#badgeChip').textContent='🏅 '+badges(S).length+' / '+EXPERIMENTS.length;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
+function checkBadge(id,had){if(!had&&BADGES[id](S)){const e=byId(EXPERIMENTS,id);setTimeout(()=>{sfx.wow();note('🏅 You won the '+e.name+' badge!',3000)},900)}renderTop()}
+// ----- lab home -----
+function showHome(){stop();exp=null;$('#homeView').hidden=false;$('#expView').hidden=true;renderTop();const box=$('#exps');box.innerHTML='';const won=badges(S);
+ EXPERIMENTS.forEach(e=>{const b=document.createElement('button');b.type='button';b.className='exp'+(won.includes(e.id)?' badge':'');b.innerHTML='<span class="big" aria-hidden="true">'+e.icon+'</span><b></b><small></small><span class="prog"></span>';b.querySelector('b').textContent=(won.includes(e.id)?'🏅 ':'')+e.name;b.querySelector('small').textContent=e.about;b.querySelector('.prog').textContent=progressText(S,e.id);b.onclick=()=>open(e.id);box.append(b)})}
+function stop(){cancelAnimationFrame(raf);cleanup.forEach(f=>f());cleanup=[]}
+function open(id){stop();exp=id;const e=byId(EXPERIMENTS,id);$('#homeView').hidden=true;$('#expView').hidden=false;$('#expTitle').textContent=e.icon+' '+e.name;scene.innerHTML='';scene.style.background='';sfx.click();({color:color,volcano:volcano,crystal:crystal,rocket:rocket,magnet:magnet,float:float})[id]()}
+$('#againBtn').onclick=()=>open(exp);$('#labBtn').onclick=showHome;
+// ----- 1. color mixing -----
+function color(){const B={x:40,y:58};let paints=[],mixed=null,stir;
+ const bk=el('p beaker',B.x,B.y,'<div class="rim"></div><div class="glass"><div class="liquid" id="liq"></div><div class="marks"></div></div>');
+ const paint=()=>{const l=$('#liq');if(!paints.length){l.style.height='30%';l.style.background='#dff2ff99';return}l.style.height=Math.min(85,30+paints.length*10)+'%';
+  if(mixed)l.style.background=mixed.hex;else{const cs=[...new Set(paints)].map(id=>byId(PAINTS,id).hex);l.style.background='repeating-linear-gradient(110deg,'+cs.map((c,i)=>c+' '+i*12+'% '+(i+1)*12+'%').join(',')+')'}};
+ const target=()=>({x:B.x,y:B.y,dx:11,dy:15,el:bk});
+ el('tray');PAINTS.forEach((pt,i)=>{const x=i%2?93:83,y=14+Math.floor(i/2)*20;const d=dropper('bottle',x,y,'','Drag the '+pt.name.toLowerCase()+' paint into the beaker',target,()=>{if(paints.length>=8){notify('The beaker is full! Tap Start over to empty it.');return}paints.push(pt.id);mixed=null;stir.reset();sfx.drip();paint();setTip('🥄 Now <b>stir it with the spoon</b>! Drag the spoon around and around inside the beaker.')});d.style.background=pt.hex;d.style.border=pt.id==='white'?'.2cqw solid #ccc':'none';label(x,y+6,pt.name)});
+ stir=stirrer(88,62,target,90,{x:32,y:90},()=>{if(!paints.length){notify('Add some paint first!');stir.reset();return}const m=mixColor(paints);mixed=m;paint();const had=BADGES.color(S),isNew=record.color(S,m.id);save();
+  if(isNew){sfx.wow();note('🎨 New color: '+m.name+'!')}else{sfx.plop();note('🎨 '+m.name)}setTip((isNew?'🎉 You discovered <b>'+m.name+'</b>! ':'That makes <b>'+m.name+'</b>. ')+'You have found '+S.colors.length+' of '+MIXES.length+' colors. Tap <b>🔄 Start over</b> to try a new mix.');checkBadge('color',had)});
+ label(88,70,'Spoon');paint();setTip('🎨 <b>Drag paint</b> into the beaker. Try two colors, like red and yellow! Then stir with the spoon.')}
+// ----- 2. volcano -----
+function volcano(){const V={x:40,y:62},CR={x:40,y:35};let soda=0,soap=false,lava=null,busy=false;
+ const vo=el('p volcano',V.x,V.y,'<div class="cone"></div><div class="crater"></div><div class="pile" id="pile"></div>');const pile=()=>{$('#pile').style.transform='scale('+(soda?0.6+soda*.3:0)+')'};pile();
+ const cv=document.createElement('canvas');scene.append(cv);const g=cv.getContext('2d');const size=()=>{const r=scene.getBoundingClientRect();cv.width=r.width;cv.height=r.height};size();
+ let foam=[];const target=()=>({x:CR.x,y:CR.y,dx:10,dy:12,el:vo});
+ el('tray');
+ dropper('emo',83,12,'📦','Drag baking soda into the volcano',target,()=>{if(busy)return;if(soda>=3){notify('That is lots of baking soda already!');return}soda++;sfx.plop();pile();fx(CR.x,CR.y-6,'Baking soda ×'+soda);setTip('🧂 Baking soda: <b>'+soda+'</b> scoop'+(soda===1?'':'s')+'. Add dish soap for extra foam, a color, then <b>pour in the vinegar</b>!')});label(83,19,'Baking soda');
+ dropper('emo',93,12,'🧼','Drag dish soap into the volcano',target,()=>{if(busy)return;soap=true;sfx.plop();fx(CR.x,CR.y-6,'Soap!')});label(93,19,'Dish soap');
+ LAVAS.forEach((c,i)=>{const x=82+i*6;const d=dropper('drop',x,34,'','Drag the '+c.name.toLowerCase()+' color into the volcano',target,()=>{if(busy)return;lava=c.id;sfx.drip();fx(CR.x,CR.y-6,c.name+'!')});d.style.background=c.hex});label(88,40,'Colors');
+ dropper('emo',88,58,'🍶','Pour vinegar into the volcano',target,()=>{if(busy)return;if(!soda){sfx.nope();setTip('🤔 Nothing happens! Vinegar needs <b>baking soda</b> to react. Add some baking soda first.');return}erupt()});label(88,66,'Vinegar');
+ function erupt(){busy=true;const type=eruptionType(soda,soap),k={small:1,medium:2,big:3.2,mega:5}[type],col=lava?byId(LAVAS,lava).hex:'#ffffff';sfx.fizz();setTimeout(sfx.boom,200);
+  const w=cv.width,h=cv.height,cx=w*CR.x/100,cy=h*CR.y/100;let t=0;
+  const tick=()=>{t+=1/60;const r=cv.getBoundingClientRect();if(t<1+k*.4)for(let i=0;i<k*2.5;i++)foam.push({x:cx+(Math.random()-.5)*w*.035,y:cy,vx:(Math.random()-.5)*w*.0028*Math.sqrt(k),vy:-(Math.random()*.005+.003)*h*Math.sqrt(k),r:(Math.random()*.007+.005)*w*(.8+k*.08),life:1});
+   g.clearRect(0,0,w,h);for(const f of foam){f.vy+=h*.0006;f.x+=f.vx;f.y+=f.vy;const ground=h*.86;if(f.y>ground){f.y=ground;f.vy=0;f.vx*=.9}f.life-=.006;g.globalAlpha=Math.max(0,f.life);g.fillStyle=col;g.beginPath();g.arc(f.x,f.y,f.r,0,7);g.fill();g.strokeStyle='#0000001a';g.stroke()}g.globalAlpha=1;foam=foam.filter(f=>f.life>0);
+   if(t<6||foam.length)raf=requestAnimationFrame(tick);else{busy=false}};tick();
+  const e=byId(ERUPTIONS,type),had=BADGES.volcano(S),isNew=record.eruption(S,type,lava);save();setTimeout(()=>{note(e.icon+' '+e.name+' eruption!'+(isNew?' NEW!':''));if(isNew)sfx.wow()},600);
+  setTip('🌋 A <b>'+e.name.toLowerCase()+'</b> eruption! '+(type!=='mega'?'Tip: 3 scoops of baking soda plus dish soap makes a MEGA eruption. ':'WOW, the biggest one! ')+'Tap <b>🔄 Start over</b> to try again.');soda=0;soap=false;lava=null;pile();checkBadge('volcano',had)}
+ setTip('🌋 Drag <b>baking soda</b> into the volcano, then <b>pour in the vinegar</b>. Watch out!')}
+// ----- 3. crystal garden -----
+function crystal(){const J={x:40,y:58};let salt=0,dissolved=false,dye='clear',hung=false,stir;
+ const jar=el('p jar',J.x,J.y,'<div class="lid"></div><div class="glass"><div class="liquid" id="water" style="height:82%;background:#cfeaff99"></div><div id="grains"></div></div>');
+ const target=()=>({x:J.x,y:J.y,dx:11,dy:16,el:jar});
+ const showGrains=()=>{const gr=$('#grains');gr.innerHTML='';if(dissolved)return;for(let i=0;i<salt*10;i++){const s=document.createElement('i');s.className='salt';s.style.left=(15+(i*37)%70)+'%';s.style.bottom=(2+(i*13)%8)+'%';gr.append(s)}};
+ el('tray');
+ dropper('emo',83,12,'🧂','Drag salt into the warm water',target,()=>{if(hung)return;if(salt>=3){notify('That is enough salt! Now stir it.');return}salt++;dissolved=false;stir.reset();sfx.plop();showGrains();setTip(salt<3?'🧂 Salt: '+salt+' of 3 scoops. Add more salt!':'🥄 Now <b>stir</b> until the salt disappears into the water!')});label(83,19,'Salt');
+ CRYSTALS.slice(1).forEach((c,i)=>{const x=81+(i%3)*6,y=30+Math.floor(i/3)*8;const d=dropper('drop',x,y,'','Drag the '+c.name.toLowerCase()+' color into the jar',target,()=>{if(hung)return;dye=c.id;sfx.drip();$('#water').style.background=c.hex+'99';fx(J.x,J.y-16,c.name+'!')});d.style.background=c.hex});label(87,44,'Colors');
+ stir=stirrer(93,12,target,70,{x:32,y:92},()=>{if(salt<3){notify('Add 3 scoops of salt first!');stir.reset();return}dissolved=true;showGrains();sfx.plop();setTip('✨ The salt dissolved! Add a <b>color</b> if you like, then <b>hang the string</b> in the jar.')});label(93,19,'Spoon');
+ dropper('emo',88,62,'🧵','Hang the string in the jar',target,()=>{if(hung)return;if(!dissolved){sfx.nope();setTip('🤔 First put in <b>3 scoops of salt</b> and <b>stir</b> until it disappears.');return}hung=true;grow()});label(88,70,'String');
+ function grow(){const g=document.createElement('div');jar.append(g);g.innerHTML='<div class="stick"></div><div class="string"></div>';const c=byId(CRYSTALS,dye);sfx.plop();setTip('⏳ Waiting... the water slowly dries up, and crystals start to grow on the string!');let n=0;
+  const iv=setInterval(()=>{n++;const k=document.createElement('div');k.className='crys';const sz=1+Math.random()*2.6;Object.assign(k.style,{left:(42+Math.random()*16)+'%',top:(10+Math.random()*62)+'%',width:sz+'cqw',height:sz+'cqw',background:c.hex});jar.querySelector('.glass').append(k);if(n%3===0)sfx.clink();
+   $('#water').style.height=Math.max(30,82-n*1.4)+'%';if(n>=36){clearInterval(iv);const had=BADGES.crystal(S),isNew=record.crystal(S,dye);save();sfx.wow();note('💎 '+c.name+' crystals!'+(isNew?' NEW!':''));setTip('💎 You grew <b>'+c.name.toLowerCase()+' crystals</b>! You have grown '+S.crystals.length+' of '+CRYSTALS.length+' colors. Tap <b>🔄 Start over</b> for another color.');checkBadge('crystal',had)}},140);cleanup.push(()=>clearInterval(iv))}
+ setTip('💎 Drag <b>3 scoops of salt</b> into the warm water, then <b>stir</b> with the spoon.')}
+// ----- 4. bottle rocket -----
+function rocket(){let pumps=0,flying=false;scene.style.background='linear-gradient(180deg,#bfe3ff 0 80%,#7fcf6a 80%)';
+ HEIGHTS.slice().reverse().forEach((h,i)=>{const m=el('marker');m.style.top=(6+i*12.5)+'%';m.innerHTML='<span>'+h.icon+'</span>';m.append(h.name)});
+ el('p pad',40,86);const r=el('p rocket',40,73,'🚀');r.style.transform='translate(-50%,-50%) rotate(-45deg)';
+ el('p pump',62,74,'<div class="body"></div><div class="base"></div>');const gauge=el('p gauge',72,60,'<i id="gi"></i>');label(72,81,'Pressure');
+ const paint=()=>{$('#gi').style.height=pumps*10+'%'};paint();
+ const HY={top:57,bot:71};const h=el('p handle',62,HY.top);h.setAttribute('aria-label','Pump handle. Drag it down and up.');let down=false,on=false,y0=0,p0=0;
+ h.addEventListener('pointerdown',e=>{if(flying)return;e.preventDefault();h.setPointerCapture(e.pointerId);on=true;y0=pct(e).y;p0=parseFloat(h.style.top)});
+ h.addEventListener('pointermove',e=>{if(!on)return;const y=Math.max(HY.top,Math.min(HY.bot,p0+pct(e).y-y0));h.style.top=y+'%';if(!down&&y>HY.bot-2.5){down=true;if(pumps<10){pumps++;sfx.pump();paint();setTip(pumps<10?'💨 Pressure: '+pumps+' of 10. Keep pumping, or press <b>LAUNCH</b>!':'💨 FULL pressure! Press the big red <b>LAUNCH</b> button!')}}else if(down&&y<HY.top+3)down=false});
+ const end=()=>{on=false;down=false;h.style.top=HY.top+'%'};h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);
+ const btn=document.createElement('button');btn.type='button';btn.className='p launch';btn.style.left='88%';btn.style.top='50%';btn.textContent='LAUNCH!';btn.onclick=()=>{if(flying)return;if(!pumps){sfx.nope();setTip('🤔 The rocket needs air pressure! <b>Pump the handle</b> down and up first.');return}launch()};scene.append(btn);el('tray').style.zIndex='0';
+ function launch(){flying=true;const lv=rocketLevel(pumps),target=12+(HEIGHTS.length-1-lv)*12.5,start=performance.now(),dur=900+lv*250;noise(.8,.1,1200);
+  const step=now=>{const t=Math.min(1,(now-start)/dur),e=1-Math.pow(1-t,3);r.style.top=(73+(target-73)*e)+'%';if(t<1)raf=requestAnimationFrame(step);else{const had=BADGES.rocket(S),better=record.rocket(S,lv);save();const H=HEIGHTS[lv];sfx.wow();note(H.icon+' '+H.name+(better?' NEW BEST!':''));setTip('🚀 With '+pumps+' pump'+(pumps===1?'':'s')+', your rocket flew <b>'+H.name.toLowerCase()+'</b>! More pressure makes it go higher. Tap <b>🔄 Start over</b> to fly again.');checkBadge('rocket',had)}};raf=requestAnimationFrame(step)}
+ setTip('🚀 <b>Drag the pump handle</b> down and up to pump air into the bottle rocket, then press <b>LAUNCH</b>!')}
+// ----- 5. magnets -----
+function magnet(){const round=pickRound(MAGNET_ITEMS,6),YES={x:18,y:20},NO={x:56,y:20};let stuck=[],sorted=0;
+ const by=el('p bin yes',YES.x,YES.y,'🧲 Magnetic'),bn=el('p bin no',NO.x,NO.y,'🚫 Not magnetic');
+ const objs=round.map((it,i)=>{const o={it,x:10+(i%3)*22+Math.random()*6,y:60+Math.floor(i/2)%2*16+Math.random()*6,done:false};o.el=el('p obj grab',o.x,o.y,it.icon);o.el.setAttribute('aria-label',it.name);
+  draggable(o.el,()=>({x:o.x,y:o.y}),{start:()=>!o.done&&!stuck.includes(o),onDrop:q=>{if(near(q,NO,12,9)){if(it.mag){sfx.nope();setTip('🤔 Hmm! Try the <b>magnet</b> on the '+it.name.toLowerCase()+' first.');return false}place(o,NO,false);return true}
+   if(near(q,YES,12,9)){sfx.nope();setTip('🤔 Did the '+it.name.toLowerCase()+' stick to the magnet? Test it with the magnet first!');return false}o.x=q.x;o.y=q.y;return true}});return o});
+ function place(o,bin,mag){o.done=true;sorted++;o.el.style.transition='left .3s,top .3s';o.el.style.left=(bin.x-7+(objs.filter(z=>z.done&&z.it.mag===mag).length-1)%4*4.6)+'%';o.el.style.top=(bin.y+3)+'%';o.el.style.fontSize='3.4cqw';
+  const had=BADGES.magnet(S);record.magnet(S,o.it.id);save();fx(bin.x,bin.y-8,(mag?'🧲 ':'🚫 ')+o.it.name);if(sorted>=round.length){sfx.wow();note('✅ All sorted!');setTip('🧲 Great sorting! Magnets pull on iron and steel. Tap <b>🔄 Start over</b> to test more things. ('+S.magnets.length+' of '+MAGNET_ITEMS.length+' tested)');checkBadge('magnet',had)}}
+ el('tray');const mg=el('p grab emo',88,30,'🧲');mg.style.fontSize='8cqw';mg.setAttribute('aria-label','Drag the magnet over the things');label(88,42,'Magnet');
+ draggable(mg,()=>({x:88,y:30}),{onMove:q=>{for(const o of objs){if(o.done||stuck.includes(o))continue;const d=Math.hypot(o.x-q.x,(o.y-q.y)*.62);if(d<8){if(o.it.mag){stuck.push(o);sfx.clink();fx(q.x,q.y-8,'Stuck!')}else if(!o.tested){o.tested=true;o.el.animate([{translate:'0 0'},{translate:'-.8cqw 0'},{translate:'.8cqw 0'},{translate:'0 0'}],{duration:300});fx(o.x,o.y-7,'Not stuck')}}}
+   stuck.forEach((o,i)=>{o.el.style.left=(q.x-3+i*3)+'%';o.el.style.top=(q.y+7)+'%'});by.classList.toggle('hot',near(q,YES,13,10)&&stuck.length>0)},
+  onEnd:()=>by.classList.remove('hot'),onDrop:q=>{if(!stuck.length)return false;if(near(q,YES,13,10)){const list=stuck;stuck=[];list.forEach(o=>place(o,YES,true));sfx.plop();return false}
+   // let go somewhere else: stuck things fall back onto the table
+   stuck.forEach(o=>{o.x=Math.max(8,Math.min(68,parseFloat(o.el.style.left)));o.y=Math.max(50,Math.min(90,parseFloat(o.el.style.top)));o.el.style.left=o.x+'%';o.el.style.top=o.y+'%'});stuck=[];setTip('🧲 They fell off! Drag the magnet over the <b>Magnetic</b> box to drop stuck things in.');return false}});
+ setTip('🧲 Drag the <b>magnet</b> over the things. Bring stuck things to the <b>🧲 Magnetic</b> box. Drag things that do not stick into <b>🚫 Not magnetic</b>.')}
+// ----- 6. sink or float -----
+function float(){const T={x:38,y:58,w:42,h:30},round=pickRound(FLOAT_ITEMS,6);let done=0;
+ const tk=el('p tank',T.x,T.y,'<div class="glass"><div class="water"></div></div>');const surface=T.y-T.h/2*1.6*.78+2,bottom=T.y+T.h/2*1.6-4;
+ const target=()=>({x:T.x,y:T.y,dx:20,dy:24,el:tk});el('tray');
+ round.forEach((it,i)=>{const x=i%2?93:83,y=12+Math.floor(i/2)*22;const d=dropper('emo',x,y,it.icon,'Drop the '+it.name.toLowerCase()+' into the water',target,q=>{d.remove();const o=el('p obj',Math.max(T.x-17,Math.min(T.x+17,q.x)),q.y,it.icon);sfx.splash();
+   const toY=it.floats?surface+1.5:bottom-2-(done%3)*1.5;o.animate([{top:q.y+'%'},{top:toY+'%'}],{duration:it.floats?600:1400,easing:it.floats?'cubic-bezier(.3,1.6,.5,1)':'ease-in',fill:'forwards'});o.style.top=toY+'%';if(it.floats)setTimeout(()=>o.classList.add('bob'),700);
+   setTimeout(()=>{fx(parseFloat(o.style.left),toY-8,it.floats?'It floats!':'It sinks!');const had=BADGES.float(S);record.float(S,it.id);save();done++;setTip((it.floats?'🛟 The <b>'+it.name.toLowerCase()+'</b> floats!':'⬇️ The <b>'+it.name.toLowerCase()+'</b> sinks!')+(done<round.length?' Try another one.':' You tested them all! Tap <b>🔄 Start over</b> for new things. ('+S.floats.length+' of '+FLOAT_ITEMS.length+' tested)'));if(done>=round.length){sfx.wow();checkBadge('float',had)}},it.floats?600:1400);return true});const lb=label(x,y+8,it.name);d.addEventListener('pointerup',()=>{if(!d.isConnected)lb.remove()})});
+ setTip('🌊 What do you think: will it sink or float? <b>Drag something</b> into the water to find out!')}
+// ----- notebook -----
+$('#bookBtn').onclick=()=>{const b=$('#book');b.innerHTML='';const won=badges(S);
+ const page=(e,html)=>{const p=document.createElement('div');p.className='page';p.innerHTML='<h3><span aria-hidden="true">'+e.icon+'</span><span></span></h3><div class="row">'+html+'</div><p class="fact"></p>';p.querySelector('h3 span:last-child').textContent=e.name+(won.includes(e.id)?' 🏅':'')+' · '+progressText(S,e.id);p.querySelector('.fact').textContent='💡 '+e.fact;b.append(p)};
+ const tag=t=>'<span class="tag">'+t+'</span>',none='<span class="tag">Nothing yet</span>';
+ page(EXPERIMENTS[0],S.colors.map(id=>{const m=byId(MIXES,id);return tag('<span class="sw" style="background:'+m.hex+'"></span> '+m.name)}).join('')||none);
+ page(EXPERIMENTS[1],[...S.eruptions.map(id=>{const e=byId(ERUPTIONS,id);return tag(e.icon+' '+e.name)}),...S.lavas.map(id=>{const l=byId(LAVAS,id);return tag('<span class="sw" style="background:'+l.hex+'"></span> '+l.name+' lava')})].join('')||none);
+ page(EXPERIMENTS[2],S.crystals.map(id=>{const c=byId(CRYSTALS,id);return tag('<span class="sw" style="background:'+c.hex+'"></span> '+c.name)}).join('')||none);
+ page(EXPERIMENTS[3],S.rocketBest<0?none:HEIGHTS.slice(0,S.rocketBest+1).map(h=>tag(h.icon+' '+h.name)).join(''));
+ page(EXPERIMENTS[4],S.magnets.map(id=>{const it=byId(MAGNET_ITEMS,id);return tag(it.icon+' '+it.name+(it.mag?': 🧲 magnetic':': not magnetic'))}).join('')||none);
+ page(EXPERIMENTS[5],S.floats.map(id=>{const it=byId(FLOAT_ITEMS,id);return tag(it.icon+' '+it.name+(it.floats?': floats':': sinks'))}).join('')||none);
+ $('#bookDialog').showModal()};
+$('#bookClose').onclick=()=>$('#bookDialog').close();$('#bookDialog').addEventListener('click',e=>{if(e.target===$('#bookDialog'))$('#bookDialog').close()});
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+showHome();
+window.__lab={get S(){return S},open,showHome};
+}
+</script>
+</body>
+</html>
