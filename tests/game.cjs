@@ -406,13 +406,13 @@ test('Five more secret lands unlock one after another, each locked level by leve
  run(`openCharacterStudio();studioTarget='dune';studioDraft={...looks.dune};renderStudioControls()`);assert(run("$('#characterOptions').innerHTML.includes('special colors')"));
  run(`openWorldMap();drawWorldMap()`);assert(run("$('#mapTotal').textContent.includes('/ 144 adventures')"));
 });
-test('The home page is a game menu that links to all sixteen games and shows saved progress for each',()=>{
+test('The home page is a game menu that links to all seventeen games and shows saved progress for each',()=>{
  const menu=fs.readFileSync('public/index.html','utf8'),head=menu.split('</head>')[0];
  assert(head.includes('<link rel="canonical" href="https://superemilia.com/">')&&head.includes('<title>Super Emilia · Pick a Game</title>'));
- assert(menu.includes('<a class="card game" href="/world/"')&&menu.includes('<a class="card game bakery" href="/bakery/"'));assert(fs.existsSync('public/bakery/index.html'));assert(menu.includes('<a class="card game memory" href="/memory/"')&&fs.existsSync('public/memory/index.html'));for(const g of ['garden','studio','vet','race','fish','hotel','potion','carnival','salon','zoo','dino','paint','fairy'])assert(menu.includes('<a class="card game '+g+'" href="/'+g+'/"')&&fs.existsSync('public/'+g+'/index.html'),g);
+ assert(menu.includes('<a class="card game" href="/world/"')&&menu.includes('<a class="card game bakery" href="/bakery/"'));assert(fs.existsSync('public/bakery/index.html'));assert(menu.includes('<a class="card game memory" href="/memory/"')&&fs.existsSync('public/memory/index.html'));for(const g of ['garden','studio','vet','race','fish','hotel','potion','carnival','salon','zoo','dino','paint','fairy','lemonade'])assert(menu.includes('<a class="card game '+g+'" href="/'+g+'/"')&&fs.existsSync('public/'+g+'/index.html'),g);
  for(const [,src] of menu.matchAll(/(?:src|srcset|href)="(\/assets\/[^"]+)"/g))assert(fs.existsSync('public'+src),src);
  const meta=Object.fromEntries([...head.matchAll(/<meta (?:property|name)="([^"]+)" content="([^"]*)">/g)].map(m=>[m[1],m[2]]));assert.equal(meta['og:url'],'https://superemilia.com/');assert.equal(meta['og:description'],meta.description);
- const ld=JSON.parse(head.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert(ld['@graph'].some(n=>n['@type']==='VideoGame'&&n.url==='https://superemilia.com/world/'));assert.equal(ld['@graph'].filter(n=>n['@type']==='VideoGame').length,16);
+ const ld=JSON.parse(head.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert(ld['@graph'].some(n=>n['@type']==='VideoGame'&&n.url==='https://superemilia.com/world/'));assert.equal(ld['@graph'].filter(n=>n['@type']==='VideoGame').length,17);
  const code=menu.match(/<script>([\s\S]*?)<\/script>/)[1];
  const make=(saved,bakery=null,memory=null,more={})=>{const items=[],list={textContent:'x',appendChild:li=>items.push(li)},play={textContent:'Play now →'};const sb={JSON,Object,Number,Array,Math,isFinite,localStorage:{getItem:k=>k==='mysteryEggBakery'?bakery:k==='superEmiliaMemory'?memory:k in more?more[k]:saved},document:{getElementById:()=>list,createElement:()=>({}),querySelector:()=>play}};vm.createContext(sb);vm.runInContext(code,sb);return {items,list,play}};
  let r=make(null);assert.equal(r.items.length,0);assert.equal(r.play.textContent,'Play now →');
@@ -433,20 +433,21 @@ test('The home page is a game menu that links to all sixteen games and shows sav
  r=make(null,null,null,{superEmiliaDino:JSON.stringify({digs:6,coins:71,found:{trex:2,bronto:1,yeti:4,dragon:0}})});assert.equal(r.items.length,3);assert(r.items[0].textContent.includes('2 / 12 animals')&&r.items[1].textContent.includes('6 skeletons')&&r.items[2].textContent.includes('71 coins'));assert.equal(r.play.textContent,'Keep digging →');
  r=make(null,null,null,{superEmiliaPaint:JSON.stringify({hung:4,finished:['rainbow','cat','cat','moon']})});assert.equal(r.items.length,2);assert(r.items[0].textContent.includes('4 paintings')&&r.items[1].textContent.includes('2 / 10 pictures'));assert.equal(r.play.textContent,'Keep painting →');
  r=make(null,null,null,{superEmiliaFairy:JSON.stringify({dust:1234,fairies:['petal','pip','pip','queen'],things:[{},{},{}]})});assert.equal(r.items.length,3);assert(r.items[0].textContent.includes('2 / 8 fairies')&&r.items[1].textContent.includes('3 things')&&r.items[2].textContent.includes('1,234 fairy dust'));assert.equal(r.play.textContent,'Keep gardening →');
+ r=make(null,null,null,{superEmiliaLemon:JSON.stringify({served:13,coins:1500,day:3})});assert.equal(r.items.length,3);assert(r.items[0].textContent.includes('Day 3')&&r.items[1].textContent.includes('13 cups')&&r.items[2].textContent.includes('1,500 coins'));assert.equal(r.play.textContent,'Keep selling →');
  r=make(null,null,null,{superEmiliaRace:JSON.stringify({races:7,coins:120,best:{candy:1,beach:3,jungle:4,moon:1}})});assert.equal(r.items.length,3);assert(r.items[0].textContent.includes('2 / 6 trophies')&&r.items[1].textContent.includes('7 races')&&r.items[2].textContent.includes('120 coins'));assert.equal(r.play.textContent,'Keep racing →');
 });
 test('The Prize Room on the menu gives prizes for playing every game',()=>{
  const menu=fs.readFileSync('public/index.html','utf8'),code=[...menu.matchAll(/<script>([\s\S]*?)<\/script>/g)][1][1];
  const sb={JSON,Object,Number,Array,Math,isFinite};vm.createContext(sb);vm.runInContext(code,sb);
  const room=saves=>vm.runInContext('prizeRoom',sb)(k=>saves[k]===undefined?null:JSON.parse(JSON.stringify(saves[k])));
- let r=room({});assert.equal(r.games.length,16);assert.equal(r.won.length,0);assert(r.total>=30);
+ let r=room({});assert.equal(r.games.length,17);assert.equal(r.won.length,0);assert(r.total>=30);
  assert(r.games.every(g=>g.prizes.length>=4&&fs.existsSync('public'+g.href+'index.html')),'every game has prizes and a page');
  assert.equal(new Set(r.games.flatMap(g=>g.prizes.map(p=>p.id))).size,r.total-1,'prize ids are all different');
  r=room({superEmiliaRace:{races:3,best:{candy:1,beach:2}},superEmiliaVet:{treated:30,day:4,helped:{Ember:1}}});
  const won=r.won.map(p=>p.name);assert.deepEqual(won,['First Patient','Caring Vet','Rare Visitor','First Race','Winner']);
  const trophies=r.games.find(g=>g.id==='race').prizes.find(p=>p.name==='Trophy Hunter');assert(!trophies.won&&trophies.have===2&&trophies.need===3);
- const all={laserLeapRewards:{medals:{'space:0':1},bosses:{}},mysteryEggBakery:{totalServed:1},superEmiliaMemory:{stars:[2]},superEmiliaGarden:{harvests:1},superEmiliaStudio:{shows:1},superEmiliaVet:{treated:1},superEmiliaRace:{races:1},superEmiliaFish:{caught:1},superEmiliaHotel:{guests:1},superEmiliaPotion:{found:['float']},superEmiliaCarnival:{plays:1},superEmiliaSalon:{served:1},superEmiliaZoo:{fed:1},superEmiliaDino:{digs:1},superEmiliaPaint:{hung:1},superEmiliaFairy:{fairies:['petal']}};
- r=room(all);assert(r.grand.won,'a prize in every game gives the grand prize');assert.equal(r.won.length,17);
+ const all={laserLeapRewards:{medals:{'space:0':1},bosses:{}},mysteryEggBakery:{totalServed:1},superEmiliaMemory:{stars:[2]},superEmiliaGarden:{harvests:1},superEmiliaStudio:{shows:1},superEmiliaVet:{treated:1},superEmiliaRace:{races:1},superEmiliaFish:{caught:1},superEmiliaHotel:{guests:1},superEmiliaPotion:{found:['float']},superEmiliaCarnival:{plays:1},superEmiliaSalon:{served:1},superEmiliaZoo:{fed:1},superEmiliaDino:{digs:1},superEmiliaPaint:{hung:1},superEmiliaFairy:{fairies:['petal']},superEmiliaLemon:{served:1}};
+ r=room(all);assert(r.grand.won,'a prize in every game gives the grand prize');assert.equal(r.won.length,18);
  delete all.superEmiliaRace;assert(!room(all).grand.won);
  r=room({laserLeapRewards:'oops',superEmiliaMemory:{stars:[3,'x',3]},superEmiliaGarden:{buddies:[1,1,1,99]}});assert.deepEqual(r.won.map(p=>p.name),['First Match','Buddy Friend']);
 });

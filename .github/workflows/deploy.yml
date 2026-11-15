@@ -29,7 +29,7 @@ jobs:
         run: |
           node --input-type=module <<'JS'
           import fs from 'node:fs';
-          for (const file of ['public/index.html', 'public/world/index.html', 'public/bakery/index.html', 'public/memory/index.html', 'public/garden/index.html', 'public/studio/index.html', 'public/vet/index.html', 'public/race/index.html', 'public/fish/index.html', 'public/hotel/index.html', 'public/potion/index.html', 'public/carnival/index.html', 'public/salon/index.html', 'public/zoo/index.html', 'public/dino/index.html', 'public/paint/index.html', 'public/fairy/index.html']) {
+          for (const file of ['public/index.html', 'public/world/index.html', 'public/bakery/index.html', 'public/memory/index.html', 'public/garden/index.html', 'public/studio/index.html', 'public/vet/index.html', 'public/race/index.html', 'public/fish/index.html', 'public/hotel/index.html', 'public/potion/index.html', 'public/carnival/index.html', 'public/salon/index.html', 'public/zoo/index.html', 'public/dino/index.html', 'public/paint/index.html', 'public/fairy/index.html', 'public/lemonade/index.html']) {
             const html = fs.readFileSync(file, 'utf8');
             const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
             if (!scripts.length) throw new Error('The script is missing from ' + file + '.');
@@ -69,6 +69,8 @@ jobs:
         run: node tests/paint.cjs
       - name: Check Fairy Garden
         run: node tests/fairy.cjs
+      - name: Check Lemonade Stand
+        run: node tests/lemonade.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload the game

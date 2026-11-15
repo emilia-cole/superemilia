@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff8d6">
+<meta name="author" content="Emilia">
+<meta name="description" content="Squeeze lemons, pour, add sugar, ice, and fun extras, and serve lemonade to thirsty buddies at your own lemonade stand. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/lemonade/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/lemonade/">
+<meta property="og:title" content="Lemonade Stand · A Super Emilia Game">
+<meta property="og:description" content="Squeeze lemons, pour, add sugar, ice, and fun extras, and serve lemonade to thirsty buddies at your own lemonade stand. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Lemonade Stand</title>
+<style>
+/* Layout: top bar, a tool row, a tip line, then the stand (one drawn scene: the customer on the left, the cup, pitcher, juicer and lemons on the counter, and sugar, ice and extras on the shelf). Everything is done by dragging. */
+:root{
+ color-scheme:light;
+ --bg:#fff8d6; --bg-2:#e6f7ff; --paper:#fff; --line:#f0e2a8; --ink:#3a3320; --soft:#7a6f4c;
+ --lemon:#ffd43b; --lemon-deep:#d9a400; --stripe:#ffd43b;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--lemon-deep);outline-offset:2px}
+.app{max-width:1000px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--lemon-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.coins{color:#a06b00;border-color:#f2d98a;background:#fff8dc}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+/* the stand */
+.stand{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #e8d9a0;background:linear-gradient(180deg,#bfe8ff 0 56%,#9bd97e 56%);container-type:inline-size;touch-action:none}
+.awning{position:absolute;left:24%;right:0;top:0;height:10%;background:repeating-linear-gradient(90deg,var(--stripe) 0 4cqw,#fff 4cqw 8cqw);border-radius:0 0 0 1cqw;box-shadow:0 .6cqw 0 #0001;z-index:1}
+.awning:after{content:"";position:absolute;left:0;right:0;bottom:-2.2cqw;height:2.4cqw;background:radial-gradient(circle at 2cqw 0,var(--stripe) 0 1.9cqw,transparent 2cqw) 0 0/8cqw 100%,radial-gradient(circle at 2cqw 0,#fff 0 1.9cqw,transparent 2cqw) 4cqw 0/8cqw 100%}
+.post{position:absolute;top:9%;height:52%;width:1.4cqw;background:#c98d4f;border-radius:.6cqw;z-index:0}
+.shelf{position:absolute;left:50%;right:1%;top:36%;height:2.4%;background:#b97a3e;border-radius:.6cqw;box-shadow:0 .5cqw 0 #8a5528;z-index:1}
+.counter{position:absolute;left:24%;right:0;top:60%;bottom:0;background:repeating-linear-gradient(90deg,#e0a868 0 7cqw,#d69a59 7cqw 14cqw);border-top:1.4cqw solid #b97a3e;z-index:1}
+.sign{position:absolute;left:52%;bottom:3%;transform:translateX(-50%);background:#fff;border:.5cqw solid #b97a3e;border-radius:1.4cqw;padding:.6cqw 2cqw;font-size:2.6cqw;font-weight:900;color:#c08a00;z-index:2;white-space:nowrap;letter-spacing:.2cqw}
+.p{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;-webkit-user-select:none;user-select:none}
+.label{position:absolute;transform:translate(-50%,-50%);font-size:1.5cqw;font-weight:900;color:#6b5a2a;white-space:nowrap;pointer-events:none;z-index:3}
+.grab{cursor:grab;touch-action:none;z-index:10;filter:drop-shadow(0 0 .8cqw #ffc83d)}
+.grab.drag{cursor:grabbing;z-index:40;filter:none}
+.grab.back{transition:left .3s ease,top .3s ease}
+.emo{font-size:5.4cqw}
+.deco{font-size:6cqw;z-index:3;pointer-events:none}
+.locked{font-size:2.4cqw;opacity:.55;z-index:3;pointer-events:none}
+/* customer */
+.buddy{font-size:15cqw;z-index:4;transition:left .8s ease,opacity .8s}
+.buddy.hot{filter:drop-shadow(0 0 1.6cqw #ffc83d)}
+.order{position:absolute;left:1.5%;top:17%;transform:translateY(-50%);max-width:21.5%;background:#fff;border-radius:2cqw;padding:1.2cqw 1.6cqw;box-shadow:0 .6cqw 0 #0001;z-index:5;display:grid;gap:.6cqw;justify-items:center;min-width:17cqw}
+.order:after{content:"";position:absolute;left:50%;bottom:-1.6cqw;transform:translateX(-50%);border:1cqw solid transparent;border-top:1.6cqw solid #fff}
+.order .row{display:flex;flex-wrap:wrap;justify-content:center;gap:.6cqw;align-items:center;font-size:2.2cqw;font-weight:900}
+.order .row span{display:flex;align-items:center;gap:.2cqw}
+.order .row.ok{opacity:.35}
+.vip{font-size:1.6cqw;font-weight:900;color:#b5179e}
+.react{position:absolute;font-size:6cqw;transform:translate(-50%,-50%);z-index:6;pointer-events:none;animation:pop .4s ease-out}
+/* cup */
+.cup{width:10cqw;height:15cqw;z-index:12;cursor:grab;touch-action:none}
+.cup.drag{cursor:grabbing;z-index:42}
+.cup.back{transition:left .35s ease,top .35s ease}
+.cup.hot .glass{box-shadow:0 0 0 .5cqw #ffc83d}
+.glass{position:absolute;inset:0;border:.5cqw solid #ffffffee;border-top-width:.3cqw;border-radius:.6cqw .6cqw 2cqw 2cqw;background:#ffffff55;overflow:hidden;box-shadow:inset .8cqw 0 0 #ffffff66}
+.juice{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(180deg,#fff27a,#ffd43b);transition:background .4s}
+.juice.pink{background:linear-gradient(180deg,#ffc2dc,#ff8fbf)}
+.line{position:absolute;left:8%;right:8%;top:10%;border-top:.3cqw dashed #ff7b54aa}
+.ice{position:absolute;font-size:2.8cqw;line-height:1}
+.dots{position:absolute;left:50%;bottom:-3.2cqw;transform:translateX(-50%);font-size:1.6cqw;font-weight:900;white-space:nowrap;color:#6b5a2a}
+.straw{position:absolute;left:58%;top:-28%;width:1.1cqw;height:9cqw;background:repeating-linear-gradient(180deg,#ff5a6e 0 1cqw,#fff 1cqw 2cqw);border-radius:.5cqw;transform:rotate(14deg);transform-origin:bottom}
+.topper{position:absolute;font-size:3.6cqw;line-height:1}
+/* pitcher, juicer */
+.pitcher{width:9cqw;height:12cqw;z-index:11;transition:rotate .2s}
+.pitcher.pour{rotate:-55deg}
+.jug{position:absolute;inset:0;border:.5cqw solid #ffffffee;border-radius:.8cqw .8cqw 1.6cqw 1.6cqw;background:#ffffff55;overflow:hidden}
+.jug .juice{transition:height .2s}
+.pitcher:after{content:"";position:absolute;right:-2.6cqw;top:20%;width:2.4cqw;height:5cqw;border:.6cqw solid #ffffffee;border-left:none;border-radius:0 2cqw 2cqw 0}
+.pitcher:before{content:"";position:absolute;left:-1.2cqw;top:-.2cqw;border:1cqw solid transparent;border-right:1.6cqw solid #ffffffee;rotate:-30deg}
+.juicer{width:10cqw;height:6cqw;z-index:3;pointer-events:none}
+.juicer .bowl{position:absolute;left:0;right:0;bottom:0;height:55%;background:#7ec8e3;border-radius:0 0 5cqw 5cqw;box-shadow:inset 0 -.6cqw 0 #0002}
+.juicer .cone{position:absolute;left:50%;bottom:45%;transform:translateX(-50%);border-left:2.6cqw solid transparent;border-right:2.6cqw solid transparent;border-bottom:3.4cqw solid #a8dcf0}
+.juicer.hot .bowl{box-shadow:0 0 0 .5cqw #ffc83d}
+.squeeze{position:absolute;left:0;right:0;top:-2.4cqw;height:1cqw;background:#fff;border-radius:1cqw;overflow:hidden}
+.squeeze i{display:block;height:100%;width:0;background:#ffd43b}
+.fx{position:absolute;transform:translate(-50%,-50%);font-size:3.2cqw;font-weight:900;pointer-events:none;animation:rise 1.1s ease-out forwards;z-index:50;color:#a06b00;text-shadow:0 .2cqw 0 #fff}
+/* dialogs */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(560px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #3a332055}
+dialog::backdrop{background:#3a332066;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg.center{justify-items:center;text-align:center}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.big{font-size:90px;line-height:1}
+.primary{background:var(--lemon);border-color:var(--lemon-deep);color:#3a3320;box-shadow:0 4px 0 var(--lemon-deep);font-size:17px;padding:11px 20px}
+.items{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:min(62dvh,520px);overflow:auto;padding:2px}
+.items h3{grid-column:1/-1;margin:4px 0 0;font-size:15px}
+.card{display:grid;justify-items:center;gap:3px;padding:10px 4px;border-radius:16px;border:2px solid var(--line);background:#fff;text-align:center}
+.card .ic{font-size:32px;line-height:1.1}
+.card .nm{font-size:13px;font-weight:900}
+.card .sub{font-size:11.5px;font-weight:700;color:var(--soft)}
+.card button{padding:5px 10px;font-size:13px}
+.card.own{background:#f2fbef;border-color:#c5e8bd}
+.swatch{width:34px;height:22px;border-radius:6px;border:2px solid #fff;box-shadow:0 0 0 2px var(--line)}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:70;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@keyframes pop{0%{scale:0}70%{scale:1.2}100%{scale:1}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-220%) scale(1.1)}}
+@media (max-width:640px){.title strong{font-size:17px}.items{grid-template-columns:repeat(2,minmax(0,1fr))}.stand{aspect-ratio:4/3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Lemonade Stand</strong></div>
+  <span class="chip" id="dayChip" aria-label="Day">☀️ Day 1</span>
+  <span class="chip coins" id="coins" aria-label="Coins">🪙 0</span>
+ </div>
+ <div class="tools">
+  <button type="button" id="shopBtn">🛒 Shop</button>
+  <button type="button" id="dumpBtn">🗑️ New cup</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <p class="tip" id="tip" role="status"></p>
+ <section class="stand" id="stand" aria-label="Your lemonade stand"></section>
+</div>
+
+<dialog id="dayDialog" aria-labelledby="dayTitle"><div class="dlg center">
+ <div class="big" aria-hidden="true">🌅</div>
+ <h2 id="dayTitle"></h2>
+ <p id="dayText"></p>
+ <button type="button" class="primary" id="dayOk">Open the stand! 🍋</button>
+</div></dialog>
+<dialog id="shopDialog" aria-labelledby="shopTitle"><div class="dlg">
+ <header><h2 id="shopTitle">🛒 Stand shop</h2><span class="chip coins" id="shopCoins">🪙 0</span><button type="button" id="shopClose" aria-label="Close the shop">✕</button></header>
+ <div class="items" id="shopItems"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+// extras: price 0 means you start with it. pink turns the lemonade pink.
+const EXTRAS=[{id:'straw',icon:'🥤',name:'Straw',price:0},{id:'slice',icon:'🍋',name:'Lemon slice',price:0},{id:'strawberry',icon:'🍓',name:'Strawberry',price:15,pink:true},{id:'mint',icon:'🌿',name:'Mint',price:20},{id:'umbrella',icon:'⛱️',name:'Umbrella',price:30},{id:'cherry',icon:'🍒',name:'Cherry',price:40}];
+const UPGRADES=[{id:'squeezer',icon:'💪',name:'Fast squeezer',price:40,about:'Squeeze lemons twice as fast'},{id:'bigjug',icon:'🫙',name:'Big pitcher',price:60,about:'Holds 5 cups instead of 3'}];
+const LOOKS=[{id:'classic',name:'Lemon yellow',stripe:'#ffd43b',price:0},{id:'pink',name:'Pink',stripe:'#ff8fc7',price:50},{id:'beach',name:'Beach blue',stripe:'#4fc3f7',price:80},{id:'mintlook',name:'Mint green',stripe:'#5fd3a5',price:80},{id:'rainbow',name:'Rainbow',stripe:'rainbow',price:120}];
+const BUDDIES=['🐶','🐱','🐰','🐻','🐼','🐸','🦊','🐨','🐷','🐯','🐮','🐵'];
+const PER_DAY=6;
+const SAVE_KEY='superEmiliaLemon';
+
+// ---------- pure game logic (also used by the tests) ----------
+const extra=id=>EXTRAS.find(e=>e.id===id);
+const shopItem=id=>EXTRAS.find(e=>e.id===id)||UPGRADES.find(u=>u.id===id)||LOOKS.find(l=>l.id===id);
+function owns(save,id){const it=shopItem(id);return!!it&&(it.price===0||save.owned.includes(id))}
+const pitcherCap=save=>owns(save,'bigjug')?5:3;
+const squeezeNeeded=save=>owns(save,'squeezer')?14:28; // how much rubbing one lemon needs
+// a new customer: how much sugar and ice, and up to 2 extras you own; sometimes a VIP who pays double
+function makeOrder(save,rand=Math.random){const mine=EXTRAS.filter(e=>owns(save,e.id)),n=save.served<2?1:Math.floor(rand()*3);const pick=[...mine].sort(()=>rand()-.5).slice(0,Math.min(n,2)).map(e=>e.id);
+ return{buddy:BUDDIES[Math.floor(rand()*BUDDIES.length)],sugar:1+Math.floor(rand()*3),ice:1+Math.floor(rand()*3),extras:pick,vip:save.served>=4&&rand()<.12}}
+function newCup(){return{fill:0,sugar:0,ice:0,extras:[],spilled:false}}
+const isPink=cup=>cup.extras.some(id=>extra(id)&&extra(id).pink);
+const goodFill=cup=>cup.fill>=85&&!cup.spilled;
+// how well the cup matches the order: stars out of the things asked for, and coins
+function scoreCup(order,cup){const sugar=cup.sugar===order.sugar,ice=cup.ice===order.ice,got=order.extras.filter(id=>cup.extras.includes(id)),fill=goodFill(cup);
+ const total=3+order.extras.length,hits=(sugar?1:0)+(ice?1:0)+(fill?1:0)+got.length,perfect=hits===total;
+ let coins=4+(sugar?2:0)+(ice?2:0)+(fill?2:0)+2*got.length+(perfect?3:0);if(order.vip)coins*=2;return{sugar,ice,fill,got,hits,total,perfect,coins}}
+// serving: pays, and every few customers the day ends
+function serve(save,order,cup){if(cup.fill<40)return null;const r=scoreCup(order,cup);save.coins+=r.coins;save.total+=r.coins;save.served++;save.today+=r.coins;if(r.perfect)save.perfect++;
+ r.dayDone=save.served%PER_DAY===0;if(r.dayDone){r.dayCoins=save.today;r.day=save.day;save.day++;save.today=0}return r}
+function buy(save,id){const it=shopItem(id);if(!it||owns(save,id)||save.coins<it.price)return false;save.coins-=it.price;save.owned.push(id);return true}
+function defaultSave(){return{coins:0,total:0,served:0,perfect:0,day:1,today:0,owned:[],look:'classic',sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0};
+ for(const k of ['coins','total','served','perfect','today'])s[k]=num(raw[k]);s.day=Math.max(1,num(raw.day));s.perfect=Math.min(s.perfect,s.served);
+ if(Array.isArray(raw.owned))s.owned=[...new Set(raw.owned.filter(id=>{const it=shopItem(id);return it&&it.price>0}))];
+ s.look=LOOKS.some(l=>l.id===raw.look)&&owns(s,raw.look)?raw.look:'classic';s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s),stand=$('#stand');
+let S=loadSave(),order=null,cup=newCup(),juice=0,squeezing=null,pouring=false,busy=false,audio=null,els={},last=performance.now();
+const POS={buddy:{x:12,y:63},cup:{x:40,y:72},pitcher:{x:59,y:72},juicer:{x:74,y:76},lemon:{x:90,y:70},sugar:{x:57,y:22},ice:{x:68,y:22}};
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.25,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={plop:()=>tone(520,.07,'triangle'),clink:()=>tone(1500,.05,'square',.03),squish:()=>tone(200+Math.random()*120,.05,'sawtooth',.02),pour:()=>tone(700+Math.random()*300,.04,'sine',.02),drip:()=>[880,660].forEach((f,i)=>setTimeout(()=>tone(f,.07,'sine'),i*70)),nope:()=>tone(220,.14,'sawtooth',.03),coin:()=>[988,1318,1568].forEach((f,i)=>setTimeout(()=>tone(f,.08,'square',.025),i*70)),yay:()=>[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.12,'triangle'),i*90))};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function setTip(h){$('#tip').innerHTML=h}
+function pct(e){const b=stand.getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function el(cls,x,y,html){const d=document.createElement('div');d.className=cls;if(x!=null){d.style.left=x+'%';d.style.top=y+'%'}if(html!=null)d.innerHTML=html;stand.append(d);return d}
+function label(x,y,t){const d=el('label',x,y);d.textContent=t;return d}
+function fx(x,y,t){const d=el('fx',x,y);d.textContent=t;setTimeout(()=>d.remove(),1100)}
+const near=(q,c,dx,dy)=>Math.abs(q.x-c.x)<=dx&&Math.abs(q.y-c.y)<=dy;
+function draggable(d,home,{start,onMove,onDrop,onEnd}){let off=null;
+ d.addEventListener('pointerdown',e=>{if(start&&!start())return;e.preventDefault();d.setPointerCapture(e.pointerId);const p=pct(e);off={dx:p.x-parseFloat(d.style.left),dy:p.y-parseFloat(d.style.top)};d.classList.add('drag');d.classList.remove('back')});
+ d.addEventListener('pointermove',e=>{if(!off)return;const p=pct(e),q={x:p.x-off.dx,y:p.y-off.dy};d.style.left=q.x+'%';d.style.top=q.y+'%';if(onMove)onMove(q,p)});
+ const end=e=>{if(!off)return;off=null;d.classList.remove('drag');const p=pct(e),q={x:parseFloat(d.style.left),y:parseFloat(d.style.top)};if(onEnd)onEnd();if(e.type!=='pointercancel'&&onDrop&&onDrop(q,p))return;d.classList.add('back');const h=home();d.style.left=h.x+'%';d.style.top=h.y+'%'};
+ d.addEventListener('pointerup',end);d.addEventListener('pointercancel',end)}
+function renderTop(){$('#coins').textContent='🪙 '+S.coins;$('#shopCoins').textContent='🪙 '+S.coins;$('#dayChip').textContent='☀️ Day '+S.day+' · '+(S.served%PER_DAY)+'/'+PER_DAY;
+ $('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off');
+ const look=LOOKS.find(l=>l.id===S.look);stand.style.setProperty('--stripe',look.stripe==='rainbow'?'#ff8fc7':look.stripe);const aw=stand.querySelector('.awning');if(aw)aw.style.background=look.stripe==='rainbow'?'repeating-linear-gradient(90deg,#ff5a5f 0 4cqw,#ff9f43 4cqw 8cqw,#ffd93d 8cqw 12cqw,#34c759 12cqw 16cqw,#3b82f6 16cqw 20cqw,#a855f7 20cqw 24cqw)':''}
+// ----- drawing -----
+function build(){stand.innerHTML='';els={};el('awning');el('post',null,null).style.left='24.5%';const p2=el('post');p2.style.right='.5%';el('shelf');el('counter');const sg=el('sign');sg.textContent='🍋 LEMONADE 🍋';
+ // shelf: sugar, ice, extras
+ el('p deco',57,30,'🥣');label(57,41,'Sugar');const sp=el('p grab emo',POS.sugar.x,POS.sugar.y,'🥄');sp.setAttribute('aria-label','Drag a spoon of sugar into the cup');dragInto(sp,POS.sugar,'sugar');
+ el('p deco',68,30,'🪣');label(68,41,'Ice');const ic=el('p grab emo',POS.ice.x,POS.ice.y,'🧊');ic.setAttribute('aria-label','Drag an ice cube into the cup');dragInto(ic,POS.ice,'ice');
+ EXTRAS.forEach((x,j)=>{const at={x:80+(j%3)*7.5,y:j<3?16:30};if(!owns(S,x.id)){el('p locked',at.x,at.y,'🔒');return}const d=el('p grab emo',at.x,at.y,x.icon);d.style.fontSize='4.2cqw';d.setAttribute('aria-label','Drag the '+x.name.toLowerCase()+' onto the cup');dragInto(d,at,'extra',x.id)});
+ label(87.5,41,'Extras');
+ // counter: juicer, lemons, pitcher, cup
+ const j=el('p juicer',POS.juicer.x,POS.juicer.y,'<div class="bowl"></div><div class="cone"></div><div class="squeeze" hidden><i></i></div>');els.juicer=j;label(POS.juicer.x,POS.juicer.y+7,'Juicer');
+ el('p deco',90,80,'🧺');label(90,90,'Lemons');lemon();
+ const pt=el('p pitcher grab',POS.pitcher.x,POS.pitcher.y,'<div class="jug"><div class="juice"></div></div>');pt.setAttribute('aria-label','Drag the pitcher over the cup to pour');els.pitcher=pt;label(POS.pitcher.x,POS.pitcher.y+12.5,'Pitcher');
+ draggable(pt,()=>POS.pitcher,{start:()=>!busy,onMove:q=>{pouring=juice>0&&q.x>POS.cup.x-8&&q.x<POS.cup.x+10&&q.y<POS.cup.y-2&&q.y>POS.cup.y-30;pt.classList.toggle('pour',pouring);if(!juice&&near(q,POS.cup,10,30))setTip('🫗 The pitcher is empty! <b>Squeeze some lemons</b> first.')},
+  onEnd:()=>{pouring=false;pt.classList.remove('pour');if(cup.fill>0)afterPour()},onDrop:()=>false});
+ drawCup();
+ // customer
+ const b=el('p buddy',-12,POS.buddy.y,'');els.buddy=b;const o=document.createElement('div');o.className='order';o.hidden=true;stand.append(o);els.order=o;
+ renderTop();drawPitcher()}
+function lemon(){const l=el('p grab emo',POS.lemon.x,POS.lemon.y,'🍋');l.setAttribute('aria-label','Drag a lemon onto the juicer, then rub it back and forth');let on=false,lastQ=null,amount=0;
+ draggable(l,()=>on?POS.juicer:POS.lemon,{start:()=>!busy,onMove:q=>{const over=near(q,POS.juicer,7,9);els.juicer.classList.toggle('hot',over&&!on);
+   if(on&&over){if(lastQ){amount+=Math.hypot(q.x-lastQ.x,q.y-lastQ.y);if(Math.random()<.3)sfx.squish()}lastQ=q;const need=squeezeNeeded(S);els.juicer.querySelector('i').style.width=Math.min(100,amount/need*100)+'%';l.style.fontSize=(5.4-2.4*Math.min(1,amount/need))+'cqw';
+    if(amount>=need){l.remove();els.juicer.querySelector('.squeeze').hidden=true;juice=Math.min(pitcherCap(S),juice+1);drawPitcher();sfx.drip();fx(POS.pitcher.x,POS.pitcher.y-10,'💧 +1 cup');lemon();
+     setTip(juice>=pitcherCap(S)?'🫗 The pitcher is full! Now <b>drag the pitcher over the cup</b> to pour.':'🍋 Juicy! Squeeze another lemon, or <b>drag the pitcher over the cup</b> to pour.')}}},
+  onEnd:()=>{els.juicer.classList.remove('hot');lastQ=null},
+  onDrop:q=>{if(on)return false;if(near(q,POS.juicer,7,9)){if(juice>=pitcherCap(S)){notify('The pitcher is full! Pour some lemonade first.');return false}on=true;l.style.left=POS.juicer.x+'%';l.style.top=(POS.juicer.y-3)+'%';els.juicer.querySelector('.squeeze').hidden=false;sfx.plop();setTip('💪 Now <b>rub the lemon back and forth</b> on the juicer to squeeze it!');return true}return false}})}
+function drawPitcher(){const pt=els.pitcher;if(!pt)return;const j=pt.querySelector('.juice');j.style.height=juice/pitcherCap(S)*90+'%'}
+function drawCup(){if(els.cup)els.cup.remove();const c=el('p cup',POS.cup.x,POS.cup.y,'<div class="glass"><div class="juice'+(isPink(cup)?' pink':'')+'" style="height:'+Math.min(100,cup.fill)+'%"></div><div class="line"></div></div><div class="dots"></div>');els.cup=c;c.setAttribute('aria-label','The cup. Drag it to the customer to serve.');
+ for(let i=0;i<cup.ice;i++){const d=document.createElement('div');d.className='ice';d.textContent='🧊';d.style.left=(8+((i*37)%55))+'%';d.style.top=(cup.fill>20?100-cup.fill+4+((i*23)%20):70-i*6)+'%';c.querySelector('.glass').append(d)}
+ c.querySelector('.dots').textContent=[cup.sugar?'🥄×'+cup.sugar:'',cup.fill?Math.round(Math.min(cup.fill,100))+'%':''].filter(Boolean).join(' · ');
+ const spots={slice:[78,-8],strawberry:[-12,-6],mint:[30,-18],umbrella:[8,-34],cherry:[48,-16]};
+ for(const id of cup.extras){if(id==='straw'){const s=document.createElement('div');s.className='straw';c.append(s);continue}const t=document.createElement('div');t.className='topper';t.textContent=extra(id).icon;t.style.left=spots[id][0]+'%';t.style.top=spots[id][1]+'%';c.append(t)}
+ draggable(c,()=>POS.cup,{start:()=>!busy&&cup.fill>0,onMove:q=>{els.buddy.classList.toggle('hot',near(q,POS.buddy,13,30))},onEnd:()=>els.buddy.classList.remove('hot'),
+  onDrop:(q,p)=>{if(!near(q,POS.buddy,13,30)&&!near(p,POS.buddy,13,30))return false;if(cup.fill<40){notify('That cup is almost empty! Pour more lemonade.');return false}doServe();return true}})}
+// sugar, ice and extras dropped on the cup
+function dragInto(d,home,kind,id){draggable(d,()=>home,{start:()=>!busy,onMove:q=>{els.cup&&els.cup.classList.toggle('hot',near(q,POS.cup,8,14))},onEnd:()=>els.cup&&els.cup.classList.remove('hot'),
+ onDrop:(q,p)=>{if(!near(q,POS.cup,8,14)&&!near(p,POS.cup,8,14))return false;
+  if(kind==='sugar'){if(cup.sugar>=6){notify('That is way too sweet!');return false}cup.sugar++;sfx.plop();fx(POS.cup.x,POS.cup.y-12,'🥄 '+cup.sugar)}
+  if(kind==='ice'){if(cup.ice>=5){notify('The cup is full of ice!');return false}cup.ice++;sfx.clink();fx(POS.cup.x,POS.cup.y-12,'🧊 '+cup.ice)}
+  if(kind==='extra'){if(cup.extras.includes(id)){cup.extras=cup.extras.filter(x=>x!==id);sfx.plop();notify(extra(id).name+' taken off')}else{cup.extras.push(id);sfx.plop();fx(POS.cup.x,POS.cup.y-14,extra(id).icon)}}
+  drawCup();refreshOrder();return false}})}
+// pouring happens over time while the pitcher is tipped over the cup
+function afterPour(){if(cup.spilled){setTip('💦 Oops, it spilled! The cup is overflowing. You can still serve it, or tap <b>🗑️ New cup</b> to try again.')}else if(cup.fill>=85)setTip('👌 Perfect pour! Add sugar, ice and extras, then <b>drag the cup to the customer</b>.');else setTip('🫗 Keep pouring until the lemonade reaches the <b>red dashed line</b>.');refreshOrder()}
+function loop(now){const dt=Math.min(.1,(now-last)/1000);last=now;requestAnimationFrame(loop);
+ if(pouring&&juice>0){const add=Math.min(juice*100,45*dt);cup.fill+=add;juice=Math.max(0,juice-add/100);if(cup.fill>100){cup.fill=100;if(!cup.spilled){cup.spilled=true;sfx.nope();fx(POS.cup.x,POS.cup.y-14,'💦')}}else if(Math.random()<.3)sfx.pour();
+  const j=els.cup.querySelector('.juice');j.style.height=cup.fill+'%';els.cup.querySelector('.dots').textContent=[cup.sugar?'🥄×'+cup.sugar:'',Math.round(cup.fill)+'%'].filter(Boolean).join(' · ');drawPitcher();if(!juice){pouring=false;els.pitcher.classList.remove('pour')}}}
+// ----- customers -----
+function nextCustomer(){order=makeOrder(S);busy=false;const b=els.buddy;b.style.transition='none';b.style.left='-12%';b.style.opacity='1';b.textContent=order.buddy;void b.offsetWidth;b.style.transition='';b.style.left=POS.buddy.x+'%';
+ setTimeout(()=>{refreshOrder();els.order.hidden=false},700)}
+function refreshOrder(){if(!order)return;const o=els.order,r=scoreCup(order,cup);o.innerHTML='';if(order.vip){const v=document.createElement('div');v.className='vip';v.textContent='⭐ VIP · pays double!';o.append(v)}
+ const row=(html,ok)=>{const d=document.createElement('div');d.className='row'+(ok?' ok':'');d.innerHTML=html;o.append(d)};
+ row('<span>🍋 Fill to the line</span>',r.fill);row('<span>'+'🥄'.repeat(order.sugar)+'</span><span>'+'🧊'.repeat(order.ice)+'</span>',r.sugar&&r.ice);
+ if(order.extras.length)row(order.extras.map(id=>'<span>'+extra(id).icon+'</span>').join(''),r.got.length===order.extras.length)}
+function doServe(){const r=serve(S,order,cup);if(!r)return;busy=true;save();els.order.hidden=true;els.cup.style.left=(POS.buddy.x+8)+'%';els.cup.style.top=(POS.buddy.y-2)+'%';
+ const face=r.perfect?'😍':r.hits>=r.total-1?'😊':'🙂';const re=el('react',POS.buddy.x+4,POS.buddy.y-26,face);r.perfect?sfx.yay():sfx.coin();fx(POS.buddy.x,POS.buddy.y-14,'+'+r.coins+' 🪙');
+ const miss=[];if(!r.fill)miss.push(cup.spilled?'no spills':'fill it to the line');if(!r.sugar)miss.push(order.sugar+' sugar');if(!r.ice)miss.push(order.ice+' ice');order.extras.filter(id=>!r.got.includes(id)).forEach(id=>miss.push(extra(id).name.toLowerCase()));
+ setTip(r.perfect?'😍 PERFECT! Exactly what they wanted! +'+r.coins+' coins'+(order.vip?' (VIP double!)':'')+'.':'😊 Yum! +'+r.coins+' coins. Next time try: '+miss.join(', ')+'.');renderTop();
+ setTimeout(()=>{re.remove();els.cup.style.opacity='0';els.buddy.style.left='120%';els.buddy.style.opacity='0'},1300);
+ setTimeout(()=>{cup=newCup();drawCup();if(r.dayDone){$('#dayTitle').textContent='Day '+r.day+' is done!';$('#dayText').textContent='You served '+PER_DAY+' thirsty buddies and earned '+r.dayCoins+' coins today. You have '+S.coins+' coins. Spend them in the 🛒 Shop!';$('#dayDialog').showModal()}else{nextCustomer();setTip('🍋 A new customer! Look at their order bubble.')}},2300)}
+$('#dayOk').onclick=()=>$('#dayDialog').close();$('#dayDialog').addEventListener('close',()=>{renderTop();nextCustomer();setTip('☀️ Day '+S.day+'! Here comes your first customer.')});
+$('#dumpBtn').onclick=()=>{if(busy||(!cup.fill&&!cup.sugar&&!cup.ice&&!cup.extras.length))return;cup=newCup();drawCup();refreshOrder();sfx.plop();setTip('🗑️ A fresh cup! (The lemonade in the pitcher is still there.)')};
+// ----- shop -----
+function renderShop(){renderTop();const box=$('#shopItems');box.innerHTML='';const head=t=>{const h=document.createElement('h3');h.textContent=t;box.append(h)};
+ const card=(it,pic,sub,onUse)=>{const own=owns(S,it.id),d=document.createElement('div');d.className='card'+(own?' own':'');d.innerHTML=pic+'<span class="nm"></span><span class="sub"></span>';d.querySelector('.nm').textContent=it.name;d.querySelector('.sub').textContent=sub||'';
+  const b=document.createElement('button');b.type='button';if(own){if(onUse){const using=S.look===it.id;b.textContent=using?'✓ Using':'Use';b.disabled=using;b.onclick=()=>{onUse();save();build();renderShop()}}else{b.textContent='✓ Yours';b.disabled=true}}
+  else{b.textContent='🪙 '+it.price;b.disabled=S.coins<it.price;b.setAttribute('aria-label','Buy '+it.name+' for '+it.price+' coins');b.onclick=()=>{if(buy(S,it.id)){if(onUse)onUse();save();sfx.coin();notify(it.name+' is yours!');build();renderShop()}}}d.append(b);box.append(d)};
+ head('🍓 Extras');EXTRAS.forEach(x=>card(x,'<span class="ic" aria-hidden="true">'+x.icon+'</span>',x.pink?'Makes pink lemonade!':''));
+ head('🔧 Upgrades');UPGRADES.forEach(u=>card(u,'<span class="ic" aria-hidden="true">'+u.icon+'</span>',u.about));
+ head('🎨 Stand colors');LOOKS.forEach(l=>card(l,'<span class="swatch" style="background:'+(l.stripe==='rainbow'?'linear-gradient(90deg,#ff5a5f,#ffd93d,#34c759,#3b82f6,#a855f7)':'repeating-linear-gradient(90deg,'+l.stripe+' 0 8px,#fff 8px 16px)')+'"></span>','',()=>{S.look=l.id}))}
+$('#shopBtn').onclick=()=>{renderShop();$('#shopDialog').showModal()};$('#shopClose').onclick=()=>$('#shopDialog').close();
+$('#shopDialog').addEventListener('click',e=>{if(e.target===$('#shopDialog'))$('#shopDialog').close()});
+$('#shopDialog').addEventListener('close',()=>{const keep=order;build();order=keep;els.buddy.style.transition='none';els.buddy.textContent=order.buddy;els.buddy.style.left=POS.buddy.x+'%';refreshOrder();els.order.hidden=false});
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+build();nextCustomer();requestAnimationFrame(loop);
+setTip('🍋 Welcome to your lemonade stand! <b>Drag a lemon</b> from the basket onto the juicer and rub it to squeeze. Then <b>pour</b>, add what the customer wants, and <b>drag the cup to them</b>!');
+window.__lemon={get S(){return S},get order(){return order},get cup(){return cup},get juice(){return juice},set juice(v){juice=v;drawPitcher()},POS};
+}
+</script>
+</body>
+</html>
