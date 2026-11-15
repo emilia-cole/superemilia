@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eef1ff">
+<meta name="author" content="Emilia">
+<meta name="description" content="Feed hungry monsters the cookie with the right answer. Practice adding, subtracting, and times tables at easy, medium, or hard levels. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/math/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/math/">
+<meta property="og:title" content="Monster Munch Math · A Super Emilia Game">
+<meta property="og:description" content="Feed hungry monsters the cookie with the right answer. Practice adding, subtracting, and times tables at easy, medium, or hard levels. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Monster Munch Math</title>
+<style>
+/* Layout: a home screen (pick a level, see your monsters) and a play screen (the monster holds up a problem; drag the right cookie into its mouth). */
+:root{
+ color-scheme:light;
+ --bg:#eef1ff; --bg-2:#fff1e6; --paper:#fff; --line:#dbe0f5; --ink:#2c2f4a; --soft:#6b6f8f;
+ --grape:#6c63ff; --grape-deep:#4a40d6; --green:#3bb273; --yellow:#f5b800; --red:#ef5b5b;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--grape-deep);outline-offset:2px}
+.app{max-width:1000px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--grape-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* home */
+.hero{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:16px;display:grid;gap:14px}
+.hero h1{margin:0;font-size:26px;letter-spacing:-.5px}
+.hero p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.level{display:grid;gap:6px;justify-items:center;text-align:center;padding:16px 10px;border-radius:20px;border:3px solid;font-size:15px;box-shadow:0 5px 0 #0001}
+.level .big{font-size:42px;line-height:1}
+.level b{font-size:21px}
+.level small{color:var(--soft);font-weight:700;line-height:1.35}
+.level .stars{font-size:20px;letter-spacing:2px}
+.level.easy{background:#effaf3;border-color:#9fdcb8}.level.medium{background:#fff8e1;border-color:#f3d37a}.level.hard{background:#fff0f0;border-color:#f5aaaa}
+.parade{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.mon{display:grid;justify-items:center;gap:2px;padding:8px 2px;border-radius:16px;background:#f6f7ff;border:2px solid var(--line);font-size:12px;font-weight:900;text-align:center}
+.mon span{font-size:34px;line-height:1.1}
+.mon.locked span{filter:brightness(0);opacity:.18}
+.mon.locked{color:var(--soft)}
+/* play */
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dots{display:flex;gap:5px;margin-right:auto;flex-wrap:wrap}
+.dot{width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--line)}
+.dot.now{border-color:var(--grape);box-shadow:0 0 0 3px #6c63ff33}
+.dot.ok{background:var(--green);border-color:var(--green)}
+.dot.try{background:var(--yellow);border-color:var(--yellow)}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+.scene{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #d6dbf2;background:radial-gradient(circle at 30% 105%,#c9f0b8 0 32%,transparent 32.5%),linear-gradient(180deg,#cfe9ff,#eef7ff 70%);container-type:inline-size;touch-action:none}
+.p{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;-webkit-user-select:none;user-select:none}
+.monster{font-size:22cqw;z-index:3;transition:transform .2s}
+.monster.hot{filter:drop-shadow(0 0 2cqw #ffc83d)}
+.monster.yum{animation:yum .5s ease-in-out}
+.monster.yuck{animation:shake .45s ease-in-out}
+.sign{position:absolute;left:34%;top:15%;transform:translate(-50%,-50%);background:#fff;border:.6cqw solid #c9a06a;border-radius:2cqw;padding:1.4cqw 3cqw;font-size:6.4cqw;font-weight:900;white-space:nowrap;z-index:4;box-shadow:0 .8cqw 0 #0001;font-variant-numeric:tabular-nums}
+.sign:after{content:"";position:absolute;left:50%;top:100%;width:1cqw;height:4cqw;background:#c9a06a;transform:translateX(-50%)}
+.helper{position:absolute;left:34%;top:33%;transform:translate(-50%,-50%);display:flex;gap:1.2cqw;align-items:center;z-index:4;font-size:3cqw;background:#ffffffcc;border-radius:1.6cqw;padding:.6cqw 1.4cqw;white-space:nowrap}
+.helper .grp{display:grid;grid-template-columns:repeat(5,2.9cqw);gap:.3cqw;font-size:2.5cqw;justify-items:center}
+.helper .gone{display:contents}
+.helper .gone span{opacity:.25}
+.helper b{font-size:3.4cqw;color:var(--soft)}
+.plate{position:absolute;left:79%;top:58%;transform:translate(-50%,-50%);width:36cqw;height:36cqw;border-radius:50%;background:radial-gradient(circle,#fff 0 58%,#e7ebf7 59% 63%,#fff 64%);box-shadow:0 1cqw 0 #0001}
+.cookie{width:11cqw;height:11cqw;border-radius:50%;background:radial-gradient(circle at 28% 30%,#5a3418 0 7%,transparent 8%),radial-gradient(circle at 70% 26%,#5a3418 0 6%,transparent 7%),radial-gradient(circle at 76% 70%,#5a3418 0 7%,transparent 8%),radial-gradient(circle at 26% 74%,#5a3418 0 5%,transparent 6%),radial-gradient(circle at 40% 35%,#f2c27a,#d89a4e);box-shadow:inset -.6cqw -.8cqw 0 #0002,0 .6cqw 0 #0002;font-size:5cqw;font-weight:900;color:#fff;text-shadow:0 .3cqw 0 #6b3d14,0 0 .8cqw #6b3d14;cursor:grab;touch-action:none;z-index:8;font-variant-numeric:tabular-nums}
+.cookie.drag{cursor:grabbing;z-index:30;transform:translate(-50%,-50%) scale(1.12)}
+.cookie.back{transition:left .35s ease,top .35s ease}
+.cookie.hint{animation:hint 1s ease-in-out infinite}
+.cookie.eaten{transition:transform .3s,opacity .3s;transform:translate(-50%,-50%) scale(.2);opacity:0}
+.bubble{position:absolute;transform:translate(-50%,-50%);background:#fff;border-radius:2cqw;padding:1cqw 2cqw;font-size:3cqw;font-weight:900;z-index:20;box-shadow:0 .6cqw 0 #0001;animation:pop .3s ease-out;white-space:nowrap}
+.fx{position:absolute;transform:translate(-50%,-50%);font-size:4cqw;font-weight:900;pointer-events:none;animation:rise 1s ease-out forwards;z-index:25}
+.streak{position:absolute;right:2%;top:4%;font-size:3cqw;font-weight:900;color:#e8590c;z-index:5}
+/* dialog */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(520px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #2c2f4a55}
+dialog::backdrop{background:#2c2f4a66;backdrop-filter:blur(4px)}
+.dlg{padding:20px 16px 16px;display:grid;gap:12px;justify-items:center;text-align:center}
+.dlg h2{margin:0;font-size:25px}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.dlg .stars{font-size:44px;letter-spacing:4px}
+.dlg .newmon{font-size:80px;line-height:1;animation:pop .5s ease-out}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.primary{background:var(--grape);border-color:var(--grape-deep);color:#fff;box-shadow:0 4px 0 var(--grape-deep);font-size:17px;padding:11px 20px}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:70}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes yum{0%,100%{transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-50%,-50%) scale(1.15,.9)}70%{transform:translate(-50%,-50%) scale(.95,1.08)}}
+@keyframes shake{0%,100%{transform:translate(-50%,-50%)}25%{transform:translate(-56%,-50%) rotate(-6deg)}75%{transform:translate(-44%,-50%) rotate(6deg)}}
+@keyframes hint{0%,100%{box-shadow:inset -.6cqw -.8cqw 0 #0002,0 0 0 0 #ffc83d}50%{box-shadow:inset -.6cqw -.8cqw 0 #0002,0 0 0 1.4cqw #ffc83d88}}
+@keyframes pop{0%{scale:0}70%{scale:1.15}100%{scale:1}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-220%) scale(1.1)}}
+@media (max-width:640px){.levels{grid-template-columns:1fr}.parade{grid-template-columns:repeat(4,minmax(0,1fr))}.title strong{font-size:17px}.scene{aspect-ratio:4/3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Monster Munch Math</strong></div>
+  <span class="chip" id="monChip" aria-label="Monsters collected">👾 1 / 12</span>
+  <span class="chip" id="rightChip" aria-label="Right answers">✅ 0</span>
+ </div>
+
+ <section id="homeView">
+  <div class="hero">
+   <h1>🍪 Feed the hungry monsters!</h1>
+   <p>Each monster holds up a math problem. Drag the cookie with the right answer into its mouth. Pick a level:</p>
+   <div class="levels" id="levels"></div>
+   <h3 style="margin:4px 0 0">👾 Your monster friends <span style="color:var(--soft);font-size:14px">(finish a game to meet a new one)</span></h3>
+   <div class="parade" id="parade"></div>
+  </div>
+ </section>
+
+ <section id="playView" hidden>
+  <div class="bar"><div class="dots" id="dots" aria-label="Problems"></div><button type="button" id="quitBtn">🏠 Levels</button><button type="button" id="soundBtn" aria-pressed="true">🔊</button></div>
+  <p class="tip" id="tip" role="status"></p>
+  <section class="scene" id="scene" aria-label="Feed the monster"></section>
+ </section>
+</div>
+
+<dialog id="doneDialog" aria-labelledby="doneTitle"><div class="dlg">
+ <h2 id="doneTitle"></h2>
+ <div class="stars" id="doneStars" aria-hidden="true"></div>
+ <p id="doneText"></p>
+ <div id="newMon" hidden><div class="newmon" id="newMonIcon" aria-hidden="true"></div><p id="newMonText"></p></div>
+ <div class="row"><button type="button" id="againBtn">🔁 Play again</button><button type="button" class="primary" id="levelsBtn">🏠 Pick a level</button></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+const LEVELS=[{id:'easy',icon:'🟢',name:'Easy',about:'Add and take away up to 10, with apples to help you count'},{id:'medium',icon:'🟡',name:'Medium',about:'Add and take away up to 20'},{id:'hard',icon:'🔴',name:'Hard',about:'Add and take away up to 100, and times tables'}];
+const MONSTERS=[['👾','Blip'],['🐙','Inky'],['👽','Zorp'],['🐸','Gulp'],['🤖','Bolt'],['🦕','Chomp'],['👻','Boo'],['🐲','Puff'],['🦈','Finn'],['🐻','Grumbles'],['🦄','Sprinkle'],['🐉','Blaze']];
+const PER_GAME=10;
+const SAVE_KEY='superEmiliaMath';
+
+// ---------- pure game logic (also used by the tests) ----------
+const ri=(rand,a,b)=>a+Math.floor(rand()*(b-a+1));
+// one problem for a level: { text, answer, a, b, op }
+function makeProblem(level,rand=Math.random){let a,b,op;
+ if(level==='easy'){if(rand()<.7){op='+';a=ri(rand,0,9);b=ri(rand,0,10-a)}else{op='−';a=ri(rand,1,10);b=ri(rand,0,a)}}
+ else if(level==='medium'){if(rand()<.55){op='+';a=ri(rand,2,15);b=ri(rand,1,20-a)}else{op='−';a=ri(rand,6,20);b=ri(rand,1,a)}}
+ else{const k=rand();if(k<.35){op='+';a=ri(rand,10,80);b=ri(rand,5,100-a)}else if(k<.7){op='−';a=ri(rand,20,100);b=ri(rand,5,a)}else{op='×';a=[2,3,4,5,10][ri(rand,0,4)];b=ri(rand,1,10);if(rand()<.5)[a,b]=[b,a]}}
+ const answer=op==='+'?a+b:op==='−'?a-b:a*b;return{a,b,op,answer,text:a+' '+op+' '+b+' = ?'}}
+// four cookies: the answer and three close (but different, never below zero) numbers, in a mixed-up order
+function choicesFor(p,rand=Math.random){const set=new Set([p.answer]),spread=p.answer>=20?[1,2,10,3,5]:[1,2,3];let tries=0;
+ while(set.size<4&&tries<100){tries++;const d=spread[ri(rand,0,spread.length-1)]*(rand()<.5?-1:1),n=p.answer+d;if(n>=0)set.add(n)}
+ for(let n=0;set.size<4;n++)set.add(n);return[...set].sort(()=>rand()-.5)}
+// stars for a game: first-try right answers out of 10
+const starsFor=right=>right>=10?3:right>=8?2:right>=5?1:0;
+// a finished game: best stars per level, totals, and a new monster friend for every finished game
+function finishGame(save,level,firstTry,totalRight){const stars=starsFor(firstTry);save.games++;save.correct+=totalRight;save.best[level]=Math.max(save.best[level]||0,stars);
+ let newMon=null;if(save.monsters<MONSTERS.length){save.monsters++;newMon=MONSTERS[save.monsters-1]}return{stars,newMon}}
+function defaultSave(){return{best:{easy:0,medium:0,hard:0},games:0,correct:0,monsters:1,sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0};
+ s.games=num(raw.games);s.correct=num(raw.correct);s.monsters=Math.max(1,Math.min(MONSTERS.length,num(raw.monsters)));
+ if(raw.best&&typeof raw.best==='object')for(const l of LEVELS)s.best[l.id]=Math.min(3,num(raw.best[l.id]));s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s),scene=$('#scene');
+let S=loadSave(),level='easy',n=0,results=[],prob=null,tries=0,streak=0,firstTry=0,totalRight=0,mon=null,busy=false,audio=null;
+const MON={x:34,y:62};
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05,end=1.25){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*end,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={munch:()=>{[0,90,180].forEach(t=>setTimeout(()=>tone(180+Math.random()*80,.06,'square',.04,.7),t));setTimeout(()=>[660,880,1100].forEach((f,i)=>setTimeout(()=>tone(f,.09,'triangle'),i*70)),300)},yuck:()=>tone(200,.25,'sawtooth',.04,.6),pick:()=>tone(700,.04,'sine',.03),win:()=>[523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>tone(f,.13,'triangle',.06,1),i*110))};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2000)}
+function setTip(h){$('#tip').innerHTML=h}
+function pct(e){const b=scene.getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function el(cls,x,y,html){const d=document.createElement('div');d.className=cls;if(x!=null){d.style.left=x+'%';d.style.top=y+'%'}if(html!=null)d.innerHTML=html;scene.append(d);return d}
+function fx(x,y,t){const d=el('fx',x,y);d.textContent=t;setTimeout(()=>d.remove(),1000)}
+function renderTop(){$('#monChip').textContent=MONSTERS[0][0]+' '+S.monsters+' / '+MONSTERS.length;$('#rightChip').textContent='✅ '+S.correct;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
+// ----- home -----
+function showHome(){$('#homeView').hidden=false;$('#playView').hidden=true;renderTop();const box=$('#levels');box.innerHTML='';
+ LEVELS.forEach(l=>{const b=document.createElement('button');b.type='button';b.className='level '+l.id;const st=S.best[l.id];b.innerHTML='<span class="big" aria-hidden="true">'+l.icon+'</span><b></b><small></small><span class="stars" aria-hidden="true">'+'⭐'.repeat(st)+'☆'.repeat(3-st)+'</span>';b.querySelector('b').textContent=l.name;b.querySelector('small').textContent=l.about;b.setAttribute('aria-label',l.name+'. '+l.about+'. Best: '+st+' of 3 stars.');b.onclick=()=>start(l.id);box.append(b)});
+ const pr=$('#parade');pr.innerHTML='';MONSTERS.forEach(([ic,nm],i)=>{const d=document.createElement('div');const got=i<S.monsters;d.className='mon'+(got?'':' locked');d.innerHTML='<span aria-hidden="true">'+ic+'</span>';d.append(got?nm:'???');pr.append(d)})}
+// ----- play -----
+function start(l){level=l;n=0;results=[];streak=0;firstTry=0;totalRight=0;const got=MONSTERS.slice(0,S.monsters);mon=got[Math.floor(Math.random()*got.length)];$('#homeView').hidden=true;$('#playView').hidden=false;sfx.pick();next()}
+function renderDots(){const d=$('#dots');d.innerHTML='';for(let i=0;i<PER_GAME;i++){const s=document.createElement('span');s.className='dot'+(i<results.length?(results[i]?' ok':' try'):i===n?' now':'');d.append(s)}}
+function next(){prob=makeProblem(level);tries=0;busy=false;renderDots();scene.innerHTML='';
+ const m=el('p monster',MON.x,MON.y,mon[0]);m.id='mon';m.setAttribute('aria-label',mon[1]+' the monster');
+ const sg=document.createElement('div');sg.className='sign';sg.textContent=prob.text;sg.setAttribute('aria-label',prob.a+(prob.op==='+'?' plus ':prob.op==='−'?' minus ':' times ')+prob.b);scene.append(sg);
+ if(level==='easy'&&(prob.a||prob.b)){const h=document.createElement('div');h.className='helper';h.setAttribute('aria-hidden','true');
+  const ap=(k,ic,cls)=>Array.from({length:k},()=>'<span'+(cls?' class="'+cls+'"':'')+'>'+ic+'</span>').join('');
+  if(prob.op==='+')h.innerHTML='<span class="grp">'+ap(prob.a,'🍎')+'</span><b>+</b><span class="grp">'+ap(prob.b,'🍏')+'</span>';
+  else h.innerHTML='<span class="grp">'+ap(prob.a-prob.b,'🍎')+'<span class="gone">'+ap(prob.b,'🍎')+'</span></span><b>take away '+prob.b+'</b>';scene.append(h)}
+ if(streak>=3)el('streak').textContent='🔥 '+streak+' in a row!';
+ const pl=document.createElement('div');pl.className='plate';scene.append(pl);
+ const spots=[[72,44],[86,44],[72,70],[86,70]];choicesFor(prob).forEach((v,i)=>cookie(v,spots[i][0],spots[i][1]));
+ setTip(n===0?'🍪 <b>Drag the cookie</b> with the right answer into '+mon[1]+'\u2019s mouth!':'🤔 Problem '+(n+1)+' of '+PER_GAME+'. Which cookie is the answer?')}
+function cookie(v,x,y){const c=el('p cookie',x,y,String(v));c.dataset.v=v;c.setAttribute('aria-label','Cookie with the number '+v);let off=null;const m=()=>$('#mon');
+ c.addEventListener('pointerdown',e=>{if(busy)return;e.preventDefault();c.setPointerCapture(e.pointerId);const p=pct(e);off={dx:p.x-parseFloat(c.style.left),dy:p.y-parseFloat(c.style.top)};c.classList.add('drag');c.classList.remove('back');sfx.pick()});
+ c.addEventListener('pointermove',e=>{if(!off)return;const p=pct(e),q={x:p.x-off.dx,y:p.y-off.dy};c.style.left=q.x+'%';c.style.top=q.y+'%';m().classList.toggle('hot',Math.abs(q.x-MON.x)<14&&Math.abs(q.y-MON.y)<24||Math.abs(p.x-MON.x)<14&&Math.abs(p.y-MON.y)<24)});
+ const end=e=>{if(!off)return;off=null;c.classList.remove('drag');const over=m().classList.contains('hot');m().classList.remove('hot');
+  if(e.type!=='pointercancel'&&over){answer(c,Number(c.dataset.v));return}c.classList.add('back');c.style.left=x+'%';c.style.top=y+'%'};
+ c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end)}
+function say(t,ms=1100){const b=el('bubble',MON.x+19,MON.y-8);b.textContent=t;setTimeout(()=>b.remove(),ms)}
+function answer(c,v){const m=$('#mon');tries++;
+ if(v===prob.answer){busy=true;c.style.left=MON.x+'%';c.style.top=(MON.y-2)+'%';c.classList.add('eaten');m.classList.remove('yum');void m.offsetWidth;m.classList.add('yum');sfx.munch();
+  const first=tries===1;results.push(first);totalRight++;if(first){firstTry++;streak++}else streak=0;say(first?['Yum! 😋','Delicious!','Nom nom!','So tasty!'][Math.floor(Math.random()*4)]:'Yum, thanks! 😋');fx(MON.x,MON.y-20,first?'⭐':'👍');
+  setTip('😋 Yes! '+prob.a+' '+prob.op+' '+prob.b+' = <b>'+prob.answer+'</b>');n++;renderDots();setTimeout(()=>{if(n>=PER_GAME)finish();else next()},1300);return}
+ m.classList.remove('yuck');void m.offsetWidth;m.classList.add('yuck');sfx.yuck();say('Yuck! 🤢');streak=0;const old=scene.querySelector('.streak');if(old)old.remove();
+ c.classList.add('back');c.style.left=c.dataset.homeX||c.style.left;c.remove();
+ if(tries>=2){scene.querySelectorAll('.cookie').forEach(k=>{if(Number(k.dataset.v)===prob.answer)k.classList.add('hint')});setTip('💡 Here is a hint: the glowing cookie is the answer. '+hintText())}
+ else setTip('🤢 Not that one! '+v+' is not the answer. '+hintText()+' Try again!')}
+function hintText(){const p=prob;if(p.op==='+')return p.a>=10&&p.b>=10?'Add the tens first, then the ones.':'Start at '+Math.max(p.a,p.b)+' and count up '+Math.min(p.a,p.b)+'.';if(p.op==='−')return 'Start at '+p.a+' and count back '+p.b+'.';return p.a+' groups of '+p.b+'. Count by '+p.b+'s!'}
+function finish(){const r=finishGame(S,level,firstTry,totalRight);save();renderTop();sfx.win();const L=LEVELS.find(l=>l.id===level);
+ $('#doneTitle').textContent=r.stars===3?'🏆 Perfect! You are a math star!':r.stars>=1?'🎉 Great job!':'🙂 Good try!';$('#doneStars').textContent='⭐'.repeat(r.stars)+'☆'.repeat(3-r.stars);
+ $('#doneText').textContent='You got '+firstTry+' of '+PER_GAME+' right on the first try on '+L.name+'.'+(r.stars<3?' Get 10 on the first try for 3 stars!':'');
+ $('#newMon').hidden=!r.newMon;if(r.newMon){$('#newMonIcon').textContent=r.newMon[0];$('#newMonText').textContent='A new monster friend: '+r.newMon[1]+'! You have '+S.monsters+' of '+MONSTERS.length+'.'}$('#doneDialog').showModal()}
+$('#againBtn').onclick=()=>{$('#doneDialog').close();start(level)};$('#levelsBtn').onclick=()=>{$('#doneDialog').close();showHome()};
+$('#doneDialog').addEventListener('cancel',e=>{e.preventDefault();$('#doneDialog').close();showHome()});
+$('#quitBtn').onclick=showHome;
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+showHome();
+window.__math={get S(){return S},get prob(){return prob},get n(){return n},start,MON};
+}
+</script>
+</body>
+</html>
