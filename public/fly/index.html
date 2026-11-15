@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#dff1ff">
+<meta name="author" content="Emilia">
+<meta name="description" content="Fly through the ring with the right answer! A fast math racing game with adding, taking away, and times tables. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/fly/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/fly/">
+<meta property="og:title" content="Math Sky Racer · A Super Emilia Game">
+<meta property="og:description" content="Fly through the ring with the right answer! A fast math racing game with adding, taking away, and times tables. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Math Sky Racer</title>
+<style>
+/* Layout: a home screen (pick a level and a flyer) and a play screen (one canvas: steer up and down, fly through the ring with the right answer). */
+:root{
+ color-scheme:light;
+ --bg:#dff1ff; --bg-2:#fff3e0; --paper:#fff; --line:#cfe0f0; --ink:#1f3047; --soft:#5f7189;
+ --sky:#2f8fe0; --sky-deep:#1b6bb0; --green:#3bb273; --yellow:#f5b800;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--sky-deep);outline-offset:2px}
+.app{max-width:1000px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--sky-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hero{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:16px;display:grid;gap:14px}
+.hero h1{margin:0;font-size:26px;letter-spacing:-.5px}
+.hero h3{margin:4px 0 0;font-size:17px}
+.hero p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.level{display:grid;gap:6px;justify-items:center;text-align:center;padding:16px 10px;border-radius:20px;border:3px solid;font-size:15px;box-shadow:0 5px 0 #0001}
+.level .big{font-size:40px;line-height:1}
+.level b{font-size:20px}
+.level small{color:var(--soft);font-weight:700;line-height:1.35}
+.level .best{font-weight:900;color:var(--sky-deep);font-size:14px}
+.level.easy{background:#effaf3;border-color:#9fdcb8}.level.medium{background:#fff8e1;border-color:#f3d37a}.level.hard{background:#fff0f0;border-color:#f5aaaa}.level.times{background:#f2f0ff;border-color:#b9b2ff}
+.tables{display:grid;gap:10px;background:#f7f6ff;border:2px solid #d8d4ff;border-radius:18px;padding:12px}
+.tables h3{margin:0}
+.tablegrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.tbl{padding:10px 2px;border-radius:14px;border-color:#d8d4ff;font-size:19px}
+.flyers{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.flyer{display:grid;justify-items:center;gap:2px;padding:8px 2px;border-radius:16px;font-size:12px;text-align:center}
+.flyer span{font-size:32px;line-height:1.15}
+.flyer.on{border-color:var(--sky);background:#e8f4ff;box-shadow:0 0 0 3px #2f8fe033}
+.flyer.locked span{filter:brightness(0);opacity:.2}
+.flyer small{color:var(--soft);font-weight:700}
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bar .help{margin-right:auto;color:var(--soft);font-weight:700;font-size:14px}
+.stage{position:relative;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #cadcef;background:#bfe3ff;touch-action:none;cursor:crosshair}
+.stage canvas{display:block;width:100%;height:auto;aspect-ratio:16/9}
+.pad{display:none;gap:10px}
+.pad button{flex:1;font-size:28px;padding:14px}
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(520px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #1f304755}
+dialog::backdrop{background:#1f304766;backdrop-filter:blur(4px)}
+.dlg{padding:20px 16px 16px;display:grid;gap:12px;justify-items:center;text-align:center}
+.dlg h2{margin:0;font-size:25px}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.dlg .stars{font-size:44px;letter-spacing:4px}
+.dlg .newfly{font-size:76px;line-height:1}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.primary{background:var(--sky);border-color:var(--sky-deep);color:#fff;box-shadow:0 4px 0 var(--sky-deep);font-size:17px;padding:11px 20px}
+[hidden]{display:none!important}
+@media (max-width:760px){.levels{grid-template-columns:1fr 1fr}.tablegrid,.flyers{grid-template-columns:repeat(4,minmax(0,1fr))}.title strong{font-size:17px}}
+@media (pointer:coarse){.pad{display:flex}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Math Sky Racer</strong></div>
+  <span class="chip" id="rightChip" aria-label="Right answers">✅ 0</span>
+ </div>
+
+ <section id="homeView">
+  <div class="hero">
+   <h1>✈️ Fly through the right answer!</h1>
+   <p>A math problem pops up at the top. Point your mouse (or use the arrow keys) to steer your flyer and zoom through the ring with the right answer, like a space pilot. Dodge storm clouds and birds, grab stars, and reach the finish line after 15 rings!</p>
+   <div class="levels" id="levels"></div>
+   <div class="tables" id="tables" hidden><h3>✖️ Which times table?</h3><div class="tablegrid" id="tableGrid"></div></div>
+   <h3>🛩️ Pick your flyer <span style="color:var(--soft);font-size:14px">(get more answers right to unlock more)</span></h3>
+   <div class="flyers" id="flyers"></div>
+  </div>
+ </section>
+
+ <section id="playView" hidden>
+  <div class="bar"><span class="help" id="help">Point your mouse where you want to fly. Arrow keys work too!</span><button type="button" id="quitBtn">🏠 Levels</button><button type="button" id="soundBtn" aria-pressed="true">🔊</button></div>
+  <div class="stage" id="stage"><canvas id="cv" width="960" height="540" aria-label="Math Sky Racer. Steer to fly through the ring with the right answer."></canvas></div>
+  <div class="pad"><button type="button" id="leftBtn" aria-label="Fly left">⬅️</button><button type="button" id="upBtn" aria-label="Fly up">⬆️</button><button type="button" id="downBtn" aria-label="Fly down">⬇️</button><button type="button" id="rightBtn" aria-label="Fly right">➡️</button></div>
+  <p id="sr" role="status" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></p>
+ </section>
+</div>
+
+<dialog id="doneDialog" aria-labelledby="doneTitle"><div class="dlg">
+ <h2 id="doneTitle"></h2>
+ <div class="stars" id="doneStars" aria-hidden="true"></div>
+ <p id="doneText"></p>
+ <div id="newFly" hidden><div class="newfly" id="newFlyIcon" aria-hidden="true"></div><p id="newFlyText"></p></div>
+ <div class="row"><button type="button" id="againBtn">🔁 Fly again</button><button type="button" class="primary" id="levelsBtn">🏠 Pick a level</button></div>
+</div></dialog>
+
+<script>
+'use strict';
+// ---------- game data ----------
+const LEVELS=[{id:'easy',icon:'🟢',name:'Easy',about:'Add and take away up to 10'},{id:'medium',icon:'🟡',name:'Medium',about:'Add and take away up to 20'},{id:'hard',icon:'🔴',name:'Hard',about:'Up to 100, and some times tables'},{id:'times',icon:'✖️',name:'Times tables',about:'Pick a table from 1 to 12, or mix'}];
+const TABLES=[1,2,3,4,5,6,7,8,9,10,11,12];
+// flyers unlock as you get more answers right (all games added up). back turns the emoji so it points away from you.
+const FLYERS=[{id:'plane',icon:'✈️',name:'Plane',need:0,back:-.78},{id:'heli',icon:'🚁',name:'Helicopter',need:20,flip:true},{id:'eagle',icon:'🦅',name:'Eagle',need:40,flip:true},{id:'rocket',icon:'🚀',name:'Rocket',need:70,back:-.78},{id:'unicorn',icon:'🦄',name:'Flying Unicorn',need:100,flip:true},{id:'ufo',icon:'🛸',name:'UFO',need:150},{id:'dragon',icon:'🐉',name:'Dragon',need:200,flip:true}];
+const RINGS=15,HEARTS=3,RING_X=[-3.2,0,3.2],RING_R=1.35,SHIP_Z=3,FAR=70; // the world is in meters: rings sit left, middle and right, 70 m away at first
+const SPEED={easy:13,medium:15,hard:16,times:15}; // meters per second at the start; every right answer adds 5%
+const SAVE_KEY='superEmiliaFly';
+
+// ---------- pure game logic (also used by the tests) ----------
+const ri=(rand,a,b)=>a+Math.floor(rand()*(b-a+1));
+function makeProblem(level,rand=Math.random,table=0){let a,b,op;
+ if(level==='times'){op='×';a=table||ri(rand,2,12);b=ri(rand,1,12)}
+ else if(level==='easy'){if(rand()<.65){op='+';a=ri(rand,0,9);b=ri(rand,0,10-a)}else{op='−';a=ri(rand,1,10);b=ri(rand,0,a)}}
+ else if(level==='medium'){if(rand()<.55){op='+';a=ri(rand,2,15);b=ri(rand,1,20-a)}else{op='−';a=ri(rand,6,20);b=ri(rand,1,a)}}
+ else{const k=rand();if(k<.35){op='+';a=ri(rand,10,80);b=ri(rand,5,100-a)}else if(k<.7){op='−';a=ri(rand,20,100);b=ri(rand,5,a)}else{op='×';a=[2,3,4,5,10][ri(rand,0,4)];b=ri(rand,1,10)}}
+ const answer=op==='+'?a+b:op==='−'?a-b:a*b;return{a,b,op,answer,text:a+' '+op+' '+b+' = ?'}}
+// three rings: the answer and two close numbers, different and never below zero, in a mixed-up order
+function ringNumbers(p,rand=Math.random){const set=new Set([p.answer]),spread=p.op==='×'?[p.a,1,2,p.b].filter(Boolean):p.answer>=20?[1,2,10,3]:[1,2,3];let tries=0;
+ while(set.size<3&&tries<100){tries++;const n=p.answer+spread[ri(rand,0,spread.length-1)]*(rand()<.5?-1:1);if(n>=0)set.add(n)}for(let n=0;set.size<3;n++)set.add(n);return[...set].sort(()=>rand()-.5)}
+// which ring the flyer went through (or -1 for none) when the rings reach it
+function ringHit(x,y,xs=RING_X,r=RING_R){for(let i=0;i<xs.length;i++)if(Math.hypot(x-xs[i],y)<=r)return i;return-1}
+const starsFor=right=>right>=14?3:right>=11?2:right>=7?1:0;
+// a finished race: best score per level (and per times table), totals, and newly unlocked flyers
+function finishRace(save,level,table,right,score){const stars=starsFor(right),before=FLYERS.filter(f=>save.correct>=f.need).length;save.races++;save.correct+=right;
+ const key=level==='times'?'times'+(table||'mix'):level;save.best[key]=Math.max(save.best[key]||0,score);if(right>=RINGS)save.finished++;
+ const unlocked=FLYERS.filter(f=>save.correct>=f.need).slice(before);return{stars,unlocked}}
+function defaultSave(){return{best:{},races:0,correct:0,finished:0,flyer:'plane',sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0};
+ s.races=num(raw.races);s.correct=num(raw.correct);s.finished=Math.min(num(raw.finished),s.races);
+ if(raw.best&&typeof raw.best==='object'){const keys=['easy','medium','hard','timesmix',...TABLES.map(t=>'times'+t)];for(const k of keys){const v=num(raw.best[k]);if(v)s.best[k]=v}}
+ const f=FLYERS.find(x=>x.id===raw.flyer);s.flyer=f&&s.correct>=f.need?f.id:'plane';s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s),cv=$('#cv'),g=cv.getContext('2d'),W=960,H=540,PX=190;
+let S=loadSave(),level='easy',table=0,audio=null,raf=0;
+let st=null; // the race state
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05,end=1.25){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),gn=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*end,audio.currentTime+len);gn.gain.setValueAtTime(vol,audio.currentTime);gn.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(gn).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={right:()=>[784,988,1318].forEach((f,i)=>setTimeout(()=>tone(f,.09,'triangle'),i*60)),wrong:()=>tone(220,.3,'sawtooth',.05,.5),bump:()=>tone(120,.25,'square',.05,.6),star:()=>tone(1568,.08,'sine',.04,1.5),beep:()=>tone(660,.12,'square',.04,1),go:()=>tone(990,.25,'square',.05,1),win:()=>[523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>tone(f,.13,'triangle',.06,1),i*110))};
+const flyer=()=>FLYERS.find(f=>f.id===S.flyer)||FLYERS[0];
+function renderTop(){$('#rightChip').textContent='✅ '+S.correct;$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off')}
+// ----- home -----
+function showHome(){cancelAnimationFrame(raf);st=null;$('#homeView').hidden=false;$('#playView').hidden=true;$('#tables').hidden=true;renderTop();
+ const box=$('#levels');box.innerHTML='';LEVELS.forEach(l=>{const b=document.createElement('button');b.type='button';b.className='level '+l.id;const best=l.id==='times'?Math.max(0,...Object.keys(S.best).filter(k=>k.startsWith('times')).map(k=>S.best[k])):S.best[l.id]||0;
+  b.innerHTML='<span class="big" aria-hidden="true">'+l.icon+'</span><b></b><small></small><span class="best"></span>';b.querySelector('b').textContent=l.name;b.querySelector('small').textContent=l.about;b.querySelector('.best').textContent=best?'🏆 Best: '+best:'';b.onclick=()=>l.id==='times'?showTables():start(l.id,0);box.append(b)});
+ const fl=$('#flyers');fl.innerHTML='';FLYERS.forEach(f=>{const b=document.createElement('button');b.type='button';const open=S.correct>=f.need;b.className='flyer'+(f.id===S.flyer?' on':'')+(open?'':' locked');b.innerHTML='<span aria-hidden="true">'+f.icon+'</span>';
+  b.append(open?f.name:'???');if(!open){const sm=document.createElement('small');sm.textContent=(f.need-S.correct)+' more';b.append(sm);b.disabled=true}b.setAttribute('aria-label',open?f.name+(f.id===S.flyer?', picked':''):'Locked. Get '+(f.need-S.correct)+' more answers right.');b.onclick=()=>{S.flyer=f.id;save();sfx.beep();showHome()};fl.append(b)})}
+function showTables(){const t=$('#tables'),gd=$('#tableGrid');gd.innerHTML='';[...TABLES,0].forEach(k=>{const b=document.createElement('button');b.type='button';b.className='tbl';const best=S.best['times'+(k||'mix')]||0;b.textContent=k?k+'s':'🔀 Mix';b.title=best?'Best: '+best:'';b.setAttribute('aria-label',(k?'The '+k+' times table':'All tables mixed')+(best?'. Best score '+best:''));b.onclick=()=>start('times',k);gd.append(b)});t.hidden=false;sfx.beep();t.scrollIntoView({behavior:'smooth',block:'nearest'})}
+// ----- race (seen from behind the flyer: the world rushes toward you) -----
+const F=256,CX=480,CY=270,GROUND=3.2;
+const P=(X,Y,Z)=>({x:CX+X*F/Z,y:CY+Y*F/Z,s:F/Z});
+function start(l,t){level=l;table=t;$('#homeView').hidden=true;$('#playView').hidden=false;
+ st={x:0,y:0,tx:0,ty:0,vx:0,speed:SPEED[l],hearts:HEARTS,right:0,done:0,score:0,streak:0,gate:null,prob:null,things:[],pops:[],grid:0,inv:0,count:3.2,flash:null,nextGate:1,mode:'count',t:0,finishZ:null,
+  hills:Array.from({length:14},(_,i)=>({x:i*90-140+Math.random()*40,h:30+Math.random()*60,w:80+Math.random()*80}))};
+ cancelAnimationFrame(raf);let last=performance.now();const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;if(st){update(dt);draw()}if(st)raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop)}
+function newGate(){st.prob=makeProblem(level,Math.random,table);const nums=ringNumbers(st.prob);st.gate={z:FAR,nums,colors:['#ff5a8a','#ffb020','#3bb273','#2f8fe0','#a66bff'].sort(()=>Math.random()-.5),passed:false};$('#sr').textContent=st.prob.text.replace('?','')+' Left ring '+nums[0]+', middle ring '+nums[1]+', right ring '+nums[2]+'.'}
+function hurt(why){if(st.inv>0)return;st.hearts--;st.streak=0;st.inv=1.4;sfx.bump();st.flash={t:.9,text:why,color:'#ef4444'};if(st.hearts<=0)endRace(false)}
+function update(dt){st.t+=dt;
+ if(keys.left)st.tx-=7*dt;if(keys.right)st.tx+=7*dt;if(keys.up)st.ty-=5*dt;if(keys.down)st.ty+=5*dt;st.tx=Math.max(-4.8,Math.min(4.8,st.tx));st.ty=Math.max(-2.3,Math.min(2.3,st.ty));
+ const ox=st.x;st.x+=(st.tx-st.x)*Math.min(1,dt*8);st.y+=(st.ty-st.y)*Math.min(1,dt*8);st.vx=(st.x-ox)/Math.max(dt,.001);
+ if(st.inv>0)st.inv-=dt;if(st.flash){st.flash.t-=dt;if(st.flash.t<=0)st.flash=null}st.pops=st.pops.filter(p=>(p.t-=dt)>0);
+ if(st.mode==='count'){st.grid+=st.speed*.3*dt;const before=Math.ceil(st.count);st.count-=dt;const after=Math.ceil(st.count);if(after!==before&&after>0)sfx.beep();if(st.count<=0){st.mode='play';sfx.go()}return}
+ st.grid+=st.speed*dt;
+ if(st.mode==='finish'){st.finishZ-=st.speed*dt;if(st.finishZ<=SHIP_Z){st.mode='end';endRace(true)}return}
+ if(st.mode!=='play')return;
+ if(!st.gate){st.nextGate-=dt;if(st.nextGate<=0)newGate()}
+ else{const gt=st.gate;gt.z-=st.speed*dt;
+  if(!gt.passed&&gt.z<=SHIP_Z){gt.passed=true;const i=ringHit(st.x,st.y);st.done++;
+   if(i>=0&&gt.nums[i]===st.prob.answer){st.right++;st.streak++;const pts=100+Math.min(st.streak,10)*10;st.score+=pts;st.speed*=1.05;sfx.right();st.flash={t:.9,text:'✅ '+st.prob.a+' '+st.prob.op+' '+st.prob.b+' = '+st.prob.answer,color:'#16a34a'};st.pops.push({x:CX,y:CY-40,t:.8,text:'+'+pts})}
+   else{sfx.wrong();st.hearts--;st.streak=0;st.inv=1;st.flash={t:1.5,text:(i<0?'Missed! ':'Oops! ')+st.prob.a+' '+st.prob.op+' '+st.prob.b+' = '+st.prob.answer,color:'#ef4444'};if(st.hearts<=0){endRace(false);return}}
+   // right after the rings, send an obstacle and a star; they reach you well before the next rings
+   if(st.done<RINGS){if(level!=='easy'||Math.random()<.6)st.things.push({kind:Math.random()<.5?'⛈️':'🐦',X:Math.random()*8-4,Y:Math.random()*3.6-1.8,z:FAR,ph:Math.random()*6});
+    if(Math.random()<.75)st.things.push({kind:'⭐',X:Math.random()*8-4,Y:Math.random()*3-1.5,z:FAR+14})}}
+  if(gt.z<.8){st.gate=null;st.nextGate=1.1;if(st.done>=RINGS){st.mode='finish';st.finishZ=FAR}}}
+ for(const o of st.things){o.z-=st.speed*dt;if(o.kind==='🐦')o.X+=Math.sin(st.t*2+o.ph)*1.2*dt;
+  if(!o.hit&&o.z<=SHIP_Z+.4&&o.z>SHIP_Z-.6){const d=Math.hypot(o.X-st.x,o.Y-st.y);if(o.kind==='⭐'&&d<1.5){o.hit=true;st.score+=25;sfx.star();st.pops.push({x:P(st.x,st.y,SHIP_Z).x,y:P(st.x,st.y,SHIP_Z).y-80,t:.6,text:'+25 ⭐'})}else if(o.kind!=='⭐'&&d<1.25){o.hit=true;hurt(o.kind==='⛈️'?'⛈️ Bumped a storm cloud!':'🐦 Bonk! A bird!')}}}
+ st.things=st.things.filter(o=>o.z>.6&&!(o.kind==='⭐'&&o.hit))}
+// ----- drawing -----
+function emoji(t,x,y,size,rot=0,flip=false){g.save();g.translate(x,y);if(flip)g.scale(-1,1);if(rot)g.rotate(rot);g.font=Math.round(size)+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(t,0,0);g.restore()}
+function rr(x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+function draw(){const hz=CY;
+ // sky and far hills (they slide a little as you steer)
+ const sk=g.createLinearGradient(0,0,0,hz);sk.addColorStop(0,'#3b82f6');sk.addColorStop(1,'#cfe9ff');g.fillStyle=sk;g.fillRect(0,0,W,hz);
+ g.fillStyle='#ffffffb0';for(let i=0;i<5;i++){const x=((i*230-st.x*14-st.t*8)%1150+1150)%1150-100,y=40+i*37%120;g.beginPath();g.ellipse(x,y,60,16,0,0,7);g.ellipse(x+30,y-10,36,14,0,0,7);g.fill()}
+ g.fillStyle='#7aa6c9';for(const h of st.hills){const x=h.x-st.x*22;g.beginPath();g.moveTo(x-h.w/2,hz);g.lineTo(x,hz-h.h);g.lineTo(x+h.w/2,hz);g.fill()}
+ // ground with a grid rushing toward you
+ const gr=g.createLinearGradient(0,hz,0,H);gr.addColorStop(0,'#7fcf6a');gr.addColorStop(1,'#3f9d4a');g.fillStyle=gr;g.fillRect(0,hz,W,H-hz);
+ g.strokeStyle='#ffffff55';g.lineWidth=2;for(let X=-30;X<=30;X+=3){const a=P(X-st.x*.0,GROUND,1.2),b=P(X,GROUND,90);g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke()}
+ for(let k=0;k<14;k++){const z=1.2+(((k*6-st.grid)%84)+84)%84;const y=CY+GROUND*F/z;if(y>H)continue;g.globalAlpha=Math.min(1,8/z);g.lineWidth=Math.max(1,6/z*2);g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke()}g.globalAlpha=1;
+ // everything in the world, far to near
+ const list=[];if(st.gate)st.gate.nums.forEach((n,i)=>list.push({z:st.gate.z,ring:i}));for(const o of st.things)list.push({z:o.z,thing:o});if(st.finishZ!==null)list.push({z:st.finishZ,finish:true});list.sort((a,b)=>b.z-a.z);
+ for(const it of list){if(it.z<.7)continue;
+  if(it.ring!==undefined){const gt=st.gate,i=it.ring,p=P(RING_X[i],0,it.z),r=RING_R*p.s,near=it.z<SHIP_Z+1.5;g.globalAlpha=near?.55:1;
+   g.lineWidth=Math.max(3,r*.2);g.strokeStyle=gt.colors[i];g.fillStyle='#ffffff40';g.beginPath();g.arc(p.x,p.y,r,0,7);g.fill();g.stroke();g.lineWidth=Math.max(1,r*.06);g.strokeStyle='#ffffffcc';g.beginPath();g.arc(p.x,p.y,r*.84,0,7);g.stroke();
+   const fs=Math.max(12,r*.8);g.font='900 '+Math.round(fs)+'px ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=Math.max(2,fs*.16);g.strokeStyle='#1f3047';g.strokeText(gt.nums[i],p.x,p.y+fs*.05);g.fillStyle='#fff';g.fillText(gt.nums[i],p.x,p.y+fs*.05);g.globalAlpha=1}
+  else if(it.thing){const o=it.thing,p=P(o.X,o.Y,o.z);if(o.hit)continue;const sh=P(o.X,GROUND,o.z);g.fillStyle='#0002';g.beginPath();g.ellipse(sh.x,sh.y,p.s*.6,p.s*.15,0,0,7);g.fill();emoji(o.kind,p.x,p.y,p.s*(o.kind==='⛈️'?1.9:o.kind==='⭐'?1.1:1.3),0,o.kind==='🐦')}
+  else if(it.finish){const l=P(-6,-3.5,it.z),rgt=P(6,GROUND,it.z),w=rgt.x-l.x,h=rgt.y-l.y,c=Math.max(4,w/16);g.lineWidth=Math.max(2,w/40);
+   for(let k=0;k<16;k++)for(let j=0;j<2;j++){g.fillStyle=(k+j)%2?'#222':'#fff';g.fillRect(l.x+k*c,l.y+j*c,c,c)}g.fillStyle='#ef4444';g.fillRect(l.x-c*.4,l.y,c*.4,h);g.fillRect(rgt.x,l.y,c*.4,h);emoji('🏁',l.x+w/2,l.y-c,c*2)}}
+ // the flyer, seen from behind, leaning into turns
+ const f=flyer(),sp=P(st.x,st.y,SHIP_Z),shadow=P(st.x,GROUND,SHIP_Z),bank=Math.max(-.5,Math.min(.5,st.vx*.06));
+ g.fillStyle='#0003';g.beginPath();g.ellipse(shadow.x,Math.min(H-6,shadow.y),50,12,0,0,7);g.fill();
+ if(!(st.inv>0&&Math.floor(st.t*12)%2)){g.fillStyle='#ffd43b99';g.beginPath();g.arc(sp.x-14,sp.y+34,8+Math.sin(st.t*30)*2,0,7);g.arc(sp.x+14,sp.y+34,8+Math.cos(st.t*30)*2,0,7);g.fill();
+  emoji(f.icon,sp.x,sp.y,96,(f.back||0)+bank,false)}
+ // aim marker: a small cross where you will fly through
+ g.strokeStyle='#ffffffcc';g.lineWidth=3;const am=P(st.x,st.y,SHIP_Z+5);g.beginPath();g.arc(am.x,am.y,9,0,7);g.moveTo(am.x-16,am.y);g.lineTo(am.x-6,am.y);g.moveTo(am.x+6,am.y);g.lineTo(am.x+16,am.y);g.stroke();
+ for(const p of st.pops){g.globalAlpha=Math.min(1,p.t*2);g.font='900 32px ui-rounded,system-ui,sans-serif';g.fillStyle='#16a34a';g.textAlign='center';g.fillText(p.text,p.x,p.y-30+p.t*40);g.globalAlpha=1}
+ // HUD: the question and the three answers (in the same order as the rings: left, middle, right)
+ const q=st.mode==='count'?'Get ready!':st.prob?st.prob.text:'Here come the rings...';g.font='900 44px ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif';const qw=Math.max(260,g.measureText(q).width+60);
+ g.fillStyle='#fff';rr(W/2-qw/2,12,qw,62,22);g.fill();g.lineWidth=5;g.strokeStyle='#2f8fe0';g.stroke();g.fillStyle='#1f3047';g.textAlign='center';g.textBaseline='middle';g.fillText(q,W/2,45);
+ if(st.gate&&st.mode==='play'){st.gate.nums.forEach((n,i)=>{const x=W/2+(i-1)*92;g.fillStyle='#ffffffdd';rr(x-38,82,76,40,14);g.fill();g.lineWidth=4;g.strokeStyle=st.gate.colors[i];g.stroke();g.fillStyle='#1f3047';g.font='900 26px ui-rounded,system-ui,sans-serif';g.fillText(n,x,103)})}
+ g.font='30px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';g.textAlign='left';g.fillText('❤️'.repeat(Math.max(0,st.hearts))+'🤍'.repeat(HEARTS-Math.max(0,st.hearts)),18,40);
+ g.font='900 28px ui-rounded,system-ui,sans-serif';g.textAlign='right';g.fillStyle='#fff';g.strokeStyle='#1f3047';g.lineWidth=5;g.strokeText('⭐ '+st.score,W-20,38);g.fillText('⭐ '+st.score,W-20,38);if(st.streak>=3){g.strokeText('🔥 '+st.streak+' in a row',W-20,74);g.fillStyle='#ffb020';g.fillText('🔥 '+st.streak+' in a row',W-20,74)}
+ g.fillStyle='#ffffffaa';rr(240,H-24,480,12,6);g.fill();g.fillStyle='#2f8fe0';rr(240,H-24,480*Math.min(1,st.done/RINGS),12,6);g.fill();emoji('🏁',732,H-18,22);g.font='800 16px ui-rounded,system-ui,sans-serif';g.fillStyle='#fff';g.textAlign='right';g.fillText(st.done+' / '+RINGS,232,H-13);
+ if(st.flash){g.globalAlpha=Math.min(1,st.flash.t*2);g.font='900 32px ui-rounded,system-ui,sans-serif';g.textAlign='center';const w=g.measureText(st.flash.text).width+40;g.fillStyle='#fff';rr(W/2-w/2,132,w,50,18);g.fill();g.fillStyle=st.flash.color;g.fillText(st.flash.text,W/2,158);g.globalAlpha=1}
+ if(st.mode==='count'){const n=Math.ceil(st.count);g.font='900 140px ui-rounded,system-ui,sans-serif';g.textAlign='center';g.lineWidth=12;g.strokeStyle='#1f3047';g.strokeText(n>0?n:'GO!',W/2,H/2);g.fillStyle='#ffd43b';g.fillText(n>0?n:'GO!',W/2,H/2)}}
+function endRace(finished){if(!st||st.ended)return;st.ended=true;const right=st.right,score=st.score,r=finishRace(S,level,table,right,score);save();renderTop();
+ setTimeout(()=>{cancelAnimationFrame(raf);sfx.win();$('#doneTitle').textContent=finished?(r.stars===3?'🏆 Amazing flying, math pilot!':'🏁 You made it to the finish!'):'💥 Out of hearts!';
+  $('#doneStars').textContent='⭐'.repeat(r.stars)+'☆'.repeat(3-r.stars);$('#doneText').textContent='You flew through '+right+' right answer'+(right===1?'':'s')+' out of '+RINGS+' and scored '+score+' points.'+(r.stars<3?' Get 14 right for 3 stars!':'');
+  $('#newFly').hidden=!r.unlocked.length;if(r.unlocked.length){const f=r.unlocked[r.unlocked.length-1];$('#newFlyIcon').textContent=f.icon;$('#newFlyText').textContent='New flyer unlocked: the '+f.name+'! Pick it on the level screen.'}$('#doneDialog').showModal()},finished?300:900)}
+$('#againBtn').onclick=()=>{$('#doneDialog').close();start(level,table)};$('#levelsBtn').onclick=()=>{$('#doneDialog').close();showHome()};
+$('#doneDialog').addEventListener('cancel',e=>{e.preventDefault();$('#doneDialog').close();showHome()});
+// ----- controls: point with the mouse or finger, arrow keys, or the on-screen buttons -----
+const keys={up:false,down:false,left:false,right:false};
+function aim(e){if(!st)return;const b=cv.getBoundingClientRect(),mx=(e.clientX-b.left)/b.width*W,my=(e.clientY-b.top)/b.height*H;st.tx=Math.max(-4.8,Math.min(4.8,(mx-CX)*SHIP_Z/F));st.ty=Math.max(-2.3,Math.min(2.3,(my-CY)*SHIP_Z/F))}
+$('#stage').addEventListener('pointermove',aim);$('#stage').addEventListener('pointerdown',e=>{aim(e);try{$('#stage').setPointerCapture(e.pointerId)}catch(x){}});
+const KEYMAP={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};
+addEventListener('keydown',e=>{if(st&&KEYMAP[e.code]){keys[KEYMAP[e.code]]=true;e.preventDefault()}});addEventListener('keyup',e=>{if(KEYMAP[e.code])keys[KEYMAP[e.code]]=false});
+for(const [id,k] of [['#upBtn','up'],['#downBtn','down'],['#leftBtn','left'],['#rightBtn','right']]){const b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointercancel','pointerleave'].forEach(t=>b.addEventListener(t,()=>{keys[k]=false}))}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&st&&st.mode==='play'){st.mode='count';st.count=3.2}});
+$('#quitBtn').onclick=showHome;$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+showHome();
+window.__fly={get S(){return S},get st(){return st},start,RING_X,F,CX,CY,SHIP_Z};
+}
+</script>
+</body>
+</html>
