@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eafbe9">
+<meta name="author" content="Emilia">
+<meta name="description" content="Build a tiny fairy garden with flowers, mushroom houses, and lanterns, water sprouts by day, catch fireflies at night, and invite 8 fairies to move in. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/fairy/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/fairy/">
+<meta property="og:title" content="Fairy Garden · A Super Emilia Game">
+<meta property="og:description" content="Build a tiny fairy garden with flowers, mushroom houses, and lanterns, water sprouts by day, catch fireflies at night, and invite 8 fairies to move in. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Fairy Garden</title>
+<style>
+/* Layout: top bar, a tool row, a tip line, then the garden (one drawn scene: the garden on the left, the shop tray of things to drag in on the right). Day and night change the scene. */
+:root{
+ color-scheme:light;
+ --bg:#eafbe9; --bg-2:#fbeaff; --paper:#fff; --line:#d8ead6; --ink:#2b3a2e; --soft:#667a69;
+ --mint:#4cbf7a; --mint-deep:#2e8a52; --dust:#b26bff;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--mint-deep);outline-offset:2px}
+.app{max-width:1000px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mint-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.dust{color:#7a3fc4;border-color:#e2c9ff;background:#f8f0ff}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tools .time{background:#1f2a5a;color:#fff;border-color:#141c40}
+.tools .time.day{background:#fff3c4;color:#6b5200;border-color:#f2d98a}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+/* the garden */
+.garden{position:relative;aspect-ratio:16/10;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #cfe3cc;background:linear-gradient(180deg,#bfe8ff 0 30%,#a6e08f 30%,#7fcb6b);container-type:inline-size;touch-action:none;transition:background 1s}
+.garden.night{background:linear-gradient(180deg,#121a45 0 30%,#1f4a3a 30%,#173a2c)}
+.garden .sun{position:absolute;left:6%;top:4%;font-size:7cqw;transition:opacity 1s}
+.garden .moon{position:absolute;left:6%;top:4%;font-size:6cqw;opacity:0;transition:opacity 1s}
+.garden.night .sun{opacity:0}.garden.night .moon{opacity:1}
+.garden .stars{position:absolute;inset:0 22% 70% 0;opacity:0;transition:opacity 1s;background-image:radial-gradient(circle,#fff 0 1px,transparent 1.5px),radial-gradient(circle,#fffbd0 0 1px,transparent 1.5px);background-size:9cqw 7cqw,13cqw 9cqw;background-position:2cqw 1cqw,6cqw 4cqw}
+.garden.night .stars{opacity:.9}
+.tray{position:absolute;left:78%;right:1.2%;top:2.5%;bottom:2.5%;background:#ffffffdd;border-radius:2cqw;box-shadow:0 .6cqw 0 #0001;z-index:2}
+.garden.night .tray{background:#2a335fdd}
+.p{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;line-height:1;-webkit-user-select:none;user-select:none}
+.thing{font-size:6cqw;cursor:grab;touch-action:none;z-index:5;filter:drop-shadow(0 .5cqw 0 #0002);transition:filter 1s}
+.thing.big{font-size:9cqw}
+.thing.drag{cursor:grabbing;z-index:40;transform:translate(-50%,-50%) scale(1.15)}
+.thing.back{transition:left .3s ease,top .3s ease}
+.garden.night .thing{filter:brightness(.55) saturate(.8)}
+.garden.night .thing.glow{filter:drop-shadow(0 0 1.6cqw #ffe27a) drop-shadow(0 0 .6cqw #fff3b0)}
+.shop{font-size:4.6cqw;z-index:6}
+.garden.night .thing.shop{filter:none}
+.shop.poor{opacity:.45}
+.price{position:absolute;transform:translate(-50%,-50%);font-size:1.5cqw;font-weight:900;color:#7a3fc4;white-space:nowrap;pointer-events:none;z-index:6}
+.garden.night .price{color:#e7cfff}
+.tool{font-size:6.5cqw;cursor:grab;touch-action:none;z-index:20;filter:drop-shadow(0 0 1cqw #ffc83d);animation:wob 1.2s ease-in-out infinite}
+.tool.drag{cursor:grabbing;animation:none;z-index:45;transform:translate(-50%,-50%) scale(1.15)}
+.tool.back{transition:left .3s ease,top .3s ease}
+.label{position:absolute;transform:translate(-50%,-50%);font-size:1.6cqw;font-weight:900;color:var(--soft);white-space:nowrap;pointer-events:none;z-index:6}
+.garden.night .label{color:#dfe6ff}
+.sprout{font-size:4.6cqw;z-index:4;pointer-events:none;animation:pop .4s ease-out}
+.sprout i{display:block;font-style:normal;transition:transform .2s}
+.fly{width:1.4cqw;height:1.4cqw;border-radius:50%;background:#fff6a8;box-shadow:0 0 1.2cqw .5cqw #ffe45c,0 0 3cqw 1cqw #ffe45c66;z-index:8;pointer-events:none;animation:blink 1.3s ease-in-out infinite}
+.fairy{font-size:5.2cqw;z-index:9;pointer-events:none}
+.fairy i{display:block;font-style:normal;animation:flap .5s ease-in-out infinite}
+.fairy.rainbow i{animation:flap .5s ease-in-out infinite,rain 2s linear infinite}
+.garden.night .fairy{filter:drop-shadow(0 0 1.2cqw #fff3b0)}
+.fx{position:absolute;transform:translate(-50%,-50%);font-size:3.2cqw;font-weight:900;pointer-events:none;animation:rise 1.1s ease-out forwards;z-index:50;color:#7a3fc4;text-shadow:0 .2cqw 0 #fff}
+/* dialogs */
+dialog{border:none;border-radius:26px;padding:0;background:var(--paper);color:var(--ink);width:min(580px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:0 30px 80px #2b3a2e55}
+dialog::backdrop{background:#2b3a2e66;backdrop-filter:blur(4px)}
+.dlg{padding:18px 16px 16px;display:grid;gap:12px}
+.dlg.center{justify-items:center;text-align:center}
+.dlg header{display:flex;align-items:center;gap:8px}
+.dlg h2{margin:0;font-size:24px;letter-spacing:-.4px}
+.dlg header h2{margin-right:auto}
+.dlg p{margin:0;color:var(--soft);font-weight:600;line-height:1.45}
+.big{font-size:100px;line-height:1}
+.primary{background:var(--mint);border-color:var(--mint-deep);color:#fff;box-shadow:0 4px 0 var(--mint-deep);font-size:17px;padding:11px 20px}
+.book{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:min(62dvh,520px);overflow:auto;padding:2px}
+.card{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px;padding:10px;border-radius:16px;border:2px solid var(--line);background:#fff}
+.card .ic{font-size:40px;line-height:1}
+.card .ic.unknown{filter:brightness(0);opacity:.2}
+.card .nm{font-size:15px;font-weight:900}
+.card .sub{font-size:12.5px;font-weight:700;color:var(--soft);line-height:1.35}
+.card.home{background:#f1fbf3;border-color:#bfe6c9}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:70;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@keyframes wob{0%,100%{rotate:0deg}50%{rotate:6deg}}
+@keyframes flap{0%,100%{translate:0 0;rotate:-6deg}50%{translate:0 -.8cqw;rotate:6deg}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes pop{0%{scale:0}70%{scale:1.2}100%{scale:1}}
+@keyframes rain{to{filter:hue-rotate(360deg)}}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-220%) scale(1.1)}}
+@media (max-width:640px){.title strong{font-size:17px}.book{grid-template-columns:1fr}.garden{aspect-ratio:4/3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Fairy Garden</strong></div>
+  <span class="chip" id="fairyChip" aria-label="Fairies living in your garden">🧚 0 / 8</span>
+  <span class="chip dust" id="dust" aria-label="Fairy dust">✨ 0</span>
+ </div>
+ <div class="tools">
+  <button type="button" class="time" id="timeBtn">🌙 Make it night</button>
+  <button type="button" id="bookBtn">📖 Fairy book</button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <p class="tip" id="tip" role="status"></p>
+ <section class="garden" id="garden" aria-label="Your fairy garden"></section>
+</div>
+
+<dialog id="newDialog" aria-labelledby="newTitle"><div class="dlg center">
+ <div class="big" id="newIcon" aria-hidden="true"></div>
+ <h2 id="newTitle"></h2>
+ <p id="newText"></p>
+ <button type="button" class="primary" id="newOk">Welcome home! 💖</button>
+</div></dialog>
+<dialog id="bookDialog" aria-labelledby="bookTitle"><div class="dlg">
+ <header><h2 id="bookTitle">📖 Fairy book</h2><button type="button" id="bookClose" aria-label="Close the fairy book">✕</button></header>
+ <p id="bookSub"></p><div class="book" id="book"></div>
+</div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- game data ----------
+// things for the garden: price in fairy dust; big things are drawn larger; glow things light up at night
+const ITEMS=[
+ {id:'tulip',icon:'🌷',name:'Tulip',price:4,kind:'flower'},{id:'blossom',icon:'🌸',name:'Blossom',price:5,kind:'flower'},
+ {id:'sunflower',icon:'🌻',name:'Sunflower',price:7,kind:'flower'},{id:'stone',icon:'🪨',name:'Stepping stone',price:3},
+ {id:'mushroom',icon:'🍄',name:'Mushroom',price:8,kind:'mushroom'},{id:'candle',icon:'🕯️',name:'Candle',price:8,glow:true,kind:'light'},
+ {id:'lantern',icon:'🏮',name:'Lantern',price:12,glow:true,kind:'light'},{id:'nest',icon:'🪺',name:'Bird nest',price:12},
+ {id:'lotus',icon:'🪷',name:'Lily pond',price:15,kind:'water'},{id:'tree',icon:'🌳',name:'Tree',price:20,big:true},
+ {id:'hut',icon:'🛖',name:'Fairy house',price:25,big:true},{id:'crystal',icon:'💎',name:'Crystal',price:30,glow:true},
+ {id:'fountain',icon:'⛲',name:'Fountain',price:40,big:true,kind:'water'},{id:'rainbow',icon:'🌈',name:'Rainbow',price:60,big:true}];
+// fairies and what makes each one move in
+const FAIRIES=[
+ {id:'petal',name:'Petal',color:'hue-rotate(300deg) saturate(1.4)',loves:'flowers',need:{kind:'flower',n:3},hint:'Put 3 flowers in your garden.'},
+ {id:'pip',name:'Pip',color:'sepia(.6) saturate(1.5)',loves:'cozy houses',need:{ids:['hut'],n:1},hint:'Build a fairy house.'},
+ {id:'moss',name:'Moss',color:'hue-rotate(90deg) saturate(1.5)',loves:'mushrooms',need:{kind:'mushroom',n:2},hint:'Grow 2 mushrooms.'},
+ {id:'ripple',name:'Ripple',color:'hue-rotate(180deg) saturate(1.6)',loves:'water',need:{kind:'water',n:1},hint:'Add a lily pond or a fountain.'},
+ {id:'glow',name:'Glow',color:'sepia(1) saturate(4) hue-rotate(5deg) brightness(1.1)',loves:'lights',need:{kind:'light',n:3},hint:'Light up 3 candles or lanterns.'},
+ {id:'breeze',name:'Breeze',color:'hue-rotate(140deg) saturate(1.2) brightness(1.1)',loves:'trees and birds',need:{ids:['tree','nest'],all:true},hint:'Add a tree and a bird nest.'},
+ {id:'twinkle',name:'Twinkle',color:'hue-rotate(240deg) saturate(1.8)',loves:'crystals',need:{ids:['crystal'],n:1},hint:'Find a crystal for your garden.'},
+ {id:'rainbow',name:'Rainbow',color:'rainbow',loves:'a big, colorful garden',need:{ids:['rainbow'],n:1,total:15},hint:'Add a rainbow and have 15 things in your garden.'}];
+// the garden area (in % of the scene) and limits
+const AREA={x0:3,x1:75,y0:10,y1:94},MAX_THINGS=40,MAX_SPROUTS=4,MAX_FLIES=7;
+const SAVE_KEY='superEmiliaFairy';
+
+// ---------- pure game logic (also used by the tests) ----------
+const item=id=>ITEMS.find(i=>i.id===id);
+const inGarden=(x,y)=>x>=AREA.x0&&x<=AREA.x1&&y>=AREA.y0&&y<=AREA.y1;
+function countThings(save,need){return save.things.filter(t=>{const it=item(t.id);return need.kind?it.kind===need.kind:need.ids.includes(t.id)}).length}
+function needMet(save,f){const n=f.need;if(n.all)return n.ids.every(id=>save.things.some(t=>t.id===id));if(n.total&&save.things.length<n.total)return false;return countThings(save,n)>=n.n}
+// fairies whose favorite things are now in the garden move in (and stay)
+function checkFairies(save){const fresh=FAIRIES.filter(f=>!save.fairies.includes(f.id)&&needMet(save,f)).map(f=>f.id);save.fairies.push(...fresh);return fresh}
+function placeThing(save,id,x,y){const it=item(id);if(!it||save.things.length>=MAX_THINGS||save.dust<it.price||!inGarden(x,y))return false;save.dust-=it.price;save.things.push({id,x:Math.round(x*10)/10,y:Math.round(y*10)/10});return true}
+// taking a thing back to the tray gives all the fairy dust back
+function removeThing(save,i){const t=save.things[i];if(!t)return 0;save.things.splice(i,1);const back=item(t.id).price;save.dust+=back;return back}
+function catchFly(save){save.dust+=2;save.caught++;return 2}
+function bloomSprout(save){save.dust+=3;save.bloomed++;return 3}
+// a spot in the garden for a sprout or firefly (not too close to the tray)
+function randomSpot(rand=Math.random,top=AREA.y0+4){return{x:AREA.x0+3+rand()*(AREA.x1-AREA.x0-6),y:top+rand()*(AREA.y1-3-top)}}
+function defaultSave(){return{dust:20,things:[],fairies:[],caught:0,bloomed:0,night:false,sound:true}}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const num=v=>{const n=Math.floor(Number(v));return Number.isFinite(n)&&n>=0?n:0};
+ s.dust=raw.dust===undefined?20:num(raw.dust);s.caught=num(raw.caught);s.bloomed=num(raw.bloomed);
+ if(Array.isArray(raw.things))s.things=raw.things.filter(t=>t&&item(t.id)&&Number.isFinite(t.x)&&Number.isFinite(t.y)).slice(0,MAX_THINGS).map(t=>({id:t.id,x:Math.min(AREA.x1,Math.max(AREA.x0,t.x)),y:Math.min(AREA.y1,Math.max(AREA.y0,t.y))}));
+ if(Array.isArray(raw.fairies))s.fairies=[...new Set(raw.fairies.filter(id=>FAIRIES.some(f=>f.id===id)))];
+ s.night=raw.night===true;s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s),garden=$('#garden');
+let S=loadSave(),audio=null,sprouts=[],flies=[],sprites=[],spawnT=1,saveT=0,last=performance.now(),dragging=0;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.25,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={place:()=>tone(820,.07,'triangle'),back:()=>tone(500,.08,'triangle',.04),twinkle:()=>[1318,1568,2093].forEach((f,i)=>setTimeout(()=>tone(f,.08,'sine',.035),i*60)),drip:()=>tone(1500+Math.random()*400,.04,'sine',.02),fairy:()=>[784,988,1175,1568].forEach((f,i)=>setTimeout(()=>tone(f,.14,'sine',.05),i*110)),nope:()=>tone(220,.14,'sawtooth',.03)};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function setTip(h){$('#tip').innerHTML=h}
+function pct(e){const b=garden.getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*100,y:(e.clientY-b.top)/b.height*100}}
+function el(cls,x,y,html){const d=document.createElement('div');d.className=cls;if(x!=null){d.style.left=x+'%';d.style.top=y+'%'}if(html!=null)d.innerHTML=html;garden.append(d);return d}
+function fx(x,y,t){const d=el('fx',x,y);d.textContent=t;setTimeout(()=>d.remove(),1100)}
+function renderTop(){$('#dust').textContent='✨ '+S.dust;$('#fairyChip').textContent='🧚 '+S.fairies.length+' / '+FAIRIES.length;const t=$('#timeBtn');t.textContent=S.night?'☀️ Make it day':'🌙 Make it night';t.classList.toggle('day',S.night);
+ $('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound);$('#soundBtn').setAttribute('aria-label',S.sound?'Sound on':'Sound off');
+ garden.querySelectorAll('.shop').forEach(d=>d.classList.toggle('poor',S.dust<item(d.dataset.id).price))}
+// generic drag: onDrop(q,p) returns true to keep it where it was dropped
+function draggable(d,home,{onMove,onDrop}){let off=null;
+ d.addEventListener('pointerdown',e=>{e.preventDefault();d.setPointerCapture(e.pointerId);const p=pct(e);off={dx:p.x-parseFloat(d.style.left),dy:p.y-parseFloat(d.style.top)};d.classList.add('drag');d.classList.remove('back');dragging++});
+ d.addEventListener('pointermove',e=>{if(!off)return;const p=pct(e),q={x:p.x-off.dx,y:p.y-off.dy};d.style.left=q.x+'%';d.style.top=q.y+'%';if(onMove)onMove(q,p)});
+ const end=e=>{if(!off)return;off=null;dragging--;d.classList.remove('drag');const p=pct(e),q={x:parseFloat(d.style.left),y:parseFloat(d.style.top)};if(e.type!=='pointercancel'&&onDrop&&onDrop(q,p))return;d.classList.add('back');d.style.left=home().x+'%';d.style.top=home().y+'%'};
+ d.addEventListener('pointerup',end);d.addEventListener('pointercancel',end)}
+// builds the scene (only when nothing is being dragged)
+function build(){garden.innerHTML='';garden.classList.toggle('night',S.night);sprites=[];sprouts.forEach(s=>s.el=null);flies.forEach(f=>f.el=null);
+ el('sun',null,null,'☀️');el('moon',null,null,'🌙');el('stars');
+ // garden things (lower ones drawn in front)
+ S.things.map((t,i)=>({t,i})).sort((a,b)=>a.t.y-b.t.y).forEach(({t})=>{const it=item(t.id),d=el('p thing'+(it.big?' big':'')+(it.glow?' glow':''),t.x,t.y,it.icon);d.setAttribute('aria-label',it.name);
+  draggable(d,()=>({x:t.x,y:t.y}),{onDrop:(q,p)=>{if(p.x>AREA.x1+2){const back=removeThing(S,S.things.indexOf(t));sfx.back();fx(p.x,p.y,'+'+back+' ✨');notify(it.name+' went back in the tray');save();setTimeout(build,0);return true}
+   t.x=Math.min(AREA.x1,Math.max(AREA.x0,q.x));t.y=Math.min(AREA.y1,Math.max(AREA.y0,q.y));d.style.left=t.x+'%';d.style.top=t.y+'%';sfx.place();save();return true}})});
+ // tray: the tool on top, then the shop
+ el('tray');const tool=S.night?{icon:'🫙',name:'Jar',kind:'jar'}:{icon:'💧',name:'Water',kind:'water'};const tl=el('p tool',88.5,9,tool.icon);tl.setAttribute('aria-label','Drag the '+tool.name.toLowerCase());el('label',88.5,16.5).textContent=tool.name;bindTool(tl,tool.kind);
+ ITEMS.forEach((it,j)=>{const x=j%2?93.5:83.5,y=25+Math.floor(j/2)*10.6,d=el('p thing shop',x,y,it.icon);d.dataset.id=it.id;d.setAttribute('aria-label','Drag the '+it.name.toLowerCase()+' into your garden for '+it.price+' fairy dust');el('price',x,y+4.4).textContent='✨'+it.price;
+  draggable(d,()=>({x,y}),{onDrop:(q,p)=>{const at=inGarden(q.x,q.y)?q:p;if(!inGarden(at.x,at.y))return false;if(S.dust<it.price){sfx.nope();notify('You need '+(it.price-S.dust)+' more fairy dust for the '+it.name.toLowerCase()+'.');return false}
+   if(!placeThing(S,it.id,at.x,at.y)){notify('Your garden is full! Drag something back to the tray first.');return false}sfx.place();fx(at.x,at.y-5,'✨');save();arrive();setTimeout(build,0);return true}})});
+ // fairies who live here
+ S.fairies.forEach(id=>{const f=FAIRIES.find(x=>x.id===id),s=randomSpot(Math.random,AREA.y0),d=el('p fairy'+(f.color==='rainbow'?' rainbow':''),s.x,s.y,'<i>🧚</i>');if(f.color!=='rainbow')d.querySelector('i').style.filter=f.color;sprites.push({el:d,x:s.x,y:s.y,tx:s.x,ty:s.y,id})});
+ sprouts.forEach(s=>{s.el=el('p sprout',s.x,s.y,'<i>🌱</i>');s.el.querySelector('i').style.transform='scale('+(1+s.water/20)+')'});flies.forEach(f=>{f.el=el('p fly',f.x,f.y)});
+ renderTop()}
+function arrive(){const fresh=checkFairies(S);if(!fresh.length)return;save();const f=FAIRIES.find(x=>x.id===fresh[0]);setTimeout(()=>{sfx.fairy();$('#newIcon').innerHTML='<span style="display:inline-block;'+(f.color==='rainbow'?'animation:rain 2s linear infinite':'filter:'+f.color)+'">🧚</span>';$('#newTitle').textContent=f.name+' moved in!';$('#newText').textContent=f.name+' loves '+f.loves+', and your garden is just right. '+S.fairies.length+' of '+FAIRIES.length+' fairies live here now.';$('#newDialog').showModal()},500)}
+$('#newOk').onclick=()=>$('#newDialog').close();$('#newDialog').addEventListener('close',()=>{build();last=performance.now()});
+// the water drop (day) waters sprouts until they bloom; the jar (night) catches fireflies
+function bindTool(t,kind){draggable(t,()=>({x:88.5,y:9}),{onMove:q=>{const hx=q.x,hy=q.y+2;
+  if(kind==='water'){for(const s of sprouts){if(s.done||Math.hypot(s.x-hx,(s.y-hy)*.62)>5)continue;s.water+=1;if(Math.random()<.4)sfx.drip();if(s.el)s.el.querySelector('i').style.transform='scale('+(1+s.water/20)+')';
+    if(s.water>=12){s.done=true;if(s.el){s.el.querySelector('i').textContent='🌼';setTimeout(()=>{s.el&&s.el.remove()},500)}const g=bloomSprout(S);sfx.twinkle();fx(s.x,s.y-5,'🌼 +'+g+' ✨');save();renderTop();setTip('🌼 It bloomed! +'+g+' fairy dust. Spend it in the tray on the right.')}}}
+  else{for(const f of flies){if(f.done||Math.hypot(f.x-hx,(f.y-hy)*.62)>4.5)continue;f.done=true;if(f.el)f.el.remove();const g=catchFly(S);sfx.twinkle();fx(f.x,f.y-4,'+'+g+' ✨');save();renderTop()}}
+  sprouts=sprouts.filter(s=>!s.done);flies=flies.filter(f=>!f.done)},onDrop:()=>false})}
+function spawn(){if(!S.night){if(sprouts.length>=MAX_SPROUTS)return;const s=randomSpot(Math.random,40);const sp={x:s.x,y:s.y,water:0,el:el('p sprout',s.x,s.y,'<i>🌱</i>')};sprouts.push(sp)}
+ else{if(flies.length>=MAX_FLIES)return;const s=randomSpot(Math.random,AREA.y0);flies.push({x:s.x,y:s.y,vx:(Math.random()-.5)*8,vy:(Math.random()-.5)*6,el:el('p fly',s.x,s.y)})}}
+function loop(now){const dt=Math.min(.1,(now-last)/1000);last=now;requestAnimationFrame(loop);if(document.hidden||document.querySelector('dialog[open]'))return;
+ spawnT-=dt;if(spawnT<=0){spawnT=S.night?1.6:2.6;spawn()}
+ for(const f of flies){f.vx+=(Math.random()-.5)*20*dt;f.vy+=(Math.random()-.5)*16*dt;f.vx=Math.max(-9,Math.min(9,f.vx));f.vy=Math.max(-7,Math.min(7,f.vy));f.x+=f.vx*dt;f.y+=f.vy*dt;
+  if(f.x<AREA.x0+2||f.x>AREA.x1-2)f.vx*=-1;if(f.y<AREA.y0+2||f.y>AREA.y1-2)f.vy*=-1;f.x=Math.max(AREA.x0+2,Math.min(AREA.x1-2,f.x));f.y=Math.max(AREA.y0+2,Math.min(AREA.y1-2,f.y));if(f.el){f.el.style.left=f.x+'%';f.el.style.top=f.y+'%'}}
+ for(const s of sprites){if(Math.hypot(s.tx-s.x,s.ty-s.y)<1){const t=randomSpot(Math.random,AREA.y0);s.tx=t.x;s.ty=t.y}const d=Math.hypot(s.tx-s.x,s.ty-s.y);s.x+=(s.tx-s.x)/d*7*dt;s.y+=(s.ty-s.y)/d*7*dt;s.el.style.left=s.x+'%';s.el.style.top=s.y+'%';s.el.querySelector('i').style.transform=s.tx<s.x?'scaleX(-1)':''}
+ saveT-=dt;if(saveT<=0){saveT=4;save()}}
+$('#timeBtn').onclick=()=>{if(dragging)return;S.night=!S.night;sprouts.forEach(s=>s.el&&s.el.remove());flies.forEach(f=>f.el&&f.el.remove());sprouts=[];flies=[];spawnT=.5;save();build();
+ setTip(S.night?'🌙 Night time! Fireflies are coming out. <b>Drag the jar</b> 🫙 over them to catch them. Lanterns, candles and crystals glow in the dark!':'☀️ Good morning! Sprouts 🌱 are popping up. <b>Drag the water drop</b> 💧 over a sprout until it blooms.')};
+$('#bookBtn').onclick=()=>{const b=$('#book');b.innerHTML='';FAIRIES.forEach(f=>{const home=S.fairies.includes(f.id),d=document.createElement('div');d.className='card'+(home?' home':'');
+  d.innerHTML='<span class="ic'+(home?'':' unknown')+'" aria-hidden="true"><span style="display:inline-block;'+(home?(f.color==='rainbow'?'animation:rain 2s linear infinite':'filter:'+f.color):'')+'">🧚</span></span><div><div class="nm"></div><div class="sub"></div></div>';
+  d.querySelector('.nm').textContent=home?f.name:'??? fairy';d.querySelector('.sub').textContent=home?'Lives in your garden. Loves '+f.loves+'.':'Loves '+f.loves+'. '+f.hint;b.append(d)});
+ $('#bookSub').textContent=S.fairies.length+' of '+FAIRIES.length+' fairies live here · '+S.things.length+' things in your garden · '+S.caught+' fireflies caught · '+S.bloomed+' sprouts bloomed';$('#bookDialog').showModal()};
+$('#bookClose').onclick=()=>$('#bookDialog').close();$('#bookDialog').addEventListener('click',e=>{if(e.target===$('#bookDialog'))$('#bookDialog').close()});
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+window.addEventListener('pagehide',save);
+setTip(S.night?'🌙 Night time! <b>Drag the jar</b> 🫙 over the fireflies to catch them.':'🧚 Welcome to your fairy garden! <b>Drag things</b> from the tray into the garden. Water the sprouts 🌱 with the 💧 to earn more fairy dust. Fairies move in when your garden has what they love. Look in the 📖 Fairy book!');
+build();checkFairies(S);requestAnimationFrame(loop);
+window.__fairy={get S(){return S},build,spawn,get sprouts(){return sprouts},get flies(){return flies}};
+}
+</script>
+</body>
+</html>
