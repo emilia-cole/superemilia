@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff1f6">
+<meta name="author" content="Emilia">
+<meta name="description" content="Decorate a dream dollhouse room by room: drag in beds, couches, lamps, wallpaper, people, and pets, earn stars, and unlock new packs. A free game by Emilia.">
+<link rel="canonical" href="https://superemilia.com/house/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Super Emilia">
+<meta property="og:url" content="https://superemilia.com/house/">
+<meta property="og:title" content="Dream Dollhouse · A Super Emilia Game">
+<meta property="og:description" content="Decorate a dream dollhouse room by room: drag in beds, couches, lamps, wallpaper, people, and pets, earn stars, and unlock new packs. A free game by Emilia.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<title>Dream Dollhouse</title>
+<style>
+/* Layout: the whole-house view (a dollhouse with six rooms under a roof) and a room view (the big room on the left, the tray of things to drag on the right, or below on phones). */
+:root{
+ color-scheme:light;
+ --bg:#fff1f6; --bg-2:#eef3ff; --paper:#fff; --line:#f1d3df; --ink:#3a2431; --soft:#7d6370;
+ --rose:#e2557a; --rose-deep:#b8325a;
+ --round:ui-rounded,"SF Pro Rounded","Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(800px 400px at 85% 0,#fff 0,transparent 60%),linear-gradient(170deg,var(--bg),var(--bg-2));color:var(--ink);font-family:var(--round);-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:2px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;transition:transform .1s ease}
+button:active:not(:disabled){transform:scale(.96)}
+button:focus-visible{outline:3px solid var(--rose-deep);outline-offset:2px}
+.app{max-width:1060px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;padding-block:12px 18px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home{text-decoration:none;font-weight:800;color:var(--ink);background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:14px}
+.title{display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.title small{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--rose-deep);font-weight:800}
+.title strong{font-size:20px;letter-spacing:-.4px}
+.chip{background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:900;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tip{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;color:var(--soft);font-size:14.5px;min-height:42px;line-height:1.4}
+.tip b{color:var(--ink)}
+/* a room (used big in the room view and small in the house) */
+.room{position:relative;aspect-ratio:16/10;container-type:inline-size;overflow:hidden;width:100%;--wall:#fff3df;--floor:#c98d5a}
+.room .wall{position:absolute;inset:0 0 30% 0;background:var(--wall)}
+.room .floor{position:absolute;inset:70% 0 0 0;background:var(--floor);box-shadow:inset 0 .9cqw 0 #0002}
+.room .base{position:absolute;left:0;right:0;top:68.6%;height:1.6cqw;background:#fff;box-shadow:0 .3cqw 0 #0001}
+.room .win{position:absolute;left:8%;top:20%;width:15cqw;height:13cqw;border:1.1cqw solid #fff;border-radius:1cqw;background:linear-gradient(#8fd0ff,#d8f1ff);box-shadow:0 .5cqw 0 #0001;overflow:hidden}
+.room .win:before{content:"";position:absolute;left:50%;top:0;bottom:0;width:.8cqw;background:#fff;transform:translateX(-50%)}
+.room .win:after{content:"☁️";position:absolute;left:12%;top:18%;font-size:4.5cqw;line-height:1}
+.room .it{position:absolute;line-height:1;transform:translate(-50%,-50%) scaleX(var(--f,1));white-space:nowrap;filter:drop-shadow(0 .3cqw 0 #0002)}
+.room.night .wall,.room.night .floor{filter:brightness(.5) saturate(.8)}
+.room.night .win{background:linear-gradient(#141a45,#34418a)}
+.room.night .win:after{content:"🌙"}
+.room.night .it{filter:brightness(.62) saturate(.9)}
+.room.night .it.light{filter:drop-shadow(0 0 2.2cqw #ffd76a) drop-shadow(0 0 .8cqw #fff3b0)}
+/* the whole house */
+.yard{position:relative;border-radius:24px;padding:22px 6% 0;background:linear-gradient(#bfe6ff,#eef9ff);overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #ecd2dd}
+.yard.night{background:linear-gradient(#141a45,#2d3778)}
+.yard .sky{position:absolute;font-size:44px;line-height:1;top:14px;right:5%}
+.yard .sky2{position:absolute;font-size:30px;line-height:1;top:40px;left:4%}
+.house{position:relative;max-width:720px;margin:0 auto}
+.roof{position:relative;height:clamp(64px,13vw,120px);margin:0 -5%;background:repeating-linear-gradient(0deg,#e8576b 0 10px,#d6475d 10px 12px);clip-path:polygon(50% 0,100% 100%,0 100%);display:grid;place-items:center}
+.roof span{font-size:clamp(20px,4vw,36px);margin-top:30%}
+.chim{position:absolute;right:20%;top:8px;width:7%;height:clamp(36px,7vw,60px);background:#b9563f;border-radius:4px 4px 0 0}
+.floors{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.6vw,14px);padding:clamp(6px,1.6vw,14px);background:#f6c98d;box-shadow:inset 0 -6px 0 #0001}
+.mini{position:relative;padding:0;border:0;border-radius:6px;overflow:hidden;background:none;display:block;box-shadow:0 0 0 3px #e7b06e}
+.mini .rlabel{position:absolute;left:5px;top:5px;background:#ffffffe6;border-radius:999px;padding:2px 8px;font-size:clamp(10px,1.6vw,13px);font-weight:900;white-space:nowrap;z-index:5}
+.mini .rstars{position:absolute;right:5px;top:5px;background:#ffffffe6;border-radius:999px;padding:2px 6px;font-size:clamp(9px,1.4vw,12px);z-index:5;letter-spacing:-1px}
+.ground{height:26px;margin:0 -12%;background:linear-gradient(#86d46f,#6cbf58)}
+.welcome{display:grid;gap:10px;background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:14px 16px}
+.welcome h1{margin:0;font-size:24px;letter-spacing:-.4px}
+.welcome p{margin:0;color:var(--soft);font-weight:700;line-height:1.4}
+.packs{display:flex;flex-wrap:wrap;gap:6px}
+.pack{padding:5px 10px;border-radius:999px;font-size:13px;font-weight:800;background:#fdf4f7;border:1.5px solid var(--line)}
+.pack.lock{color:#9a8a92;background:#f4f1f3}
+.pack.got{background:#fff6d8;border-color:#f2c94c}
+/* the room view */
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bar h2{margin:0 auto 0 0;font-size:20px;display:flex;gap:8px;align-items:center}
+.bar h2 small{font-size:15px;letter-spacing:-1px}
+.studio{display:grid;gap:12px;align-items:start}
+.bigroom{border-radius:22px;overflow:hidden;border:4px solid #fff;box-shadow:0 8px 0 #ecd2dd;position:relative;touch-action:none}
+.bigroom .it{cursor:grab;touch-action:none}
+.bigroom .it.sel{outline:.4cqw dashed var(--rose);outline-offset:.6cqw;border-radius:1cqw}
+.tools{position:absolute;display:flex;gap:4px;transform:translate(-50%,-100%);z-index:230;background:#fff;padding:4px;border-radius:14px;box-shadow:0 4px 14px #3a243133}
+.tools button{padding:4px 8px;font-size:18px;border-radius:10px;min-width:38px}
+.side{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:10px;display:grid;gap:10px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.tabs button{padding:6px 2px;font-size:13px;display:grid;justify-items:center;gap:2px;border-radius:12px}
+.tabs button span{font-size:22px;line-height:1}
+.tabs button[aria-pressed="true"]{border-color:var(--rose);background:#fff0f5}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.thing{position:relative;aspect-ratio:1;display:grid;place-items:center;font-size:30px;line-height:1;padding:0;border-radius:14px;touch-action:none;cursor:grab}
+.thing.lock{filter:grayscale(1);opacity:.45;cursor:pointer}
+.thing.lock:after{content:"🔒";position:absolute;right:2px;bottom:2px;font-size:13px}
+.looks{display:grid;gap:6px}
+.looks b{font-size:13px;color:var(--soft)}
+.sw{display:flex;flex-wrap:wrap;gap:6px}
+.sw button{position:relative;width:38px;height:38px;padding:0;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line);overflow:hidden;container-type:inline-size}
+.sw button i{position:absolute;inset:0;background:var(--bgc)}
+.sw button[aria-pressed="true"]{box-shadow:0 0 0 3px var(--rose)}
+.sw button.lock i{filter:grayscale(1);opacity:.4}
+.sw button.lock:after{content:"🔒";position:absolute;inset:0;display:grid;place-items:center;font-size:14px}
+.clear{justify-self:start;font-size:13px}
+.ghost{position:fixed;pointer-events:none;z-index:300;line-height:1;transform:translate(-50%,-50%);filter:drop-shadow(0 4px 6px #0003)}
+.fx{position:absolute;transform:translate(-50%,-50%);font-size:3cqw;font-weight:900;pointer-events:none;animation:rise 1.4s ease-out forwards;z-index:210;color:var(--rose-deep);background:#fff;border-radius:2cqw;padding:.6cqw 1.4cqw;box-shadow:0 .4cqw 0 #0001;white-space:nowrap}
+.big-note{position:absolute;left:50%;top:18%;transform:translate(-50%,-50%);background:#fff;border-radius:2cqw;padding:1.2cqw 2.4cqw;font-size:3.4cqw;font-weight:900;z-index:220;box-shadow:0 .8cqw 0 #0001;text-align:center;animation:pop .4s ease-out;white-space:nowrap}
+.poof{position:absolute;transform:translate(-50%,-50%);font-size:6cqw;pointer-events:none;animation:poof .5s ease-out forwards;z-index:210}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:400;max-width:calc(100vw - 30px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+[hidden]{display:none!important}
+@keyframes pop{0%{scale:0}70%{scale:1.15}100%{scale:1}}
+@keyframes rise{0%{opacity:0;translate:0 0}15%{opacity:1}100%{opacity:0;translate:0 -6cqw}}
+@keyframes poof{from{opacity:1;scale:.6}to{opacity:0;scale:1.6}}
+@keyframes land{0%{scale:1.3}100%{scale:1}}
+.land{animation:land .25s ease-out}
+@media (min-width:900px){.studio{grid-template-columns:minmax(0,1fr) 290px}}
+@media (max-width:600px){.wide{display:none}.bar h2{font-size:17px}.title strong{font-size:17px}.welcome h1{font-size:20px}.yard .sky{font-size:30px}.yard .sky2{font-size:22px;top:30px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="topbar">
+  <a class="home" href="/" aria-label="Back to all games">← Games</a>
+  <div class="title"><small>Super Emilia</small><strong>Dream Dollhouse</strong></div>
+  <span class="chip" id="starChip" aria-label="Stars">⭐ 0 / 18</span>
+  <button type="button" id="nightBtn">🌙<span class="wide"> Night</span></button>
+  <button type="button" id="soundBtn" aria-pressed="true">🔊</button>
+ </div>
+ <section id="houseView">
+  <div class="welcome">
+   <h1>🏡 Welcome to your dream dollhouse!</h1>
+   <p id="houseTip">Tap a room to decorate it. Fill rooms with things to earn ⭐ stars, and stars unlock new packs.</p>
+   <div class="packs" id="packs"></div>
+  </div>
+  <div class="yard" id="yard" style="margin-top:12px">
+   <span class="sky" id="sky" aria-hidden="true">☀️</span><span class="sky2" id="sky2" aria-hidden="true">☁️</span>
+   <div class="house">
+    <div class="chim" aria-hidden="true"></div>
+    <div class="roof" aria-hidden="true"><span>💗</span></div>
+    <div class="floors" id="floors"></div>
+   </div>
+   <div class="ground" aria-hidden="true"></div>
+  </div>
+ </section>
+ <section id="roomView" hidden>
+  <div class="bar"><button type="button" id="prevBtn" aria-label="Room above">◀</button><h2 id="roomTitle"></h2><button type="button" id="nextBtn" aria-label="Next room">▶</button><button type="button" id="houseBtn" aria-label="Whole house">🏠<span class="wide"> House</span></button></div>
+  <p class="tip" id="tip" role="status"></p>
+  <div class="studio">
+   <div class="bigroom" id="bigroom"><div class="room" id="room" aria-label="Room"></div></div>
+   <div class="side">
+    <div class="tabs" id="tabs" role="group" aria-label="Kinds of things"></div>
+    <div class="items" id="items"></div>
+    <div class="looks"><b>Wallpaper</b><div class="sw" id="walls"></div><b>Floor</b><div class="sw" id="floorsSw"></div></div>
+    <button type="button" class="clear" id="clearBtn">🧹 Clear this room</button>
+   </div>
+  </div>
+ </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+// ---------- data ----------
+// rooms, top floor first (that is how the house is drawn)
+const ROOMS=[{id:'playroom',name:'Playroom',icon:'🧸',wall:'sky',floor:'wood'},{id:'attic',name:'Attic',icon:'⭐',wall:'cream',floor:'wood'},{id:'bedroom',name:'Bedroom',icon:'🛏️',wall:'pink',floor:'blue'},{id:'bathroom',name:'Bathroom',icon:'🛁',wall:'sky',floor:'tile'},{id:'living',name:'Living Room',icon:'🛋️',wall:'cream',floor:'wood'},{id:'kitchen',name:'Kitchen',icon:'🍳',wall:'cream',floor:'tile'}];
+// packs unlock with stars
+const PACKS=[{id:'home',name:'Home Basics',icon:'🏠',cost:0},{id:'pets',name:'Pet Pack',icon:'🐾',cost:3},{id:'toys',name:'Toy Box',icon:'🪁',cost:6},{id:'party',name:'Party Pack',icon:'🎈',cost:9},{id:'fancy',name:'Fancy Pack',icon:'👑',cost:12},{id:'magic',name:'Magic Pack',icon:'🦄',cost:15},{id:'holiday',name:'Holiday Pack',icon:'🎄',cost:18}];
+const CATS=[{id:'f',name:'Furniture',icon:'🛋️'},{id:'d',name:'Decor',icon:'🖼️'},{id:'p',name:'People',icon:'👪'},{id:'t',name:'Pets & toys',icon:'🐶'}];
+// e emoji, n name, c kind, z size, p pack, l gives light at night, a is an animal
+const I=(e,n,c,z,p,x={})=>Object.assign({e,n,c,z,p},x);
+const ITEMS=[
+ I('🛋️','Couch','f',20,'home'),I('🛏️','Bed','f',22,'home'),I('🪑','Chair','f',11,'home'),I('🛁','Bathtub','f',20,'home'),I('🚽','Toilet','f',11,'home'),I('🚪','Door','f',19,'home'),I('🗄️','Cabinet','f',13,'home'),I('📺','TV','f',12,'home'),I('🪜','Ladder','f',17,'home'),I('🧺','Basket','f',8,'home'),
+ I('🖼️','Picture','d',9,'home'),I('🪞','Mirror','d',10,'home'),I('🪴','Plant','d',10,'home'),I('💡','Light','d',7,'home',{l:1}),I('🕯️','Candle','d',6,'home',{l:1}),I('🍽️','Plates','d',7,'home'),I('🫖','Teapot','d',7,'home'),I('🧼','Soap','d',5,'home'),I('📚','Books','d',8,'home'),I('⏰','Alarm clock','d',6,'home'),
+ I('👩','Mom','p',11,'home'),I('👨','Dad','p',11,'home'),I('👧','Girl','p',9,'home'),I('👦','Boy','p',9,'home'),I('👶','Baby','p',7,'home'),I('👵','Grandma','p',10,'home'),I('👴','Grandpa','p',10,'home'),
+ I('🐱','Cat','t',8,'home',{a:1}),I('🐶','Dog','t',9,'home',{a:1}),I('🧸','Teddy bear','t',7,'home'),I('⚽','Ball','t',6,'home'),
+ I('🐰','Bunny','t',7,'pets',{a:1}),I('🐹','Hamster','t',5,'pets',{a:1}),I('🐠','Fish','t',6,'pets',{a:1}),I('🦜','Parrot','t',7,'pets',{a:1}),I('🐢','Turtle','t',6,'pets',{a:1}),I('🦴','Bone','t',5,'pets'),
+ I('🎹','Piano','f',16,'toys'),I('🎸','Guitar','t',10,'toys'),I('🪁','Kite','t',9,'toys'),I('🧩','Puzzle','t',6,'toys'),I('🚂','Toy train','t',9,'toys'),I('🪀','Yo-yo','t',5,'toys'),I('🎨','Paints','d',7,'toys'),
+ I('🎈','Balloon','d',9,'party'),I('🎂','Cake','d',9,'party'),I('🎁','Present','d',7,'party'),I('🎉','Party popper','d',7,'party'),I('🧁','Cupcake','d',6,'party'),I('🍕','Pizza','d',7,'party'),
+ I('👸','Princess','p',10,'fancy'),I('🕰️','Grand clock','f',13,'fancy'),I('🏺','Vase','d',8,'fancy'),I('🪩','Disco ball','d',9,'fancy',{l:1}),I('🏆','Trophy','d',7,'fancy'),I('👑','Crown','d',6,'fancy'),I('💎','Gem','d',5,'fancy'),I('🦢','Swan','t',8,'fancy',{a:1}),
+ I('🧚','Fairy','p',8,'magic'),I('🧙','Wizard','p',10,'magic'),I('🌈','Rainbow','d',14,'magic'),I('✨','Sparkles','d',7,'magic',{l:1}),I('🔮','Crystal ball','d',7,'magic',{l:1}),I('🦄','Unicorn','t',12,'magic',{a:1}),I('🐉','Dragon','t',13,'magic',{a:1}),
+ I('🎄','Holiday tree','f',18,'holiday',{l:1}),I('🎅','Santa','p',11,'holiday'),I('⛄','Snowman','t',11,'holiday'),I('🦌','Reindeer','t',11,'holiday',{a:1}),I('🧦','Stocking','d',6,'holiday'),I('🍪','Cookies','d',6,'holiday')];
+const WALLS=[{id:'cream',name:'Cream',cost:0,css:'#fff3df'},{id:'pink',name:'Pink stripes',cost:0,css:'repeating-linear-gradient(90deg,#ffd9e8 0 4cqw,#ffeaf2 4cqw 8cqw)'},{id:'sky',name:'Sky blue',cost:0,css:'#dcefff'},
+ {id:'dots',name:'Mint dots',cost:2,css:'radial-gradient(circle,#9fe0bf 0 .8cqw,transparent .9cqw) 0 0/5cqw 5cqw,#e6fbf0'},{id:'lilac',name:'Lilac checks',cost:4,css:'conic-gradient(#e3d3ff 25%,#f4edff 0 50%,#e3d3ff 0 75%,#f4edff 0) 0 0/8cqw 8cqw'},
+ {id:'sunny',name:'Sunny stripes',cost:7,css:'repeating-linear-gradient(90deg,#fff0a0 0 3cqw,#fffad9 3cqw 6cqw)'},{id:'rainbow',name:'Rainbow',cost:10,css:'linear-gradient(180deg,#ffd6d6,#ffe9c7,#fff7c2,#d9f7d0,#d4ecff,#e6dbff)'},
+ {id:'stars',name:'Starry night',cost:14,css:'radial-gradient(circle,#fff 0 .35cqw,transparent .45cqw) 0 0/6cqw 6cqw,radial-gradient(circle,#ffe58a 0 .3cqw,transparent .4cqw) 3cqw 3cqw/6cqw 6cqw,#2b2f6b'}];
+const FLOORS=[{id:'wood',name:'Wood',cost:0,css:'repeating-linear-gradient(90deg,#c98d5a 0 7cqw,#a8713f 7cqw 7.4cqw,#d39a68 7.4cqw 14cqw)'},{id:'tile',name:'Tiles',cost:0,css:'conic-gradient(#fff 25%,#cfdbe8 0 50%,#fff 0 75%,#cfdbe8 0) 0 0/6cqw 6cqw'},{id:'blue',name:'Blue carpet',cost:0,css:'#8fb8f0'},
+ {id:'pink',name:'Pink carpet',cost:3,css:'#ffb3d1'},{id:'grass',name:'Grass',cost:8,css:'repeating-linear-gradient(90deg,#7fd66b 0 1cqw,#6cc85a 1cqw 2cqw)'},{id:'marble',name:'Marble',cost:12,css:'linear-gradient(135deg,#f6f6fa,#dfe2ec 40%,#f8f8fc 60%,#d9dce8)'}];
+const MAX_ITEMS=30,MAX_STARS=ROOMS.length*3,SAVE_KEY='superEmiliaHouse';
+
+// ---------- pure game logic (also used by the tests) ----------
+const itemOf=e=>ITEMS.find(i=>i.e===e);
+const packOf=id=>PACKS.find(p=>p.id===id);
+const roomOf=id=>ROOMS.find(r=>r.id===id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function newRoom(r){return{wall:r.wall,floor:r.floor,items:[],best:0}}
+function defaultSave(){const rooms={};ROOMS.forEach(r=>rooms[r.id]=newRoom(r));return{rooms,placed:0,night:false,sound:true}}
+// stars are kept: each room remembers the most stars it ever had
+function totalStars(s){return ROOMS.reduce((t,r)=>t+s.rooms[r.id].best,0)}
+const unlocked=(s,cost)=>cost<=totalStars(s);
+function ownsItem(s,e){const d=itemOf(e);return!!d&&unlocked(s,packOf(d.p).cost)}
+// someone lives here: a person or an animal
+function lives(it){const d=itemOf(it.e);return!!d&&(d.c==='p'||!!d.a)}
+// 3 things = 1 star, 6 things = 2 stars, 10 things with someone living there = 3 stars
+function roomStars(r){const n=r.items.length;return n>=10&&r.items.some(lives)?3:n>=6?2:n>=3?1:0}
+function addItem(s,id,e,x,y){const r=s.rooms[id];if(!r||!ownsItem(s,e)||r.items.length>=MAX_ITEMS)return null;const it={e,x:clamp(Math.round(x*10)/10,3,97),y:clamp(Math.round(y*10)/10,5,95),s:1,f:false};r.items.push(it);s.placed++;return it}
+function moveItem(it,x,y){it.x=clamp(Math.round(x*10)/10,3,97);it.y=clamp(Math.round(y*10)/10,5,95)}
+function resizeItem(it,d){it.s=clamp(Math.round((it.s+d*.2)*10)/10,.6,1.6);return it.s}
+function removeItem(s,id,it){const r=s.rooms[id],i=r?r.items.indexOf(it):-1;if(i<0)return false;r.items.splice(i,1);return true}
+// what unlocks when the stars go from a to b
+function unlocksBetween(a,b){return[...PACKS.map(p=>({kind:'pack',name:p.icon+' '+p.name,cost:p.cost})),...WALLS.map(w=>({kind:'wall',name:'🖌️ '+w.name+' wallpaper',cost:w.cost})),...FLOORS.map(f=>({kind:'floor',name:'🟫 '+f.name+' floor',cost:f.cost}))].filter(u=>u.cost>a&&u.cost<=b)}
+// after a change: a room that reached more stars keeps them
+function settle(s,id){const r=s.rooms[id],st=roomStars(r);if(st<=r.best)return null;const before=totalStars(s);r.best=st;return{stars:st,unlocks:unlocksBetween(before,totalStars(s))}}
+function nextUnlock(s){const t=totalStars(s);return PACKS.find(p=>p.cost>t)||null}
+function setLook(s,id,kind,look){const list=kind==='wall'?WALLS:FLOORS,o=list.find(x=>x.id===look),r=s.rooms[id];if(!o||!r||!unlocked(s,o.cost))return false;r[kind]=look;return true}
+function peopleCount(s){return ROOMS.reduce((t,r)=>t+s.rooms[r.id].items.filter(i=>{const d=itemOf(i.e);return d&&d.c==='p'}).length,0)}
+function thingCount(s){return ROOMS.reduce((t,r)=>t+s.rooms[r.id].items.length,0)}
+function normalizeSave(raw){const s=defaultSave();if(!raw||typeof raw!=='object')return s;const rr=raw.rooms&&typeof raw.rooms==='object'?raw.rooms:{};const num=(v,a,b,d)=>{const n=Number(v);return Number.isFinite(n)?clamp(n,a,b):d};
+ ROOMS.forEach(r=>{const o=rr[r.id];if(!o||typeof o!=='object')return;const t=s.rooms[r.id];t.best=Math.floor(num(o.best,0,3,0));
+  t.items=(Array.isArray(o.items)?o.items:[]).filter(i=>i&&itemOf(i.e)).slice(0,MAX_ITEMS).map(i=>({e:i.e,x:num(i.x,3,97,50),y:num(i.y,5,95,50),s:Math.round(num(i.s,.6,1.6,1)*10)/10,f:i.f===true}));
+  t.wall=WALLS.some(w=>w.id===o.wall)?o.wall:r.wall;t.floor=FLOORS.some(f=>f.id===o.floor)?o.floor:r.floor});
+ ROOMS.forEach(r=>{const t=s.rooms[r.id];if(!unlocked(s,WALLS.find(w=>w.id===t.wall).cost))t.wall=r.wall;if(!unlocked(s,FLOORS.find(f=>f.id===t.floor).cost))t.floor=r.floor;t.items=t.items.filter(i=>ownsItem(s,i.e))});
+ s.placed=Math.floor(num(raw.placed,0,1e9,0));s.night=raw.night===true;s.sound=raw.sound!==false;return s}
+function loadSave(){try{return normalizeSave(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'))}catch(e){return defaultSave()}}
+
+// ---------- the game (only runs in a browser) ----------
+if(typeof document!=='undefined'){
+const $=s=>document.querySelector(s),roomEl=$('#room'),big=$('#bigroom');
+let S=loadSave(),cur=null,cat='f',sel=null,audio=null,clearArm=0;
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function tone(f=660,len=.1,type='sine',vol=.05,end=1.25){if(!S.sound)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,audio.currentTime);o.frequency.exponentialRampToValueAtTime(f*end,audio.currentTime+len);g.gain.setValueAtTime(vol,audio.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+len+.05);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+len+.06)}catch(e){}}
+const sfx={plop:()=>tone(520,.08,'triangle',.05,1.4),pick:()=>tone(880,.05,'sine',.03),poof:()=>tone(400,.12,'sine',.04,.5),click:()=>tone(1400,.04,'square',.025),nope:()=>tone(220,.14,'sawtooth',.03,.9),star:()=>[784,988,1318,1568].forEach((f,i)=>setTimeout(()=>tone(f,.12,'triangle',.05,1),i*90)),meow:()=>tone(700,.25,'sine',.04,.7),woof:()=>tone(180,.12,'square',.04,.8)};
+let toastT=0;function notify(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2600)}
+const starText=n=>'⭐'.repeat(n)+'☆'.repeat(3-n);
+const wallCss=id=>WALLS.find(w=>w.id===id).css,floorCss=id=>FLOORS.find(f=>f.id===id).css;
+// draw a room into a .room element (big or small)
+function drawRoom(el,id,big){const r=S.rooms[id];el.innerHTML='<div class="wall"></div><div class="floor"></div><div class="base"></div><div class="win"></div>';el.style.setProperty('--wall',wallCss(r.wall));el.style.setProperty('--floor',floorCss(r.floor));el.classList.toggle('night',S.night);
+ r.items.forEach(it=>{const d=itemOf(it.e),s=document.createElement('span');s.className='it'+(d.l?' light':'')+(it===sel?' sel':'');s.textContent=it.e;s.style.left=it.x+'%';s.style.top=it.y+'%';s.style.fontSize=(d.z*it.s)+'cqw';s.style.setProperty('--f',it.f?-1:1);s.style.zIndex=10+Math.round(it.y);if(big){s.setAttribute('aria-label',d.n);hookItem(s,it)}el.append(s)})}
+function renderTop(){$('#starChip').textContent='⭐ '+totalStars(S)+' / '+MAX_STARS;$('#nightBtn').innerHTML=S.night?'☀️<span class="wide"> Day</span>':'🌙<span class="wide"> Night</span>';$('#nightBtn').setAttribute('aria-label',S.night?'Day':'Night');$('#soundBtn').textContent=S.sound?'🔊':'🔇';$('#soundBtn').setAttribute('aria-pressed',S.sound)}
+// ----- whole house -----
+function showHouse(){cur=null;sel=null;$('#roomView').hidden=true;$('#houseView').hidden=false;renderTop();
+ $('#yard').classList.toggle('night',S.night);$('#sky').textContent=S.night?'🌙':'☀️';$('#sky2').textContent=S.night?'✨':'☁️';
+ const t=totalStars(S),fl=$('#floors');fl.innerHTML='';ROOMS.forEach(r=>{const b=document.createElement('button');b.type='button';b.className='mini';b.dataset.room=r.id;b.setAttribute('aria-label','Decorate the '+r.name+', '+S.rooms[r.id].best+' stars');b.innerHTML='<span class="rlabel">'+r.icon+' '+r.name+'</span><span class="rstars">'+starText(S.rooms[r.id].best)+'</span><div class="room"></div>';drawRoom(b.querySelector('.room'),r.id,false);b.onclick=()=>{sfx.click();openRoom(r.id)};fl.append(b)});
+ const pk=$('#packs');pk.innerHTML='';PACKS.forEach(p=>{const s=document.createElement('span');const got=t>=p.cost;s.className='pack '+(p.cost===0?'':got?'got':'lock');s.textContent=p.icon+' '+p.name+(p.cost===0?'':got?' ✓':' 🔒 '+p.cost+'⭐');pk.append(s)});
+ const n=nextUnlock(S);$('#houseTip').innerHTML=t===0?'Tap a room to decorate it. Put <b>3 things</b> in a room for a ⭐ star. Stars unlock new packs!':(n?'You have <b>'+t+' ⭐</b>. Earn <b>'+(n.cost-t)+' more</b> to unlock the '+n.icon+' <b>'+n.name+'</b>! Tap a room to decorate it.':'You have all <b>'+MAX_STARS+' ⭐</b>! Every pack is unlocked. Your dream house is amazing!')}
+// ----- one room -----
+function openRoom(id){cur=id;sel=null;clearArm=0;big.querySelectorAll('.big-note,.fx,.poof').forEach(n=>n.remove());$('#houseView').hidden=true;$('#roomView').hidden=false;renderRoom();renderTray();window.scrollTo(0,0)}
+function roomTip(){const r=S.rooms[cur],n=r.items.length,st=roomStars(r);
+ if(n===0)return'👉 <b>Drag things</b> from the tray into the room (or tap one). Drag a thing to move it, or drag it out of the room to take it away. Tap a thing to make it bigger, smaller, or flip it.';
+ if(st===0)return'🏠 Put <b>'+(3-n)+' more</b> thing'+(3-n===1?'':'s')+' in this room for a ⭐ star!';
+ if(st===1)return'⭐ Cozy! Put <b>'+(6-n)+' more</b> thing'+(6-n===1?'':'s')+' in for ⭐⭐.';
+ if(st===2){const need=Math.max(0,10-n),who=r.items.some(lives);return'⭐⭐ So pretty! For ⭐⭐⭐ the room needs <b>10 things</b>'+(who?'':' and <b>someone living here</b> (a person or a pet)')+(need?' ('+need+' more to go).':'.')}
+ return'⭐⭐⭐ This room is a dream! Try the <b>🌙 Night</b> button to see the lights glow.'}
+function renderRoom(){const r=roomOf(cur);$('#roomTitle').innerHTML=r.icon+' '+r.name+' <small>'+starText(S.rooms[cur].best)+'</small>';drawRoom(roomEl,cur,true);renderTop();$('#tip').innerHTML=roomTip();drawTools()}
+function renderTray(){const tabs=$('#tabs');tabs.innerHTML='';CATS.forEach(c=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',c.id===cat);b.innerHTML='<span aria-hidden="true">'+c.icon+'</span>'+c.name;b.onclick=()=>{cat=c.id;sfx.click();renderTray()};tabs.append(b)});
+ const box=$('#items');box.innerHTML='';ITEMS.filter(i=>i.c===cat).forEach(d=>{const b=document.createElement('button');b.type='button';const own=ownsItem(S,d.e);b.className='thing'+(own?'':' lock');b.textContent=d.e;b.setAttribute('aria-label',own?d.n:d.n+' (locked)');b.title=d.n;if(own)hookTray(b,d);else b.onclick=()=>{sfx.nope();const p=packOf(d.p);notify('🔒 Earn '+p.cost+' ⭐ to unlock the '+p.icon+' '+p.name+'!')};box.append(b)});
+ const sw=(el,list,kind)=>{el.innerHTML='';list.forEach(o=>{const b=document.createElement('button');b.type='button';const own=unlocked(S,o.cost);b.className=own?'':'lock';b.setAttribute('aria-pressed',S.rooms[cur][kind]===o.id);b.setAttribute('aria-label',o.name+(own?'':' (locked, '+o.cost+' stars)'));b.title=o.name+(own?'':' · '+o.cost+' ⭐');b.innerHTML='<i></i>';b.querySelector('i').style.setProperty('--bgc',o.css);b.onclick=()=>{if(!setLook(S,cur,kind,o.id)){sfx.nope();notify('🔒 Earn '+o.cost+' ⭐ to unlock '+o.name+'!');return}sfx.click();save();renderRoom();renderTray()};el.append(b)})};
+ sw($('#walls'),WALLS,'wall');sw($('#floorsSw'),FLOORS,'floor');$('#clearBtn').textContent=clearArm?'🧹 Tap again to clear':'🧹 Clear this room'}
+function roomPos(cx,cy){const b=roomEl.getBoundingClientRect();return{x:(cx-b.left)/b.width*100,y:(cy-b.top)/b.height*100,inside:cx>=b.left&&cx<=b.right&&cy>=b.top&&cy<=b.bottom}}
+function fx(x,y,t,cls='fx'){const d=document.createElement('div');d.className=cls;d.style.left=x+'%';d.style.top=y+'%';d.textContent=t;big.append(d);setTimeout(()=>d.remove(),1400)}
+function bigNote(t){big.querySelectorAll('.big-note').forEach(n=>n.remove());const n=document.createElement('div');n.className='big-note';n.textContent=t;big.append(n);setTimeout(()=>n.remove(),2400)}
+// after something changes in the room
+function changed(){const res=settle(S,cur);save();renderRoom();if(res){sfx.star();bigNote(starText(res.stars)+' '+roomOf(cur).name+'!');if(res.unlocks.length){renderTray();setTimeout(()=>notify('🎁 Unlocked: '+res.unlocks.map(u=>u.name).join(', ')+'!'),900)}}}
+// tray: drag a thing into the room, or tap it
+function hookTray(b,d){b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);sel=null;const sx=e.clientX,sy=e.clientY;let ghost=null;
+ const move=ev=>{if(!ghost&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<6)return;if(!ghost){ghost=document.createElement('div');ghost.className='ghost';ghost.textContent=d.e;ghost.style.fontSize=(roomEl.getBoundingClientRect().width*d.z/100)+'px';document.body.append(ghost);sfx.pick()}ghost.style.left=ev.clientX+'px';ghost.style.top=ev.clientY+'px'};
+ const up=ev=>{b.removeEventListener('pointermove',move);b.removeEventListener('pointerup',up);b.removeEventListener('pointercancel',up);let p;
+  if(ghost){ghost.remove();p=roomPos(ev.clientX,ev.clientY);if(!p.inside)return}else{p={x:30+Math.random()*40,y:d.c==='d'?30+Math.random()*25:62+Math.random()*20}}
+  const it=addItem(S,cur,d.e,p.x,p.y);if(!it){sfx.nope();notify(S.rooms[cur].items.length>=MAX_ITEMS?'This room is full! Take something out first.':'You cannot use that yet.');return}
+  sfx.plop();changed();const s=[...roomEl.querySelectorAll('.it')].pop();if(s)s.classList.add('land')};
+ b.addEventListener('pointermove',move);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up)})}
+const SAYS=['I love it here!','So cozy!','Hi!','This is my room!','Yay!','Pretty!'];
+// things in the room: drag to move, drag out to take away, tap for tools
+function hookItem(s,it){s.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();s.setPointerCapture(e.pointerId);const sx=e.clientX,sy=e.clientY,p0=roomPos(sx,sy),ox=it.x-p0.x,oy=it.y-p0.y;let moved=false;
+ const move=ev=>{if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<6)return;if(!moved){moved=true;sel=null;drawTools();roomEl.querySelectorAll('.it.sel').forEach(x=>x.classList.remove('sel'));s.style.zIndex=150;sfx.pick()}const p=roomPos(ev.clientX,ev.clientY);s.style.left=(p.x+ox)+'%';s.style.top=(p.y+oy)+'%';s.style.opacity=p.inside?1:.5};
+ const up=ev=>{s.removeEventListener('pointermove',move);s.removeEventListener('pointerup',up);s.removeEventListener('pointercancel',up);
+  if(!moved){sel=sel===it?null:it;sfx.click();const d=itemOf(it.e);if(sel&&(d.c==='p'||d.a)){const say=it.e==='🐱'?'Meow!':it.e==='🐶'?'Woof!':d.a?'💕':SAYS[Math.floor(Math.random()*SAYS.length)];if(it.e==='🐱')sfx.meow();if(it.e==='🐶')sfx.woof();fx(it.x,Math.max(6,it.y-d.z*it.s*.9),say)}renderRoom();return}
+  const p=roomPos(ev.clientX,ev.clientY);if(!p.inside){removeItem(S,cur,it);sfx.poof();fx(clamp(p.x,4,96),clamp(p.y,6,94),'💨','poof');changed();return}
+  moveItem(it,p.x+ox,p.y+oy);sfx.plop();changed()};
+ s.addEventListener('pointermove',move);s.addEventListener('pointerup',up);s.addEventListener('pointercancel',up)})}
+function drawTools(){big.querySelectorAll('.tools').forEach(t=>t.remove());if(!sel||!S.rooms[cur].items.includes(sel))return;const d=itemOf(sel.e),t=document.createElement('div');t.className='tools';
+ const h=d.z*sel.s*.8;let top=sel.y+h+1.5,below=true;if(top>84){top=sel.y-h-1.5;below=false}t.style.left=clamp(sel.x,14,86)+'%';t.style.top=clamp(top,4,96)+'%';t.style.transform=below?'translate(-50%,0)':'translate(-50%,-100%)';
+ [['➖','Smaller',()=>resizeItem(sel,-1)],['➕','Bigger',()=>resizeItem(sel,1)],['↔️','Flip',()=>{sel.f=!sel.f}],['🗑️','Take away',()=>{removeItem(S,cur,sel);fx(sel.x,sel.y,'💨','poof');sfx.poof();sel=null}]].forEach(([i,n,f])=>{const b=document.createElement('button');b.type='button';b.textContent=i;b.setAttribute('aria-label',n);b.addEventListener('pointerdown',e=>e.stopPropagation());b.onclick=()=>{f();sfx.click();changed()};t.append(b)});big.append(t)}
+big.addEventListener('pointerdown',()=>{if(sel){sel=null;renderRoom()}});
+function step(d){const i=ROOMS.findIndex(r=>r.id===cur);sfx.click();openRoom(ROOMS[(i+d+ROOMS.length)%ROOMS.length].id)}
+$('#prevBtn').onclick=()=>step(-1);$('#nextBtn').onclick=()=>step(1);$('#houseBtn').onclick=()=>{sfx.click();showHouse()};
+$('#clearBtn').onclick=()=>{if(!S.rooms[cur].items.length){notify('This room is already empty.');return}if(!clearArm){clearArm=1;renderTray();setTimeout(()=>{if(clearArm){clearArm=0;if(cur)renderTray()}},3000);return}clearArm=0;S.rooms[cur].items=[];sel=null;sfx.poof();save();renderRoom();renderTray();notify('🧹 All clean! Your ⭐ stars stay.')};
+$('#nightBtn').onclick=()=>{S.night=!S.night;save();sfx.click();if(cur)renderRoom();else showHouse()};
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();renderTop()};
+showHouse();
+window.__house={get S(){return S},openRoom,showHouse};
+}
+</script>
+</body>
+</html>
